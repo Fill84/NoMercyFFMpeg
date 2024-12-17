@@ -11,11 +11,15 @@ ENV DEBIAN_FRONTEND=noninteractive \
 
 ENV ffmpeg_version=7.1 \
     iconv_version=1.18 \
-    zlib_version=1.3.1 \
     libxml2_version=2.13 \
+    zlib_version=1.3.1 \
+    fftw3_version=3.3.10 \
     freetype_version=2.13.3 \
     fribidi_version=1.0.16 \
+    fontconfig_version=2.15.0 \
     harfbuzz_version=10.1.0 \
+    avisynth_version=3.7.3 \
+    chromaprint_version=1.5.1 \
     libass_version=0.17.3 \
     mp3lame_version=3.100 \
     libvpx_version=1.15.0 \
@@ -71,11 +75,15 @@ WORKDIR /build
 RUN wget -O libiconv.tar.gz http://ftp.gnu.org/gnu/libiconv/libiconv-${iconv_version}.tar.gz && \
     tar -xvf libiconv.tar.gz && rm libiconv.tar.gz && mv libiconv-* iconv
 
-# Download zlib
-RUN git clone --branch v${zlib_version} https://github.com/madler/zlib.git
-
 # Download libxml2
-RUN git clone --branch ${libxml2_version} https://github.com/GNOME/libxml2.git
+RUN git clone --branch ${libxml2_version} https://github.com/GNOME/libxml2.git libxml2
+
+# Download zlib
+RUN git clone --branch v${zlib_version} https://github.com/madler/zlib.git zlib
+
+# Download fftw3 
+RUN wget -O fftw3.tar.gz http://www.fftw.org/fftw-${fftw3_version}.tar.gz && \
+    tar -xvf fftw3.tar.gz && rm fftw3.tar.gz && mv fftw-${fftw3_version} fftw3
 
 # Download freetype
 RUN wget -O freetype.tar.gz https://download.savannah.gnu.org/releases/freetype/freetype-${freetype_version}.tar.gz \
@@ -85,26 +93,30 @@ RUN wget -O freetype.tar.gz https://download.savannah.gnu.org/releases/freetype/
 RUN wget https://github.com/fribidi/fribidi/releases/download/v${fribidi_version}/fribidi-${fribidi_version}.tar.xz \
     && tar -xJf fribidi-${fribidi_version}.tar.xz && rm fribidi-${fribidi_version}.tar.xz && mv fribidi-${fribidi_version} fribidi
 
+# Download fontconfig
+RUN git clone --branch ${fontconfig_version} https://gitlab.freedesktop.org/fontconfig/fontconfig.git fontconfig
+
 # Download harfbuzz
 RUN git clone --branch ${harfbuzz_version} https://github.com/harfbuzz/harfbuzz.git harfbuzz
-# RUN wget https://github.com/harfbuzz/harfbuzz/releases/download/${harfbuzz_version}/harfbuzz-${harfbuzz_version}.tar.xz \
-#     && tar -xJf harfbuzz-${harfbuzz_version}.tar.xz && rm harfbuzz-${harfbuzz_version}.tar.xz && mv harfbuzz-${harfbuzz_version} harfbuzz
 
-# Download fontconfig
-RUN git clone --depth=1 https://gitlab.freedesktop.org/fontconfig/fontconfig.git
+# Download avisynth
+RUN git clone --branch v${avisynth_version} https://github.com/AviSynth/AviSynthPlus.git avisynth
+
+# Download chromaprint
+RUN git clone --branch v${chromaprint_version} https://github.com/acoustid/chromaprint.git chromaprint
 
 # Download libass
-RUN git clone --branch ${libass_version} https://github.com/libass/libass.git
+RUN git clone --branch ${libass_version} https://github.com/libass/libass.git libass
 
 # Download mp3lame
 RUN wget -O mp3lame.tar.gz https://downloads.sourceforge.net/project/lame/lame/${mp3lame_version}/lame-${mp3lame_version}.tar.gz \
     && tar -xzf mp3lame.tar.gz && rm mp3lame.tar.gz && mv lame-${mp3lame_version} lame
 
 # Download libvpx
-RUN git clone --branch v${libvpx_version} https://chromium.googlesource.com/webm/libvpx.git
+RUN git clone --branch v${libvpx_version} https://chromium.googlesource.com/webm/libvpx.git libvpx
 
 # Download x264
-RUN git clone --branch ${x264_version} https://code.videolan.org/videolan/x264.git
+RUN git clone --branch ${x264_version} https://code.videolan.org/videolan/x264.git x264
 
 # Download x265
 RUN wget -O x265.tar.bz2 https://bitbucket.org/multicoreware/x265_git/get/${x265_version}.tar.bz2 \
@@ -119,17 +131,17 @@ RUN wget -O fdk-aac.tar.gz https://github.com/mstorsjo/fdk-aac/archive/v${fdk_aa
     && tar -xzf fdk-aac.tar.gz && rm fdk-aac.tar.gz && mv fdk-aac-* fdk-aac
 
 # Download Opus
-RUN git clone --branch v${opus_version} https://github.com/xiph/opus.git
+RUN git clone --branch v${opus_version} https://github.com/xiph/opus.git opus
 
 # Download libwebp
 RUN wget -O libwebp.tar.gz https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-${libwebp_version}.tar.gz \
     && tar -xzf libwebp.tar.gz && rm libwebp.tar.gz && mv libwebp-${libwebp_version} libwebp
 
 # Download openjpeg
-RUN git clone --branch v${openjpeg_version} https://github.com/uclouvain/openjpeg.git
+RUN git clone --branch v${openjpeg_version} https://github.com/uclouvain/openjpeg.git openjpeg
 
 # Download zimg
-RUN git clone --branch release-${zimg_version} https://github.com/sekrit-twc/zimg.git
+RUN git clone --branch release-${zimg_version} https://github.com/sekrit-twc/zimg.git zimg
 
 # Download ffmpeg
 RUN wget -O ffmpeg.tar.bz2 https://ffmpeg.org/releases/ffmpeg-${ffmpeg_version}.tar.bz2 \

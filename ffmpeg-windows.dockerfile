@@ -36,7 +36,6 @@ ENV PATH="${PREFIX}/bin:${PATH}"
 ENV CFLAGS="-static-libgcc -static-libstdc++ -I${PREFIX}/include -O2 -pipe -D_FORTIFY_SOURCE=2 -fstack-protector-strong"
 ENV CXXFLAGS="-static-libgcc -static-libstdc++ -I${PREFIX}/include -O2 -pipe -D_FORTIFY_SOURCE=2 -fstack-protector-strong"
 ENV LDFLAGS="-static-libgcc -static-libstdc++ -L${PREFIX}/lib -O2 -pipe -fstack-protector-strong"
-ENV LD_LIBRARY_PATH="/usr/local/lib:${PREFIX}/lib:$LD_LIBRARY_PATH"
 
 # Create the build directory
 RUN mkdir -p ${PREFIX}
@@ -55,15 +54,12 @@ RUN echo "[binaries]" > cross_file.txt && \
     echo "cpu = '${ARCH}'" >> cross_file.txt && \
     echo "endian = 'little'" >> cross_file.txt
 
+ENV CMAKE_COMMON_ARG="-DCMAKE_INSTALL_PREFIX=${PREFIX} -DCMAKE_SYSTEM_NAME=Windows -DCMAKE_C_COMPILER=${CC} -DCMAKE_CXX_COMPILER=${CXX} -DCMAKE_RC_COMPILER=${WINDRES} -DENABLE_SHARED=OFF -DBUILD_SHARED_LIBS=OFF"
+
 # iconv
 WORKDIR /build/iconv
 RUN ./configure --prefix=${PREFIX} --enable-extra-encodings --enable-static --disable-shared --with-pic \
     --host=${CROSS_PREFIX%-} \
-    && make -j$(nproc) && make install
-
-# zlib
-WORKDIR /build/zlib
-RUN ./configure --prefix=${PREFIX} --static \
     && make -j$(nproc) && make install
 
 # libxml2
@@ -77,6 +73,14 @@ RUN ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared --without-p
 # zlib
 WORKDIR /build/zlib
 RUN ./configure --prefix=${PREFIX} --static \
+    && make -j$(nproc) && make install
+
+# fftw3
+WORKDIR /build/fftw3
+RUN ./bootstrap.sh --prefix=${PREFIX} --enable-static --disable-shared --enable-maintainer-mode --disable-fortran \
+    --disable-doc --with-our-malloc --enable-threads --with-combined-threads --with-incoming-stack-boundary=2 \
+    --enable-sse2 --enable-avx --enable-avx2 \
+    --host=${CROSS_PREFIX%-} \
     && make -j$(nproc) && make install
 
 # libfreetype
@@ -107,6 +111,28 @@ RUN meson build --prefix=${PREFIX} --buildtype=release -Ddefault_library=static 
     --cross-file=../cross_file.txt \
     && ninja -C build && ninja -C build install
 
+# avisynth
+WORKDIR /build/avisynth
+RUN mkdir -p build && cd build \
+    && cmake -S .. -B . \
+    ${CMAKE_COMMON_ARG} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DHEADERS_ONLY=ON \
+    && make -j$(nproc) && make VersionGen install
+
+# chromaprint
+WORKDIR /build/chromaprint
+RUN mkdir -p build && cd build \
+    && cmake -S .. -B . \
+    ${CMAKE_COMMON_ARG} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_TOOLS=OFF \
+    -DBUILD_TESTS=OFF \
+    -DFFT_LIB=fftw3 \
+    && make -j$(nproc) && make install \
+    && echo "Libs.private: -lfftw3 -lstdc++" >> ${PREFIX}/lib/pkgconfig/libchromaprint.pc \
+    && echo "Cflags.private: -DCHROMAPRINT_NODLL" >> ${PREFIX}/lib/pkgconfig/libchromaprint.pc
+
 # libass
 WORKDIR /build/libass
 RUN ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
@@ -125,36 +151,9 @@ RUN ./configure --prefix=${PREFIX} --enable-static --disable-shared --enable-nas
 WORKDIR /build/libvpx
 RUN CROSS=${CROSS_PREFIX} \
     DIST_DIR=${PREFIX} \
-    ./configure \
-    --disable-docs \
-    --disable-examples \
-    --disable-runtime-cpu-detect \
-    --disable-shared \
-    --disable-tools \
-    --disable-unit-tests \
-    --enable-avx \
-    --enable-avx2 \
-    --enable-avx512 \
-    --enable-libyuv \
-    --enable-mmx \
-    --enable-pic \
-    --enable-postproc \
-    --enable-sse \
-    --enable-sse2 \
-    --enable-sse3 \
-    --enable-sse4_1 \
-    --enable-ssse3 \
-    --enable-static \
-    --enable-static-msvcrt \
-    --enable-vp8 \
-    --enable-vp9 \
-    --enable-vp9-highbitdepth \
-    --enable-vp9-postproc \
-    --enable-vp9-temporal-denoising \
-    --enable-webm_io \
-    --prefix=${PREFIX} \
+    ./configure --prefix=${PREFIX} --enable-vp9-highbitdepth --enable-static --enable-pic \
+    --disable-shared --disable-examples --disable-tools --disable-docs --disable-unit-tests \
     --target=${ARCH}-win64-gcc \
-    --as=yasm \
     && make -j$(nproc) && make install
 
 # x264
@@ -165,27 +164,26 @@ RUN ./configure \
     && make -j$(nproc) && make install
 
 # x265
-ENV CMAKE_COMMON_ARG="-DCMAKE_INSTALL_PREFIX=${PREFIX} -DCMAKE_SYSTEM_NAME=Windows -DCMAKE_C_COMPILER=${CC} -DCMAKE_CXX_COMPILER=${CXX} -DCMAKE_RC_COMPILER=${WINDRES} -DENABLE_SHARED=OFF -DBUILD_SHARED_LIBS=OFF"
-
+RUN cp -r /build/x265/build/linux /build/x265/build/windows
 # build x265 12bit
-WORKDIR /build/x265/build/linux
+WORKDIR /build/x265/build/windows
 RUN rm -rf 8bit 10bit 12bit && mkdir -p 8bit 10bit 12bit
 RUN cd 12bit && cmake ${CMAKE_COMMON_ARG} -DHIGH_BIT_DEPTH=ON -DENABLE_HDR10_PLUS=ON -DEXPORT_C_API=OFF -DENABLE_CLI=OFF -DMAIN12=ON -S ../../../source -B . \
     && make -j$(nproc)
 
 # build x265 10bit
-WORKDIR /build/x265/build/linux
+WORKDIR /build/x265/build/windows
 RUN cd 10bit && cmake ${CMAKE_COMMON_ARG} -DHIGH_BIT_DEPTH=ON -DENABLE_HDR10_PLUS=ON -DEXPORT_C_API=OFF -DENABLE_CLI=OFF -S ../../../source -B . \
     && make -j$(nproc)
 
 # build x265 8bit
-WORKDIR /build/x265/build/linux
+WORKDIR /build/x265/build/windows
 RUN cd 8bit && mv ../12bit/libx265.a ./libx265_main12.a && mv ../10bit/libx265.a ./libx265_main10.a \
     && cmake ${CMAKE_COMMON_ARG} -DEXTRA_LIB="x265_main10.a;x265_main12.a" -DEXTRA_LINK_FLAGS=-L. -DLINKED_10BIT=ON -DLINKED_12BIT=ON -S ../../../source -B . \
     && make -j$(nproc)
 
 # install x265
-WORKDIR /build/x265/build/linux/8bit
+WORKDIR /build/x265/build/windows/8bit
 RUN mv libx265.a libx265_main.a \
     && { \
     echo "CREATE libx265.a"; \
@@ -280,6 +278,9 @@ RUN ./configure --pkg-config-flags=--static \
     --enable-libxml2 \
     --enable-libfreetype \
     --enable-libfribidi \
+    --enable-fontconfig \
+    --enable-avisynth \
+    --enable-chromaprint \
     --enable-libass \
     --enable-libmp3lame \
     --enable-libvpx \
@@ -308,7 +309,6 @@ RUN cp ${PREFIX}/bin/ffprobe.exe /ffmpeg/windows
 
 RUN tar -czf /ffmpeg-windows-7.1.tar.gz -C /ffmpeg/windows .
 # cleanup
-RUN rm -rf /build /ffmpeg_build
 
 ADD start-windows.sh /start-windows.sh
 RUN chmod 755 /start-windows.sh

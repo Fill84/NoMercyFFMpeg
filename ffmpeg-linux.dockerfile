@@ -36,7 +36,6 @@ ENV PATH="${PREFIX}/bin:${PATH}"
 ENV CFLAGS="-static-libgcc -static-libstdc++ -I${PREFIX}/include -O2 -pipe -fPIC -DPIC -D_FORTIFY_SOURCE=2 -fstack-protector-strong -fstack-clash-protection -pthread"
 ENV CXXFLAGS="-static-libgcc -static-libstdc++ -I${PREFIX}/include -O2 -pipe -fPIC -DPIC -D_FORTIFY_SOURCE=2 -fstack-protector-strong -fstack-clash-protection -pthread" 
 ENV LDFLAGS="-static-libgcc -static-libstdc++ -L${PREFIX}/lib -O2 -pipe -fstack-protector-strong -fstack-clash-protection -Wl,-z,relro,-z,now -pthread -lm"
-ENV LD_LIBRARY_PATH="/usr/local/lib:${PREFIX}/lib:$LD_LIBRARY_PATH"
 
 # Create the build directory
 RUN mkdir -p ${PREFIX}
@@ -55,15 +54,12 @@ RUN echo "[binaries]" > cross_file.txt && \
     echo "cpu = '${ARCH}'" >> cross_file.txt && \
     echo "endian = 'little'" >> cross_file.txt
 
+ENV CMAKE_COMMON_ARG="-DCMAKE_INSTALL_PREFIX=${PREFIX} -DENABLE_SHARED=OFF -DBUILD_SHARED_LIBS=OFF"
+
 # iconv
 WORKDIR /build/iconv
 RUN ./configure --prefix=${PREFIX} --enable-extra-encodings --enable-static --disable-shared --with-pic \
     --host=${CROSS_PREFIX%-} \
-    && make -j$(nproc) && make install
-
-# zlib
-WORKDIR /build/zlib
-RUN ./configure --prefix=${PREFIX} --static \
     && make -j$(nproc) && make install
 
 # libxml2
@@ -75,6 +71,14 @@ RUN ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared --without-p
 # zlib
 WORKDIR /build/zlib
 RUN ./configure --prefix=${PREFIX} --static \
+    && make -j$(nproc) && make install
+
+# fftw3
+WORKDIR /build/fftw3
+RUN ./bootstrap.sh --prefix=${PREFIX} --enable-static --disable-shared --enable-maintainer-mode --disable-fortran \
+    --disable-doc --with-our-malloc --enable-threads --with-combined-threads --with-incoming-stack-boundary=2 \
+    --enable-sse2 --enable-avx --enable-avx2 \
+    --host=${CROSS_PREFIX%-} \
     && make -j$(nproc) && make install
 
 # libfreetype
@@ -100,6 +104,28 @@ RUN meson build --prefix=${PREFIX} --buildtype=release -Ddefault_library=static 
     --cross-file=../cross_file.txt \
     && ninja -C build && ninja -C build install
 
+# avisynth
+WORKDIR /build/avisynth
+RUN mkdir -p build && cd build \
+    && cmake -S .. -B . \
+    ${CMAKE_COMMON_ARG} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DHEADERS_ONLY=ON \
+    && make -j$(nproc) && make VersionGen install
+
+# chromaprint
+WORKDIR /build/chromaprint
+RUN mkdir -p build && cd build \
+    && cmake -S .. -B . \
+    ${CMAKE_COMMON_ARG} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_TOOLS=OFF \
+    -DBUILD_TESTS=OFF \
+    -DFFT_LIB=fftw3 \
+    && make -j$(nproc) && make install \
+    && echo "Libs.private: -lfftw3 -lstdc++" >> ${PREFIX}/lib/pkgconfig/libchromaprint.pc \
+    && echo "Cflags.private: -DCHROMAPRINT_NODLL" >> ${PREFIX}/lib/pkgconfig/libchromaprint.pc
+
 # libass
 WORKDIR /build/libass
 RUN ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
@@ -113,35 +139,8 @@ RUN ./configure --prefix=${PREFIX} --enable-static --disable-shared --enable-nas
 
 # libvpx
 WORKDIR /build/libvpx
-RUN ./configure \
-    --disable-docs \
-    --disable-examples \
-    --disable-runtime-cpu-detect \
-    --disable-shared \
-    --disable-tools \
-    --disable-unit-tests \
-    --enable-avx \
-    --enable-avx2 \
-    --enable-avx512 \
-    --enable-libyuv \
-    --enable-mmx \
-    --enable-pic \
-    --enable-postproc \
-    --enable-sse \
-    --enable-sse2 \
-    --enable-sse3 \
-    --enable-sse4_1 \
-    --enable-ssse3 \
-    --enable-static \
-    --enable-static-msvcrt \
-    --enable-vp8 \
-    --enable-vp9 \
-    --enable-vp9-highbitdepth \
-    --enable-vp9-postproc \
-    --enable-vp9-temporal-denoising \
-    --enable-webm_io \
-    --prefix=${PREFIX} \
-    --as=yasm \
+RUN ./configure --prefix=${PREFIX} --enable-vp9-highbitdepth --enable-static --enable-pic \
+    --disable-shared --disable-examples --disable-tools --disable-docs --disable-unit-tests \
     && make -j$(nproc) && make install
 
 # x264
@@ -150,8 +149,7 @@ RUN ./configure --prefix=${PREFIX} --disable-cli --enable-static --enable-pic --
     && make -j$(nproc) && make install
 
 # x265
-ENV CMAKE_COMMON_ARG="-DCMAKE_INSTALL_PREFIX=${PREFIX} -DENABLE_SHARED=OFF -DBUILD_SHARED_LIBS=OFF"
-
+RUN mkdir -p /build/x265/build/linux
 # build x265 12bit
 WORKDIR /build/x265/build/linux
 RUN rm -rf 8bit 10bit 12bit && mkdir -p 8bit 10bit 12bit
@@ -253,6 +251,9 @@ RUN ./configure --pkg-config-flags=--static \
     --enable-libxml2 \
     --enable-libfreetype \
     --enable-libfribidi \
+    --enable-fontconfig \
+    --enable-avisynth \
+    --enable-chromaprint \
     --enable-libass \
     --enable-libmp3lame \
     --enable-libvpx \
@@ -281,7 +282,6 @@ RUN cp ${PREFIX}/bin/ffprobe /ffmpeg/linux
 
 RUN tar -czf /ffmpeg-linux-7.1.tar.gz -C /ffmpeg/linux .
 # cleanup
-RUN rm -rf /build /ffmpeg_build
 
 ADD start-linux.sh /start-linux.sh
 RUN chmod 755 /start-linux.sh
