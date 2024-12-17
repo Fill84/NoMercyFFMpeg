@@ -292,7 +292,7 @@ RUN ./configure --pkg-config-flags=--static \
     --enable-libopenjpeg \
     --enable-libzimg \
     --enable-ffnvcodec \
-    --enable-cuda-llvm \
+    # --enable-cuda-llvm \
     --enable-runtime-cpudetect \
     --extra-version="NoMercy-MediaServer" \
     --extra-cflags="-static -static-libgcc -static-libstdc++ -I/${PREFIX}/include" \
