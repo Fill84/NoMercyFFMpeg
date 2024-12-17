@@ -291,8 +291,8 @@ RUN ./configure --pkg-config-flags=--static \
     --enable-libwebp \
     --enable-libopenjpeg \
     --enable-libzimg \
-    # --enable-ffnvcodec \
-    # --enable-cuda-llvm \
+    --enable-ffnvcodec \
+    --enable-cuda-llvm \
     --enable-runtime-cpudetect \
     --extra-version="NoMercy-MediaServer" \
     --extra-cflags="-static -static-libgcc -static-libstdc++ -I/${PREFIX}/include" \
@@ -302,8 +302,6 @@ RUN ./configure --pkg-config-flags=--static \
     make -j$(nproc) && make install
 
 RUN mkdir -p /ffmpeg/aarch64
-
-RUN ls -la ${PREFIX}/bin
 
 RUN cp ${PREFIX}/bin/ffmpeg /ffmpeg/aarch64
 RUN cp ${PREFIX}/bin/ffprobe /ffmpeg/aarch64
