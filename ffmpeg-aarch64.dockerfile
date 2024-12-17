@@ -303,8 +303,8 @@ RUN ./configure --pkg-config-flags=--static \
 
 RUN mkdir -p /ffmpeg/aarch64
 
-RUN cp ${PREFIX}/bin/ffmpeg.exe /ffmpeg/aarch64
-RUN cp ${PREFIX}/bin/ffprobe.exe /ffmpeg/aarch64
+RUN cp ${PREFIX}/bin/ffmpeg /ffmpeg/aarch64
+RUN cp ${PREFIX}/bin/ffprobe /ffmpeg/aarch64
 
 RUN tar -czf /ffmpeg-aarch64-7.1.tar.gz -C /ffmpeg/aarch64 .
 # cleanup
