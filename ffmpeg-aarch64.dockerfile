@@ -263,7 +263,7 @@ RUN make PREFIX=${PREFIX} install
 WORKDIR /build/ffmpeg
 RUN ./configure --pkg-config-flags=--static \
     --arch=${ARCH} \
-    --target-os=mingw32 \
+    --target-os=linux \
     --cross-prefix=${CROSS_PREFIX} \
     --pkg-config=pkg-config \
     --prefix=${PREFIX} \
@@ -302,6 +302,8 @@ RUN ./configure --pkg-config-flags=--static \
     make -j$(nproc) && make install
 
 RUN mkdir -p /ffmpeg/aarch64
+
+RUN ls -la ${PREFIX}/bin
 
 RUN cp ${PREFIX}/bin/ffmpeg /ffmpeg/aarch64
 RUN cp ${PREFIX}/bin/ffprobe /ffmpeg/aarch64
