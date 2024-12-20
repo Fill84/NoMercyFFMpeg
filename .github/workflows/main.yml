@@ -1,0 +1,49 @@
+name: Docker Compose Build
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  docker-compose-build:
+    runs-on: ubuntu-latest
+
+    env:
+      REPO_NAME: ${{ github.repository }}
+
+    steps:
+    # Checkout the repository
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    # Set up Docker Buildx for multi-architecture builds (optional, but useful)
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    # Set up Docker Compose
+    - name: Set up Docker Compose
+      run: sudo apt-get update && sudo apt-get install -y docker-compose
+
+    # Export ffmpeg builds to release
+    - name: Export ffmpeg builds
+      run: |
+        mkdir -p downloads
+        docker cp ffmpeg-linux:/output downloads/
+        docker cp ffmpeg-windows:/output downloads/
+        docker cp ffmpeg-aarch64:/output downloads/
+
+    # Upload the tarballs to output
+    - name: Upload ffmpeg artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: ffmpeg-builds
+        path: downloads/
+
+    # Stop and clean up Docker containers
+    - name: Clean Up
+      run: docker-compose down --volumes
