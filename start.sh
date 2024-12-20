@@ -1,3 +1,4 @@
 #!/bin/bash
-echo "Cleaning up output directory"
-rm -rf /output/*
+
+rm -f /output/*.tar.gz
+echo "Cleaned up output directory"
