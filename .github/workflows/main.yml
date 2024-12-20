@@ -29,12 +29,6 @@ jobs:
     - name: Set up Docker Compose
       run: sudo apt-get update && sudo apt-get install -y docker-compose
 
-    # Build and run containers
-    - name: Build and Start Docker Compose
-      run: |
-        sed -i "s|stoney-ffmpeg-base|${{ env.REPO_NAME }}_ffmpeg-base|g" docker-compose.yml
-        docker-compose up --build -d
-
     # Export ffmpeg builds to release
     - name: Export ffmpeg builds
       run: |
