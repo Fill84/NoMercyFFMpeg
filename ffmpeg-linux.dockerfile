@@ -1,5 +1,5 @@
 # Create a Linux ffmpeg build
-FROM stoney-ffmpeg-base AS linux
+FROM nomercyffmpeg_ffmpeg-base AS linux
 
 LABEL maintainer="Phillippe Pelzer"
 LABEL version="1.0"

@@ -1,5 +1,5 @@
 # Create an Aarch64 ffmpeg build
-FROM stoney-ffmpeg-base AS aarch64
+FROM nomercyffmpeg_ffmpeg-base AS aarch64
 
 LABEL maintainer="Phillippe Pelzer"
 LABEL version="1.0"
@@ -60,7 +60,7 @@ ENV CMAKE_COMMON_ARG="-DCMAKE_INSTALL_PREFIX=${PREFIX} -DCMAKE_SYSTEM_NAME=Linux
 WORKDIR /build/iconv
 RUN ./configure --prefix=${PREFIX} --enable-extra-encodings --enable-static --disable-shared --with-pic \
     --host=${CROSS_PREFIX%-} \
-    && make -j$(nproc) && make install
+    && make -j$(( $(nproc) / 4 )) && make install
 
 # libxml2
 WORKDIR /build/libxml2
@@ -68,12 +68,12 @@ RUN ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared --without-p
     --host=${CROSS_PREFIX%-} \
     && ./configure --prefix=${PREFIX} --enable-static --disable-shared --without-python --disable-maintainer-mode \
     --host=${CROSS_PREFIX%-} \
-    && make -j$(nproc) && make install
+    && make -j$(( $(nproc) / 4 )) && make install
 
 # zlib
 WORKDIR /build/zlib
 RUN ./configure --prefix=${PREFIX} --static \
-    && make -j$(nproc) && make install
+    && make -j$(( $(nproc) / 4 )) && make install
 
 # fftw3
 WORKDIR /build/fftw3
@@ -81,13 +81,13 @@ RUN ./bootstrap.sh \
     --prefix=${PREFIX} --enable-static --disable-shared --enable-maintainer-mode --disable-fortran \
     --disable-doc --with-our-malloc --enable-threads --with-combined-threads --with-incoming-stack-boundary=2 \
     --host=${CROSS_PREFIX%-} \
-    && make -j$(nproc) && make install
+    && make -j$(( $(nproc) / 4 )) && make install
 
 # libfreetype
 WORKDIR /build/freetype
 RUN ./configure --prefix=${PREFIX} --enable-static --disable-shared \
     --host=${CROSS_PREFIX%-} \
-    && make -j$(nproc) && make install
+    && make -j$(( $(nproc) / 4 )) && make install
 
 # fribidi
 WORKDIR /build/fribidi
@@ -95,7 +95,7 @@ RUN ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared --disable-b
     --host=${CROSS_PREFIX%-} \
     && ./configure --prefix=${PREFIX} --enable-static --disable-shared --disable-bin --disable-docs --disable-tests \
     --host=${CROSS_PREFIX%-} \
-    && make -j$(nproc) && make install
+    && make -j$(( $(nproc) / 4 )) && make install
 
 ENV OLD_CFLAGS=${CFLAGS}
 ENV OLD_CXXFLAGS=${CXXFLAGS}
@@ -107,7 +107,7 @@ WORKDIR /build/openssl
 RUN ./Configure threads zlib no-shared enable-camellia enable-ec enable-srp --prefix=${PREFIX} linux-aarch64 --libdir=${PREFIX}/lib \
     --cross-compile-prefix='' \
     && sed -i -e "/^CFLAGS=/s|=.*|=${CFLAGS}|" -e "/^LDFLAGS=/s|=[[:space:]]*$|=${LDFLAGS}|" Makefile \
-    && make -j$(nproc) build_sw && make install_sw
+    && make -j$(( $(nproc) / 4 )) build_sw && make install_sw
 
 ENV CFLAGS=${OLD_CFLAGS}
 ENV CXXFLAGS=${OLD_CXXFLAGS}
@@ -118,7 +118,7 @@ RUN ./autogen.sh --prefix=${PREFIX} --disable-docs --enable-iconv --enable-libxm
     --host=${CROSS_PREFIX%-} \
     && ./configure --prefix=${PREFIX} --disable-docs --enable-iconv --enable-libxml2 --enable-static --disable-shared \
     --host=${CROSS_PREFIX%-} \
-    && make -j$(nproc) && make install
+    && make -j$(( $(nproc) / 4 )) && make install
 
 # harfbuzz
 WORKDIR /build/harfbuzz
@@ -132,7 +132,7 @@ RUN ./bootstrap --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
     --host=${CROSS_PREFIX%-} \
     && ./configure --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
     --host=${CROSS_PREFIX%-} \
-    && make -j$(nproc) && make install \
+    && make -j$(( $(nproc) / 4 )) && make install \
     && ln -s libudfread.pc ${PREFIX}/lib/pkgconfig/udfread.pc
 
 # avisynth
@@ -142,7 +142,7 @@ RUN mkdir -p build && cd build \
     ${CMAKE_COMMON_ARG} \
     -DCMAKE_BUILD_TYPE=Release \
     -DHEADERS_ONLY=ON \
-    && make -j$(nproc) && make VersionGen install
+    && make -j$(( $(nproc) / 4 )) && make VersionGen install
 
 # chromaprint
 WORKDIR /build/chromaprint
@@ -154,7 +154,7 @@ RUN mkdir -p build && cd build \
     -DBUILD_TESTS=OFF \
     -DLIB_DIR=${PREFIX}/lib \
     -DFFT_LIB=fftw3 \
-    && make -j$(nproc) && make install \
+    && make -j$(( $(nproc) / 4 )) && make install \
     && echo "Libs.private: -lfftw3 -lstdc++" >> ${PREFIX}/lib/pkgconfig/libchromaprint.pc \
     && echo "Cflags.private: -DCHROMAPRINT_NODLL" >> ${PREFIX}/lib/pkgconfig/libchromaprint.pc
 
@@ -164,7 +164,7 @@ RUN ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared --with-pic 
     --host=${CROSS_PREFIX%-} \
     && ./configure --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
     --host=${CROSS_PREFIX%-} \
-    && make -j$(nproc) && make install
+    && make -j$(( $(nproc) / 4 )) && make install
 
 # libbluray
 WORKDIR /build/libbluray
@@ -177,7 +177,7 @@ RUN ./bootstrap --prefix=${PREFIX} --enable-static --disable-shared --with-pic -
     && ./configure --prefix=${PREFIX} --enable-static --disable-shared --with-pic --disable-avisynth --enable-libaacs \
     --disable-doxygen-doc --disable-doxygen-dot --disable-doxygen-html --disable-doxygen-ps --disable-doxygen-pdf --disable-examples --disable-bdjava-jar \
     --host=${CROSS_PREFIX%-} \
-    && make -j$(nproc) && make install
+    && make -j$(( $(nproc) / 4 )) && make install
 
 # twolame
 WORKDIR /build/twolame
@@ -185,7 +185,7 @@ RUN NOCONFIGURE=1 ./autogen.sh \
     && touch doc/twolame.1 \
     && ./configure --prefix=${PREFIX} --enable-static --disable-shared --with-pic --disable-sndfile \
     --host=${CROSS_PREFIX%-} \
-    && make -j$(nproc) && make install \
+    && make -j$(( $(nproc) / 4 )) && make install \
     && sed -i 's/Cflags:/Cflags: -DLIBTWOLAME_STATIC/' ${PREFIX}/lib/pkgconfig/twolame.pc
 
 ENV CFLAGS="${CFLAGS} -DLIBTWOLAME_STATIC"
@@ -195,7 +195,7 @@ WORKDIR /build/lame
 RUN autoreconf -i \
     && ./configure --prefix=${PREFIX} --enable-static --disable-shared --enable-nasm --disable-gtktest --disable-cpml --disable-frontend --disable-decode \
     --host=${CROSS_PREFIX%-} \
-    && make -j$(nproc) && make install
+    && make -j$(( $(nproc) / 4 )) && make install
 
 # fdk-aac
 WORKDIR /build/fdk-aac
@@ -203,7 +203,7 @@ RUN ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared \
     --host=${CROSS_PREFIX%-} --target=${ARCH}-aarch64-gcc \
     && ./configure --prefix=${PREFIX} --enable-static --disable-shared \
     --host=${CROSS_PREFIX%-} --target=${ARCH}-aarch64-gcc \
-    && make -j$(nproc) && make install
+    && make -j$(( $(nproc) / 4 )) && make install
 
 # opus
 WORKDIR /build/opus
@@ -211,7 +211,7 @@ RUN ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared --disable-e
     --host=${CROSS_PREFIX%-} \
     && ./configure --prefix=${PREFIX} --enable-static --disable-shared --disable-extra-programs \
     --host=${CROSS_PREFIX%-} \
-    && make -j$(nproc) && make install
+    && make -j$(( $(nproc) / 4 )) && make install
 
 # libvpx
 WORKDIR /build/libvpx
@@ -220,14 +220,14 @@ RUN CROSS=${CROSS_PREFIX} \
     ./configure --prefix=${PREFIX} --enable-vp9-highbitdepth --enable-static --enable-pic \
     --disable-shared --disable-examples --disable-tools --disable-docs --disable-unit-tests \
     --target=arm64-linux-gcc \
-    && make -j$(nproc) && make install
+    && make -j$(( $(nproc) / 4 )) && make install
 
 # x264
 WORKDIR /build/x264
 RUN ./configure \
     --prefix=${PREFIX} --disable-cli --enable-static --disable-shared --disable-lavf --disable-swscale \
     --cross-prefix=${CROSS_PREFIX} --host=${CROSS_PREFIX%-} --target=${ARCH}-aarch64-gcc \
-    && make -j$(nproc) && make install
+    && make -j$(( $(nproc) / 4 )) && make install
 
 # x265
 RUN cp -r /build/x265/build/linux /build/x265/build/aarch64
@@ -235,18 +235,18 @@ RUN cp -r /build/x265/build/linux /build/x265/build/aarch64
 WORKDIR /build/x265/build/aarch64
 RUN rm -rf 8bit 10bit 12bit && mkdir -p 8bit 10bit 12bit
 RUN cd 12bit && cmake ${CMAKE_COMMON_ARG} -DHIGH_BIT_DEPTH=ON -DENABLE_HDR10_PLUS=ON -DEXPORT_C_API=OFF -DENABLE_CLI=OFF -DMAIN12=ON -S ../../../source -B . \
-    && make -j$(nproc)
+    && make -j$(( $(nproc) / 4 ))
 
 # build x265 10bit
 WORKDIR /build/x265/build/aarch64
 RUN cd 10bit && cmake ${CMAKE_COMMON_ARG} -DHIGH_BIT_DEPTH=ON -DENABLE_HDR10_PLUS=ON -DEXPORT_C_API=OFF -DENABLE_CLI=OFF -S ../../../source -B . \
-    && make -j$(nproc)
+    && make -j$(( $(nproc) / 4 ))
 
 # build x265 8bit
 WORKDIR /build/x265/build/aarch64
 RUN cd 8bit && mv ../12bit/libx265.a ./libx265_main12.a && mv ../10bit/libx265.a ./libx265_main10.a \
     && cmake ${CMAKE_COMMON_ARG} -DEXTRA_LIB="x265_main10.a;x265_main12.a" -DEXTRA_LINK_FLAGS=-L. -DLINKED_10BIT=ON -DLINKED_12BIT=ON -S ../../../source -B . \
-    && make -j$(nproc)
+    && make -j$(( $(nproc) / 4 ))
 
 # install x265
 WORKDIR /build/x265/build/aarch64/8bit
@@ -259,7 +259,7 @@ RUN mv libx265.a libx265_main.a \
     echo "SAVE"; \
     echo "END"; \
     } | ${AR} -M \
-    && make -j$(nproc) && make install \
+    && make -j$(( $(nproc) / 4 )) && make install \
     && echo "Libs.private: -lstdc++" >> "${PREFIX}/lib/pkgconfig/x265.pc"
 
 ENV OLD_CFLAGS=${CFLAGS}
@@ -274,7 +274,7 @@ RUN CFLAGS=${CFLAGS} \
     --host=${CROSS_PREFIX%-} \ 
     CC=${CC} \
     CXX=${CXX} \
-    && make -j$(nproc) && make install
+    && make -j$(( $(nproc) / 4 )) && make install
 
 ENV CFLAGS=${OLD_CFLAGS}
 
@@ -284,7 +284,7 @@ RUN ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared --with-pic 
     --host=${CROSS_PREFIX%-} \
     && ./configure --prefix=${PREFIX} --enable-static --disable-shared --with-pic --enable-libwebpmux --disable-libwebpextras --disable-libwebpdemux --disable-sdl --disable-gl --disable-png --disable-jpeg --disable-tiff --disable-gif \
     --host=${CROSS_PREFIX%-} \
-    && make -j$(nproc) && make install
+    && make -j$(( $(nproc) / 4 )) && make install
 
 # openjpeg
 WORKDIR /build/openjpeg
@@ -297,7 +297,7 @@ RUN mkdir build && cd build \
     -DBUILD_CODEC=OFF \
     -DWITH_ASTYLE=OFF \
     -DBUILD_TESTING=OFF \
-    && make -j$(nproc) && make install
+    && make -j$(( $(nproc) / 4 )) && make install
 
 # zimg
 WORKDIR /build/zimg
@@ -305,7 +305,7 @@ RUN  ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared --with-pic
     --host=${CROSS_PREFIX%-} \
     && ./configure --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
     --host=${CROSS_PREFIX%-} \
-    && make -j$(nproc) && make install
+    && make -j$(( $(nproc) / 4 )) && make install
 
 # ffnvcodec
 WORKDIR /build/ffnvcodec
@@ -353,7 +353,7 @@ RUN ./configure --pkg-config-flags=--static \
     --extra-ldflags="-static -static-libgcc -static-libstdc++ -L/${PREFIX}/lib" \
     --extra-libs="-lpthread -lm" \
     || (cat ffbuild/config.log ; false) && \
-    make -j$(nproc) && make install
+    make -j$(( $(nproc) / 4 )) && make install
 
 RUN mkdir -p /ffmpeg/aarch64
 

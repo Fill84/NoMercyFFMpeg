@@ -1,5 +1,5 @@
 # Create a Windows ffmpeg build
-FROM stoney-ffmpeg-base AS windows
+FROM nomercyffmpeg_ffmpeg-base AS windows
 
 LABEL maintainer="Phillippe Pelzer"
 LABEL version="1.0"
