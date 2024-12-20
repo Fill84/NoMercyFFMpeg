@@ -13,9 +13,6 @@ jobs:
   docker-compose-build:
     runs-on: ubuntu-latest
 
-    env:
-      REPO_NAME: ${{ github.repository }}
-
     steps:
     # Checkout the repository
     - name: Checkout Code
@@ -29,6 +26,10 @@ jobs:
     - name: Set up Docker Compose
       run: sudo apt-get update && sudo apt-get install -y docker-compose
 
+    # Build and run containers
+    - name: Build and Start Docker Compose
+      run: docker-compose up --build -d
+      
     # Export ffmpeg builds to release
     - name: Export ffmpeg builds
       run: |
