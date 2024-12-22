@@ -154,6 +154,12 @@ RUN ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared --with-pic 
     && ./configure --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
     && make -j$(( $(nproc) / 4 )) && make install
 
+# libdbplus
+WORKDIR /build/libdbplus
+RUN ./bootstrap --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
+    && ./configure --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
+    && make -j$(( $(nproc) / 4 )) && make install
+
 # libbluray
 WORKDIR /build/libbluray
 RUN sed -i 's/dec_init/libbluray_dec_init/g' src/libbluray/disc/dec.c \ 
