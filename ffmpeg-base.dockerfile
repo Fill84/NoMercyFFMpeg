@@ -131,7 +131,7 @@ RUN git clone --branch v${chromaprint_version} https://github.com/acoustid/chrom
 RUN git clone --branch ${libass_version} https://github.com/libass/libass.git libass
 
 # Download libdbplus
-RUN git clone --branch ${libdbplus_version} https://code.videolan.org/videolan/libdbplus.git libdbplus
+RUN git clone --branch ${libdbplus_version} https://code.videolan.org/videolan/libbdplus.git libdbplus
 
 # Download libbluray
 RUN git clone --branch ${libbluray_version} https://code.videolan.org/videolan/libbluray.git libbluray
