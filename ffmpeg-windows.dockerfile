@@ -170,10 +170,10 @@ WORKDIR /build/libbluray
 RUN sed -i 's/dec_init/libbluray_dec_init/g' src/libbluray/disc/dec.c \ 
     && sed -i 's/dec_init/libbluray_dec_init/g' src/libbluray/disc/dec.h \ 
     && sed -i 's/dec_init/libbluray_dec_init/g' src/libbluray/disc/disc.c
-RUN ./bootstrap --prefix=${PREFIX} --enable-static --disable-shared --with-pic --disable-avisynth --enable-libaacs \
+RUN ./bootstrap --prefix=${PREFIX} --enable-static --disable-shared --with-pic --disable-avisynth --enable-libaacs --enable-libdbplus \
     --disable-doxygen-doc --disable-doxygen-dot --disable-doxygen-html --disable-doxygen-ps --disable-doxygen-pdf --disable-examples --disable-bdjava-jar \
     --host=${CROSS_PREFIX%-} \
-    && ./configure --prefix=${PREFIX} --enable-static --disable-shared --with-pic --disable-avisynth --enable-libaacs \
+    && ./configure --prefix=${PREFIX} --enable-static --disable-shared --with-pic --disable-avisynth --enable-libaacs --enable-libdbplus \
     --disable-doxygen-doc --disable-doxygen-dot --disable-doxygen-html --disable-doxygen-ps --disable-doxygen-pdf --disable-examples --disable-bdjava-jar \
     --host=${CROSS_PREFIX%-} \
     && make -j$(( $(nproc) / 4 )) && make install
@@ -349,7 +349,7 @@ RUN ./configure --pkg-config-flags=--static \
     --enable-libopenjpeg \
     --enable-libzimg \
     --enable-ffnvcodec \
-    # --enable-cuda-llvm \
+    # --enable-cuda-llvm \ --enable-libdbplus
     --enable-runtime-cpudetect \
     --extra-version="NoMercy-MediaServer" \
     --extra-cflags="-static -static-libgcc -static-libstdc++ -I/${PREFIX}/include" \

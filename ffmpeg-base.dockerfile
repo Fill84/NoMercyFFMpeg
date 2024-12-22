@@ -56,6 +56,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     gperf \
     groff \
+    libdbplus-dev \
     libaacs-dev \
     libc6 \
     libc6-dev \
