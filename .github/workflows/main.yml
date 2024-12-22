@@ -42,19 +42,19 @@ jobs:
     - name: Upload ffmpeg artifacts for linux
       uses: actions/upload-artifact@v3
       with:
-        name: ffmpeg-build-linux
+        name: ffmpeg-linux-7.1
         path: downloads/ffmpeg-linux-7.1.tar.gz
 
     - name: Upload ffmpeg artifacts for windows
       uses: actions/upload-artifact@v3
       with:
-        name: ffmpeg-build-windows
+        name: ffmpeg-windows-7.1
         path: downloads/ffmpeg-windows-7.1.tar.gz
 
     - name: Upload ffmpeg artifacts for aarch64
       uses: actions/upload-artifact@v3
       with:
-        name: ffmpeg-build-aarch64
+        name: ffmpeg-aarch64-7.1
         path: downloads/ffmpeg-aarch64-7.1.tar.gz
 
     # Stop and clean up Docker containers
