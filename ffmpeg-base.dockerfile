@@ -23,7 +23,6 @@ ENV ffmpeg_version=7.1 \
     avisynth_version=3.7.3 \
     chromaprint_version=1.5.1 \
     libass_version=0.17.3 \
-    libbdplus_version=0.2.0 \
     libbluray_version=1.3.4 \
     twolame_version=0.4.0 \
     mp3lame_version=3.100 \
@@ -58,6 +57,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     gperf \
     groff \
     libaacs-dev \
+    libbdplus-dev \
     libc6 \
     libc6-dev \
     libtool \
@@ -129,9 +129,6 @@ RUN git clone --branch v${chromaprint_version} https://github.com/acoustid/chrom
 
 # Download libass
 RUN git clone --branch ${libass_version} https://github.com/libass/libass.git libass
-
-# Download libbdplus
-RUN git clone --branch ${libbdplus_version} https://code.videolan.org/videolan/libbdplus.git libbdplus
 
 # Download libbluray
 RUN git clone --branch ${libbluray_version} https://code.videolan.org/videolan/libbluray.git libbluray
