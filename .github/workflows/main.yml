@@ -34,16 +34,28 @@ jobs:
     - name: Export ffmpeg builds
       run: |
         mkdir -p downloads
-        docker cp ffmpeg-linux:/output downloads/
-        docker cp ffmpeg-windows:/output downloads/
-        docker cp ffmpeg-aarch64:/output downloads/
+        docker cp ffmpeg-linux:/output/ffmpeg-linux*.tar.gz downloads/
+        docker cp ffmpeg-windows:/output/ffmpeg-windows*.tar.gz downloads/
+        docker cp ffmpeg-aarch64:/output/ffmpeg-aarch64*.tar.gz downloads/
 
     # Upload the tarballs to output
-    - name: Upload ffmpeg artifacts
+    - name: Upload ffmpeg artifacts for linux
       uses: actions/upload-artifact@v3
       with:
-        name: ffmpeg-builds
-        path: downloads/
+        name: ffmpeg-build-linux
+        path: downloads/ffmpeg-linux*.tar.gz
+
+    - name: Upload ffmpeg artifacts for windows
+      uses: actions/upload-artifact@v3
+      with:
+        name: ffmpeg-build-windows
+        path: downloads/ffmpeg-windows*.tar.gz
+
+    - name: Upload ffmpeg artifacts for aarch64
+      uses: actions/upload-artifact@v3
+      with:
+        name: ffmpeg-build-aarch64
+        path: downloads/ffmpeg-aarch64*.tar.gz
 
     # Stop and clean up Docker containers
     - name: Clean Up
