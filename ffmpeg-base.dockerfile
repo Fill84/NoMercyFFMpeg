@@ -18,12 +18,24 @@ ENV ffmpeg_version=7.1 \
     fribidi_version=1.0.16 \
     openssl_version=3.4.0 \
     fontconfig_version=2.15.0 \
+    libpciaccess_version=0.18.1 \
+    xcbproto_version=1.17.0 \
+    xorgproto_version=2024.1 \
+    xtranx_version=1.5.2 \
+    libxcb_version=1.17.0 \
+    libx11_version=1.8.10 \
+    libXfixed_version=6.0.1 \
+    libdrm_version=2.4.124 \
     harfbuzz_version=10.1.0 \
     libudfread_version=1.1.2 \
     avisynth_version=3.7.3 \
     chromaprint_version=1.5.1 \
     libass_version=0.17.3 \
+    libva_version=2.22.0 \
+    libgcrypt_version=1.11.0 \
     libbluray_version=1.3.4 \
+    rav1e_version=0.7.1 \
+    libsrt_version=1.5.4 \
     twolame_version=0.4.0 \
     mp3lame_version=3.100 \
     fdk_aac_version=2.0.3 \
@@ -56,20 +68,21 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     gperf \
     groff \
-    libaacs-dev \
-    libbdplus-dev \
     libc6 \
     libc6-dev \
+    libssl-dev \
     libtool \
+    libxext-dev \
     meson \
     nasm \
-    libssl-dev \
     pkg-config \
     python3 \
     python3-dev \
     python3-venv \
     subversion \
     wget \
+    xtrans-dev \
+    xutils-dev \
     yasm \
     && apt-get clean && rm -rf /var/lib/apt/lists/* \
     && apt-get upgrade -y && apt-get autoremove -y && apt-get autoclean -y && apt-get clean -y \
@@ -115,6 +128,30 @@ RUN git clone --branch openssl-${openssl_version} https://github.com/openssl/ope
 # Download fontconfig
 RUN git clone --branch ${fontconfig_version} https://gitlab.freedesktop.org/fontconfig/fontconfig.git fontconfig
 
+# Download libpciaccess
+RUN git clone --branch libpciaccess-${libpciaccess_version} https://gitlab.freedesktop.org/xorg/lib/libpciaccess.git libpciaccess
+
+# Download xcbproto
+RUN git clone --branch xcb-proto-${xcbproto_version} https://gitlab.freedesktop.org/xorg/proto/xcbproto.git xcbproto
+
+# Download xproto
+RUN git clone --branch xorgproto-${xorgproto_version} https://gitlab.freedesktop.org/xorg/proto/xorgproto.git xproto
+
+# Download xtrans
+RUN git clone --branch xtrans-${xtranx_version} https://gitlab.freedesktop.org/xorg/lib/libxtrans.git libxtrans
+
+# Download libxcb
+RUN git clone --branch libxcb-${libxcb_version} https://gitlab.freedesktop.org/xorg/lib/libxcb.git libxcb
+
+# Download libx11
+RUN git clone --branch libX11-${libx11_version} https://gitlab.freedesktop.org/xorg/lib/libx11.git libx11
+
+# Download libxfixes
+RUN git clone --branch libXfixes-${libXfixed_version} https://gitlab.freedesktop.org/xorg/lib/libxfixes.git /build/libxfixes
+
+# Download libdrm
+RUN git clone --branch libdrm-${libdrm_version} https://gitlab.freedesktop.org/mesa/drm.git libdrm
+
 # Download harfbuzz
 RUN git clone --branch ${harfbuzz_version} https://github.com/harfbuzz/harfbuzz.git harfbuzz
 
@@ -130,8 +167,30 @@ RUN git clone --branch v${chromaprint_version} https://github.com/acoustid/chrom
 # Download libass
 RUN git clone --branch ${libass_version} https://github.com/libass/libass.git libass
 
+# Download libva
+RUN git clone --branch ${libva_version} https://github.com/intel/libva.git libva
+
+# Download libgpg-error
+RUN git clone https://github.com/gpg/libgpg-error.git libgpg-error
+
+# Download libgcrypt
+RUN wget https://github.com/gpg/libgcrypt/archive/refs/tags/libgcrypt-${libgcrypt_version}.tar.gz && \
+    tar -xzf libgcrypt-${libgcrypt_version}.tar.gz && rm -f libgcrypt-${libgcrypt_version}.tar.gz && mv libgcrypt-libgcrypt-${libgcrypt_version} libgcrypt
+
+# Download libbdplus
+RUN git clone https://code.videolan.org/videolan/libbdplus.git libbdplus
+
+# Download libaacs
+RUN git clone https://code.videolan.org/videolan/libaacs.git libaacs
+
 # Download libbluray
 RUN git clone --branch ${libbluray_version} https://code.videolan.org/videolan/libbluray.git libbluray
+
+# Download rav1e
+RUN git clone --branch v${rav1e_version} https://github.com/xiph/rav1e.git rav1e
+
+# Download libsrt
+RUN git clone --branch v${libsrt_version} https://github.com/Haivision/srt.git libsrt
 
 # Download twolame
 RUN git clone --branch ${twolame_version} https://github.com/njh/twolame.git twolame

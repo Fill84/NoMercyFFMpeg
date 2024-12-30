@@ -10,8 +10,11 @@ ENV DEBIAN_FRONTEND=noninteractive \
     NVIDIA_DRIVER_CAPABILITIES=compute,utility,video
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    mingw-w64 \
+    mingw-w64 libgit2-dev \
     && rm -rf /var/lib/apt/lists/*
+
+RUN rustup target add x86_64-pc-windows-gnu \
+    && cargo install cargo-c
 
 WORKDIR /build
 
@@ -44,7 +47,9 @@ RUN mkdir -p ${PREFIX}
 RUN echo "[binaries]" > cross_file.txt && \
     echo "c = '${CC}'" >> cross_file.txt && \
     echo "cpp = '${CXX}'" >> cross_file.txt && \
+    echo "ld = '${LD}'" >> cross_file.txt && \
     echo "ar = '${AR}'" >> cross_file.txt && \
+    echo "ranlib = '${RANLIB}'" >> cross_file.txt && \
     echo "strip = '${STRIP}'" >> cross_file.txt && \
     echo "pkgconfig = '${PKG_CONFIG}'" >> cross_file.txt && \
     echo "" >> cross_file.txt && \
@@ -54,7 +59,7 @@ RUN echo "[binaries]" > cross_file.txt && \
     echo "cpu = '${ARCH}'" >> cross_file.txt && \
     echo "endian = 'little'" >> cross_file.txt
 
-ENV CMAKE_COMMON_ARG="-DCMAKE_INSTALL_PREFIX=${PREFIX} -DCMAKE_SYSTEM_NAME=Windows -DCMAKE_C_COMPILER=${CC} -DCMAKE_CXX_COMPILER=${CXX} -DCMAKE_RC_COMPILER=${WINDRES} -DENABLE_SHARED=OFF -DBUILD_SHARED_LIBS=OFF"
+ENV CMAKE_COMMON_ARG="-DCMAKE_INSTALL_PREFIX=${PREFIX} -DCMAKE_SYSTEM_NAME=Windows -DCMAKE_C_COMPILER=${CC} -DCMAKE_CXX_COMPILER=${CXX} -DCMAKE_RC_COMPILER=${WINDRES} -DENABLE_SHARED=OFF -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=Release"
 
 # iconv
 WORKDIR /build/iconv
@@ -120,6 +125,82 @@ RUN ./autogen.sh --prefix=${PREFIX} --disable-docs --enable-iconv --enable-libxm
     --host=${CROSS_PREFIX%-} \
     && make -j$(( $(nproc) / 4 )) && make install
 
+# # libpciaccess
+# WORKDIR /build/libpciaccess
+# RUN meson build --prefix=${PREFIX} --buildtype=release -Ddefault_library=static \
+#     --cross-file=../cross_file.txt . \
+#     && ninja -j$(( $(nproc) / 4 )) -C build && ninja -C build install \
+#     && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/libpciaccess.pc
+
+# # xcbproto
+# WORKDIR /build/xcbproto
+# RUN ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared \
+#     --host=${CROSS_PREFIX%-} \
+#     && ./configure --prefix=${PREFIX} --enable-static --disable-shared \
+#     --host=${CROSS_PREFIX%-} \
+#     && make -j$(( $(nproc) / 4 )) && make install \
+#     && mv ${PREFIX}/share/pkgconfig/xcb-proto.pc ${PREFIX}/lib/pkgconfig/xcb-proto.pc
+
+# # xproto
+# WORKDIR /build/xproto
+# RUN ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared \
+#     --host=${CROSS_PREFIX%-} \
+#     && ./configure --prefix=${PREFIX} --enable-static --disable-shared \
+#     --host=${CROSS_PREFIX%-} \
+#     && make -j$(( $(nproc) / 4 )) && make install \
+#     && mv ${PREFIX}/share/pkgconfig/xproto.pc ${PREFIX}/lib/pkgconfig/xproto.pc
+
+# # xtrans
+# WORKDIR /build/libxtrans
+# RUN ./autogen.sh --prefix=${PREFIX} --without-xmlto --without-fop --without-xsltproc \
+#     --host=${CROSS_PREFIX%-} \
+#     && ./configure --prefix=${PREFIX} --without-xmlto --without-fop --without-xsltproc \
+#     --host=${CROSS_PREFIX%-} \
+#     && make -j$(( $(nproc) / 4 )) && make install \
+#     && cp -r ${PREFIX}/share/aclocal/. ${PREFIX}/lib/aclocal
+
+# # libxcb
+# WORKDIR /build/libxcb
+# RUN ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared --with-pic --disable-devel-docs \
+#     --host=${CROSS_PREFIX%-} \
+#     && ./configure --prefix=${PREFIX} --enable-static --disable-shared --with-pic --disable-devel-docs \
+#     --host=${CROSS_PREFIX%-} \
+#     && make -j$(( $(nproc) / 4 )) && make install
+
+# # libx11
+# WORKDIR /build/libx11
+# RUN ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
+#     --without-xmlto --without-fop --without-xsltproc --without-lint --disable-specs --enable-ipv6 \
+#     --host=${CROSS_PREFIX%-} \
+#     --disable-malloc0returnsnull \
+#     && ./configure --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
+#     --without-xmlto --without-fop --without-xsltproc --without-lint --disable-specs --enable-ipv6 \
+#     --host=${CROSS_PREFIX%-} \
+#     --disable-malloc0returnsnull \
+#     && make -j$(( $(nproc) / 4 )) && make install \
+#     && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/x11.pc
+
+# # libxfixes
+# WORKDIR /build/libxfixes
+# RUN ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
+#     --host=${CROSS_PREFIX%-} \
+#     && ./configure --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
+#     --host=${CROSS_PREFIX%-} \
+#     && make -j$(( $(nproc) / 4 )) && make install \
+#     && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/xfixes.pc
+
+# # libdrm
+# WORKDIR /build/libdrm
+# RUN mkdir build && cd build \
+#     && meson --prefix=${PREFIX} --buildtype=release \
+#     -Ddefault_library=static -Dudev=false -Dcairo-tests=disabled \
+#     -Dvalgrind=disabled -Dexynos=disabled -Dfreedreno=disabled \
+#     -Domap=disabled -Detnaviv=disabled -Dintel=enabled \
+#     -Dnouveau=enabled -Dradeon=enabled -Damdgpu=enabled \
+#     --cross-file=../../cross_file.txt .. \
+#     && ninja -j$(( $(nproc) / 4 )) && ninja install install \
+#     && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/libdrm.pc
+
 # harfbuzz
 WORKDIR /build/harfbuzz
 RUN meson build --prefix=${PREFIX} --buildtype=release -Ddefault_library=static \
@@ -140,7 +221,6 @@ WORKDIR /build/avisynth
 RUN mkdir -p build && cd build \
     && cmake -S .. -B . \
     ${CMAKE_COMMON_ARG} \
-    -DCMAKE_BUILD_TYPE=Release \
     -DHEADERS_ONLY=ON \
     && make -j$(( $(nproc) / 4 )) && make VersionGen install
 
@@ -149,7 +229,6 @@ WORKDIR /build/chromaprint
 RUN mkdir -p build && cd build \
     && cmake -S .. -B . \
     ${CMAKE_COMMON_ARG} \
-    -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_TOOLS=OFF \
     -DBUILD_TESTS=OFF \
     -DFFT_LIB=fftw3 \
@@ -165,18 +244,97 @@ RUN ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared --with-pic 
     --host=${CROSS_PREFIX%-} \
     && make -j$(( $(nproc) / 4 )) && make install
 
+# # libva
+# WORKDIR /build/libva
+# RUN ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
+#     --disable-x11 --disable-drm --disable-docs --disable-glx --disable-wayland \
+#     --host=${CROSS_PREFIX%-} \
+#     && ./configure --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
+#     --disable-x11 --disable-drm --disable-docs --disable-glx --disable-wayland \
+#     --host=${CROSS_PREFIX%-} \
+#     && make -j$(( $(nproc) / 4 )) && make install \
+#     && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/libva.pc
+
+# libgpg-error
+WORKDIR /build/libgpg-error
+RUN ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared --with-pic --disable-doc  \
+    --host=${CROSS_PREFIX%-} \
+    && ./configure --prefix=${PREFIX} --enable-static --disable-shared --with-pic --disable-doc  \
+    --host=${CROSS_PREFIX%-} \
+    && make -j$(( $(nproc) / 4 )) && make install \
+    && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/libgpg-error.pc
+
+# libgcrypt
+WORKDIR /build/libgcrypt
+RUN ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared --with-pic --disable-doc  \
+    --host=${CROSS_PREFIX%-} \
+    && ./configure --prefix=${PREFIX} --enable-static --disable-shared --with-pic --disable-doc  \
+    --host=${CROSS_PREFIX%-} \
+    && make -j$(( $(nproc) / 4 )) && make install \
+    && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/libgcrypt.pc
+
+RUN echo '#!/bin/sh' > /usr/local/bin/libgcrypt-config \
+    && echo 'pkg-config libgcrypt "$@"' >> /usr/local/bin/libgcrypt-config \
+    && chmod +x /usr/local/bin/libgcrypt-config
+
+RUN echo '#!/bin/sh' > /usr/local/bin/gpg-error-config \
+    && echo 'pkg-config libgpg-error "$@"' >> /usr/local/bin/gpg-error-config \
+    && chmod +x /usr/local/bin/gpg-error-config
+
+# libbdplus
+WORKDIR /build/libbdplus
+RUN ./bootstrap --prefix=${PREFIX} --libdir=${PREFIX}/lib --enable-static --disable-shared --with-pic --disable-doc \
+    --host=${CROSS_PREFIX%-} \
+    && ./configure --prefix=${PREFIX} --libdir=${PREFIX}/lib --enable-static --disable-shared --with-pic --disable-doc \
+    --host=${CROSS_PREFIX%-} \
+    && make -j$(( $(nproc) / 4 )) && make install \
+    && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/libbdplus.pc
+
+# libaacs
+WORKDIR /build/libaacs
+RUN ./bootstrap --prefix=${PREFIX} --libdir=${PREFIX}/lib --enable-static --disable-shared --with-pic --disable-doc \
+    --host=${CROSS_PREFIX%-} \
+    && ./configure --prefix=${PREFIX} --libdir=${PREFIX}/lib --enable-static --disable-shared --with-pic --disable-doc \
+    --host=${CROSS_PREFIX%-} \
+    && make -j$(( $(nproc) / 4 )) && make install \
+    && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/libaacs.pc
+
 # libbluray
 WORKDIR /build/libbluray
 RUN sed -i 's/dec_init/libbluray_dec_init/g' src/libbluray/disc/dec.c \ 
     && sed -i 's/dec_init/libbluray_dec_init/g' src/libbluray/disc/dec.h \ 
     && sed -i 's/dec_init/libbluray_dec_init/g' src/libbluray/disc/disc.c
-RUN ./bootstrap --prefix=${PREFIX} --enable-static --disable-shared --with-pic --disable-avisynth --enable-libaacs --enable-libbdplus --enable-libudfread --enable-static-libaacs --enable-static-libbdplus --enable-static-libudfread \
+
+ENV EXTRA_LIBS="-L${PREFIX}/lib -laacs -lbdplus"
+
+RUN export EXTRA_LIBS=${EXTRA_LIBS} \
+    && ./bootstrap --prefix=${PREFIX} --enable-static --disable-shared --with-pic --with-libxml2 \
     --disable-doxygen-doc --disable-doxygen-dot --disable-doxygen-html --disable-doxygen-ps --disable-doxygen-pdf --disable-examples --disable-bdjava-jar \
     --host=${CROSS_PREFIX%-} \
-    && ./configure --prefix=${PREFIX} --enable-static --disable-shared --with-pic --disable-avisynth --enable-libaacs --enable-libbdplus --enable-libudfread --enable-static-libaacs --enable-static-libbdplus --enable-static-libudfread \
+    LIBS="-laacs -lbdplus" \
+    && ./configure --prefix=${PREFIX} --enable-static --disable-shared --with-pic --with-libxml2 \
     --disable-doxygen-doc --disable-doxygen-dot --disable-doxygen-html --disable-doxygen-ps --disable-doxygen-pdf --disable-examples --disable-bdjava-jar \
     --host=${CROSS_PREFIX%-} \
-    && make -j$(( $(nproc) / 4 )) && make install
+    LIBS="-laacs -lbdplus" \
+    && make -j$(( $(nproc) / 4 )) && make install \
+    && echo "Libs.private: -laacs -lbdplus -lstdc++" >> ${PREFIX}/lib/pkgconfig/libbluray.pc \
+    && export EXTRA_LIBS=""
+
+ENV EXTRA_LIBS=""
+
+# rav1e
+WORKDIR /build/rav1e
+RUN cargo cinstall -v --prefix=${PREFIX} --library-type=staticlib --crt-static --release --target=x86_64-pc-windows-gnu \
+    && sed -i 's/-lgcc_s//' ${PREFIX}/lib/pkgconfig/rav1e.pc
+
+# libsrt
+WORKDIR /build/libsrt
+RUN mkdir -p build && cd build \
+    && cmake -S .. -B . \
+    ${CMAKE_COMMON_ARG} \
+    -DENABLE_SHARED=OFF -DENABLE_STATIC=ON -DENABLE_CXX_DEPS=ON -DUSE_STATIC_LIBSTDCXX=ON -DENABLE_ENCRYPTION=ON -DENABLE_APPS=OFF \
+    && make -j$(( $(nproc) / 4 )) && make install \
+    && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/srt.pc
 
 # twolame
 WORKDIR /build/twolame
@@ -294,7 +452,6 @@ WORKDIR /build/openjpeg
 RUN mkdir build && cd build \
     && cmake -S .. -B . \
     ${CMAKE_COMMON_ARG} \
-    -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_SHARED_LIBS=OFF \
     -DBUILD_PKGCONFIG_FILES=ON \
     -DBUILD_CODEC=OFF \
@@ -333,10 +490,14 @@ RUN ./configure --pkg-config-flags=--static \
     --enable-libfreetype \
     --enable-libfribidi \
     --enable-fontconfig \
+    # --enable-libdrm \
     --enable-avisynth \
     --enable-chromaprint \
     --enable-libass \
+    # --enable-vaapi \
     --enable-libbluray \
+    --enable-librav1e \
+    --enable-libsrt \
     --enable-libtwolame \
     --enable-libmp3lame \
     --enable-libfdk-aac \
@@ -349,11 +510,12 @@ RUN ./configure --pkg-config-flags=--static \
     --enable-libopenjpeg \
     --enable-libzimg \
     --enable-ffnvcodec \
-    # --enable-cuda-llvm \ --enable-libdbplus
+    --enable-nvenc \
+    # --enable-cuda-llvm \
     --enable-runtime-cpudetect \
     --extra-version="NoMercy-MediaServer" \
-    --extra-cflags="-static -static-libgcc -static-libstdc++ -I/${PREFIX}/include" \
-    --extra-ldflags="-static -static-libgcc -static-libstdc++ -L/${PREFIX}/lib" \
+    --extra-cflags="-static -static-libgcc -static-libstdc++ -I${PREFIX}/include" \
+    --extra-ldflags="-static -static-libgcc -static-libstdc++ -L${PREFIX}/lib" \
     --extra-libs="-lpthread -lm" \
     || (cat ffbuild/config.log ; false) && \
     make -j$(( $(nproc) / 4 )) && make install
