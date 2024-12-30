@@ -392,7 +392,7 @@ RUN cp -r /build/x265/build/linux /build/x265/build/windows
 WORKDIR /build/x265
 RUN rm -rf build/windows/12bit build/windows/10bit build/windows/8bit \
     && mkdir -p build/windows/12bit build/windows/10bit build/windows/8bit \
-    && cd 12bit \
+    && cd build/windows/12bit \
     && cmake ${CMAKE_COMMON_ARG} -DHIGH_BIT_DEPTH=ON -DENABLE_HDR10_PLUS=ON -DEXPORT_C_API=OFF -DENABLE_CLI=OFF -DMAIN12=ON -S ../../../source -B . \
     && make -j$(( $(nproc) / 4 )) \
     # build x265 10bit

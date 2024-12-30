@@ -392,7 +392,7 @@ RUN cp -r /build/x265/build/linux /build/x265/build/aarch64
 WORKDIR /build/x265
 RUN rm -rf build/aarch64/12bit build/aarch64/10bit build/aarch64/8bit \
     && mkdir -p build/aarch64/12bit build/aarch64/10bit build/aarch64/8bit \
-    && cd 12bit \
+    && cd build/aarch64/12bit \
     && cmake ${CMAKE_COMMON_ARG} -DHIGH_BIT_DEPTH=ON -DENABLE_HDR10_PLUS=ON -DEXPORT_C_API=OFF -DENABLE_CLI=OFF -DMAIN12=ON -S ../../../source -B . \
     && make -j$(( $(nproc) / 4 )) \
     # build x265 10bit
