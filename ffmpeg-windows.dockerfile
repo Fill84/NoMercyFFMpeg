@@ -421,8 +421,9 @@ ENV OLD_CFLAGS=${CFLAGS}
 ENV CFLAGS="${CFLAGS} -fstrength-reduce -ffast-math"
 
 # xvid
-WORKDIR /build/xvidcore/build/generic
-RUN sed -i 's/-mno-cygwin//g' Makefile \
+WORKDIR /build/xvidcore
+RUN cd build/generic \
+    && sed -i 's/-mno-cygwin//g' Makefile \
     && sed -i 's/-mno-cygwin//g' configure \
     && CFLAGS=${CFLAGS} \
     ./configure --enable-static --disable-shared \

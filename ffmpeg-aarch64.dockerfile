@@ -421,8 +421,9 @@ ENV OLD_CFLAGS=${CFLAGS}
 ENV CFLAGS="${CFLAGS} -fstrength-reduce -ffast-math"
 
 # xvid
-WORKDIR /build/xvidcore/build/generic
-RUN CFLAGS=${CFLAGS} \
+WORKDIR /build/xvidcore
+RUN cd build/generic \
+    && CFLAGS=${CFLAGS} \
     ./configure --enable-static --disable-shared \
     --prefix=${PREFIX} \
     --libdir=${PREFIX}/lib \
