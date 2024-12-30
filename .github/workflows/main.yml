@@ -28,7 +28,9 @@ jobs:
 
     # Build and run containers
     - name: Build and Start Docker Compose
-      run: docker-compose up --build -d
+      run: |
+        docker system prune -af
+        docker-compose up --build -d
       
     # Export ffmpeg builds to release
     - name: Export ffmpeg builds
