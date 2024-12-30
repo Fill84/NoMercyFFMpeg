@@ -389,25 +389,28 @@ RUN ./configure \
 # x265
 RUN cp -r /build/x265/build/linux /build/x265/build/aarch64
 # build x265 12bit
-WORKDIR /build/x265/build/aarch64
-RUN rm -rf 8bit 10bit 12bit && mkdir -p 8bit 10bit 12bit
-RUN cd 12bit && cmake ${CMAKE_COMMON_ARG} -DHIGH_BIT_DEPTH=ON -DENABLE_HDR10_PLUS=ON -DEXPORT_C_API=OFF -DENABLE_CLI=OFF -DMAIN12=ON -S ../../../source -B . \
+WORKDIR /build/x265
+RUN rm -rf build/aarch64/12bit && mkdir -p build/aarch64/12bit && cd build/aarch64/12bit \
+    && cmake ${CMAKE_COMMON_ARG} -DHIGH_BIT_DEPTH=ON -DENABLE_HDR10_PLUS=ON -DEXPORT_C_API=OFF -DENABLE_CLI=OFF -DMAIN12=ON -S ../../../source -B . \
     && make -j$(( $(nproc) / 4 ))
 
 # build x265 10bit
-WORKDIR /build/x265/build/aarch64
-RUN cd 10bit && cmake ${CMAKE_COMMON_ARG} -DHIGH_BIT_DEPTH=ON -DENABLE_HDR10_PLUS=ON -DEXPORT_C_API=OFF -DENABLE_CLI=OFF -S ../../../source -B . \
+WORKDIR /build/x265
+RUN rm -rf build/aarch64/10bit && mkdir -p build/aarch64/10bit && cd build/aarch64/10bit \
+    && cmake ${CMAKE_COMMON_ARG} -DHIGH_BIT_DEPTH=ON -DENABLE_HDR10_PLUS=ON -DEXPORT_C_API=OFF -DENABLE_CLI=OFF -S ../../../source -B . \
     && make -j$(( $(nproc) / 4 ))
 
 # build x265 8bit
-WORKDIR /build/x265/build/aarch64
-RUN cd 8bit && mv ../12bit/libx265.a ./libx265_main12.a && mv ../10bit/libx265.a ./libx265_main10.a \
+WORKDIR /build/x265
+RUN rm -rf build/aarch64/8bit && mkdir -p build/aarch64/8bit && cd build/aarch64/8bit \
+    && mv ../12bit/libx265.a ./libx265_main12.a && mv ../10bit/libx265.a ./libx265_main10.a \
     && cmake ${CMAKE_COMMON_ARG} -DEXTRA_LIB="x265_main10.a;x265_main12.a" -DEXTRA_LINK_FLAGS=-L. -DLINKED_10BIT=ON -DLINKED_12BIT=ON -S ../../../source -B . \
     && make -j$(( $(nproc) / 4 ))
 
 # install x265
-WORKDIR /build/x265/build/aarch64/8bit
-RUN mv libx265.a libx265_main.a \
+WORKDIR /build/x265
+RUN cd build/aarch64/8bit \
+    && mv libx265.a libx265_main.a \
     && { \
     echo "CREATE libx265.a"; \
     echo "ADDLIB libx265_main.a"; \
