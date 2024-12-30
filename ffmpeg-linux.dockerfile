@@ -366,18 +366,18 @@ RUN ./configure --prefix=${PREFIX} --disable-cli --enable-static --enable-pic --
 RUN mkdir -p /build/x265/build/linux
 # build x265 12bit
 WORKDIR /build/x265/build/linux
-RUN rm -rf 8bit 10bit 12bit && mkdir -p 8bit 10bit 12bit
-RUN cd 12bit && cmake ${CMAKE_COMMON_ARG} -DHIGH_BIT_DEPTH=ON -DENABLE_HDR10_PLUS=ON -DEXPORT_C_API=OFF -DENABLE_CLI=OFF -DMAIN12=ON -S ../../../source -B . \
+RUN rm -rf ./8bit ./10bit ./12bit && mkdir -p ./8bit ./10bit ./12bit
+RUN cd ./12bit && cmake ${CMAKE_COMMON_ARG} -DHIGH_BIT_DEPTH=ON -DENABLE_HDR10_PLUS=ON -DEXPORT_C_API=OFF -DENABLE_CLI=OFF -DMAIN12=ON -S ../../../source -B . \
     && make -j$(( $(nproc) / 4 ))
 
 # build x265 10bit
 WORKDIR /build/x265/build/linux
-RUN cd 10bit && cmake ${CMAKE_COMMON_ARG} -DHIGH_BIT_DEPTH=ON -DENABLE_HDR10_PLUS=ON -DEXPORT_C_API=OFF -DENABLE_CLI=OFF -S ../../../source -B . \
+RUN cd ./10bit && cmake ${CMAKE_COMMON_ARG} -DHIGH_BIT_DEPTH=ON -DENABLE_HDR10_PLUS=ON -DEXPORT_C_API=OFF -DENABLE_CLI=OFF -S ../../../source -B . \
     && make -j$(( $(nproc) / 4 ))
 
 # build x265 8bit
 WORKDIR /build/x265/build/linux
-RUN cd 8bit && mv ../12bit/libx265.a ./libx265_main12.a && mv ../10bit/libx265.a ./libx265_main10.a \
+RUN cd ./8bit && mv ../12bit/libx265.a ./libx265_main12.a && mv ../10bit/libx265.a ./libx265_main10.a \
     && cmake ${CMAKE_COMMON_ARG} -DEXTRA_LIB="x265_main10.a;x265_main12.a" -DEXTRA_LINK_FLAGS=-L. -DLINKED_10BIT=ON -DLINKED_12BIT=ON -S ../../../source -B . \
     && make -j$(( $(nproc) / 4 ))
 
