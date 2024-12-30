@@ -403,11 +403,9 @@ RUN rm -rf build/windows/12bit build/windows/10bit build/windows/8bit \
     && cd ../8bit \
     && mv ../12bit/libx265.a ./libx265_main12.a && mv ../10bit/libx265.a ./libx265_main10.a \
     && cmake ${CMAKE_COMMON_ARG} -DEXTRA_LIB="x265_main10.a;x265_main12.a" -DEXTRA_LINK_FLAGS=-L. -DLINKED_10BIT=ON -DLINKED_12BIT=ON -S ../../../source -B . \
-    && make -j$(( $(nproc) / 4 ))
-
-# install x265
-WORKDIR /build/x265/build/windows/8bit
-RUN mv libx265.a libx265_main.a \
+    && make -j$(( $(nproc) / 4 )) \
+    # install x265
+    && mv libx265.a libx265_main.a \
     && { \
     echo "CREATE libx265.a"; \
     echo "ADDLIB libx265_main.a"; \
