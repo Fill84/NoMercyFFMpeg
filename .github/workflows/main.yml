@@ -29,35 +29,18 @@ jobs:
     # Build and run containers
     - name: Build and Start Docker Compose
       run: |
-        docker system prune -af
-        docker-compose up --build -d
-      
-    # Export ffmpeg builds to release
-    - name: Export ffmpeg builds
-      run: |
-        mkdir -p downloads
-        docker cp ffmpeg-linux:/output/ffmpeg-linux-7.1.tar.gz downloads/
-        docker cp ffmpeg-windows:/output/ffmpeg-windows-7.1.tar.gz downloads/
-        docker cp ffmpeg-aarch64:/output/ffmpeg-aarch64-7.1.tar.gz downloads/
+        mkdir -p output
+        docker-compose up --build -d ffmpeg-base
+        docker-compose up --build -d ffmpeg-linux
+        docker-compose up --build -d ffmpeg-windows
+        docker-compose up --build -d ffmpeg-aarch64
 
     # Upload the tarballs to output
-    - name: Upload ffmpeg artifacts for linux
+    - name: Upload ffmpeg artifacts
       uses: actions/upload-artifact@v3
       with:
-        name: ffmpeg-linux-7.1
-        path: downloads/ffmpeg-linux-7.1.tar.gz
-
-    - name: Upload ffmpeg artifacts for windows
-      uses: actions/upload-artifact@v3
-      with:
-        name: ffmpeg-windows-7.1
-        path: downloads/ffmpeg-windows-7.1.tar.gz
-
-    - name: Upload ffmpeg artifacts for aarch64
-      uses: actions/upload-artifact@v3
-      with:
-        name: ffmpeg-aarch64-7.1
-        path: downloads/ffmpeg-aarch64-7.1.tar.gz
+        name: ffmpeg-artifacts
+        path: /output/*.tar.gz
 
     # Stop and clean up Docker containers
     - name: Clean Up

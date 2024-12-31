@@ -197,17 +197,17 @@ RUN cd /build/fontconfig \
 #     && make -j$(nproc) && make install \
 #     && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/xfixes.pc
 
-# libdrm
-RUN cd /build/libdrm \
-    && mkdir build && cd build \
-    && meson --prefix=${PREFIX} --buildtype=release \
-    -Ddefault_library=static -Dudev=false -Dcairo-tests=disabled \
-    -Dvalgrind=disabled -Dexynos=disabled -Dfreedreno=disabled \
-    -Domap=disabled -Detnaviv=disabled -Dintel=enabled \
-    -Dnouveau=enabled -Dradeon=enabled -Damdgpu=enabled \
-    --cross-file=../../cross_file.txt .. \
-    && ninja -j$(nproc) && ninja install install \
-    && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/libdrm.pc
+# # libdrm
+# RUN cd /build/libdrm \
+#     && mkdir build && cd build \
+#     && meson --prefix=${PREFIX} --buildtype=release \
+#     -Ddefault_library=static -Dudev=false -Dcairo-tests=disabled \
+#     -Dvalgrind=disabled -Dexynos=disabled -Dfreedreno=disabled \
+#     -Domap=disabled -Detnaviv=disabled -Dintel=enabled \
+#     -Dnouveau=enabled -Dradeon=enabled -Damdgpu=enabled \
+#     --cross-file=../../cross_file.txt .. \
+#     && ninja -j$(nproc) && ninja install install \
+#     && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/libdrm.pc
 
 # harfbuzz
 RUN cd /build/harfbuzz \
@@ -269,14 +269,16 @@ RUN cd /build/libass \
     --host=${CROSS_PREFIX%-} \
     && make -j$(nproc) && make install
 
-# libva
-RUN cd /build/libva \
-    && ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared \
-    --host=${CROSS_PREFIX%-} \
-    && ./configure --prefix=${PREFIX} --enable-static --disable-shared \
-    --host=${CROSS_PREFIX%-} \
-    && make -j$(nproc) && make install \
-    && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/libva.pc
+# # libva
+# RUN cd /build/libva \
+#     && ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared \
+#     --disable-x11 --disable-drm --disable-docs --disable-glx --disable-wayland \
+#     --host=${CROSS_PREFIX%-} \
+#     && ./configure --prefix=${PREFIX} --enable-static --disable-shared \
+#     --disable-x11 --disable-drm --disable-docs --disable-glx --disable-wayland \
+#     --host=${CROSS_PREFIX%-} \
+#     && make -j$(nproc) && make install \
+#     && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/libva.pc
 
 # libgpg-error
 RUN cd /build/libgpg-error \
@@ -346,12 +348,12 @@ RUN cd /build/libbluray \
 
 ENV EXTRA_LIBS=""
 
-# libcddb
-RUN cd /build/libcddb \
-    && ./configure --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
-    --host=${CROSS_PREFIX%-} \
-    && make -j$(nproc) && make install \
-    && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/libcddb.pc
+# # libcddb
+# RUN cd /build/libcddb \
+#     && ./configure --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
+#     --host=${CROSS_PREFIX%-} \
+#     && make -j$(nproc) && make install \
+#     && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/libcddb.pc
 
 # libcdio
 RUN cd /build/libcdio \
@@ -581,14 +583,15 @@ RUN cd /build/ffmpeg \
     --enable-libfreetype \
     --enable-libfribidi \
     --enable-fontconfig \
-    --enable-libdrm \
+    # --enable-libdrm \
     --enable-libvorbis \
     --enable-libvmaf \
     --enable-avisynth \
     --enable-chromaprint \
     --enable-libass \
-    --enable-vaapi \
+    # --enable-vaapi \
     --enable-libbluray \
+    --enable-libcdio \
     --enable-libdav1d \
     --enable-libdavs2 \
     --enable-librav1e \

@@ -593,6 +593,7 @@ RUN cd /build/ffmpeg \
     --enable-libass \
     --enable-vaapi \
     --enable-libbluray \
+    --enable-libcdio \
     --enable-libdav1d \
     --enable-libdavs2 \
     --enable-librav1e \
