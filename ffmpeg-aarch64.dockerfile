@@ -348,12 +348,12 @@ RUN cd /build/libbluray \
 
 ENV EXTRA_LIBS=""
 
-# libcddb
-RUN cd /build/libcddb \
-    && ./configure --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
-    --host=${CROSS_PREFIX%-} \
-    && make -j$(nproc) && make install \
-    && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/libcddb.pc
+# # libcddb
+# RUN cd /build/libcddb \
+#     && ./configure --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
+#     --host=${CROSS_PREFIX%-} \
+#     && make -j$(nproc) && make install \
+#     && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/libcddb.pc
 
 # libcdio
 RUN cd /build/libcdio \
@@ -385,7 +385,7 @@ RUN cd /build/libdav1d \
 RUN cp -r /build/libdavs2/build/linux /build/libdavs2/build/aarch64 \
     && cd /build/libdavs2/build/aarch64 \
     && sed -i -e 's/EGIB/bss/g' -e 's/naidnePF/bss/g' configure \
-    && ./configure --prefix=${PREFIX} --disable-cli --enable-static --disable-shared --with-pic \
+    && ./configure --prefix=${PREFIX} --disable-cli --enable-static --disable-shared --with-pic --disable-asm \
     --host=${CROSS_PREFIX%-} \
     --cross-prefix=${CROSS_PREFIX} \
     && make -j$(nproc) && make install
@@ -489,7 +489,7 @@ RUN cp -r /build/x265/build/linux /build/x265/build/aarch64 \
 RUN cp -r /build/libxavs2/build/linux /build/libxavs2/build/aarch64 \
     && cd /build/libxavs2/build/aarch64 \
     && ./configure --prefix=${PREFIX} \
-    --disable-cli --enable-static --enable-pic --disable-avs --disable-swscale --disable-lavf --disable-ffms --disable-gpac --disable-lsmash --extra-asflags="-w-macro-params-legacy" \
+    --disable-cli --enable-static --enable-pic --disable-asm --disable-avs --disable-swscale --disable-lavf --disable-ffms --disable-gpac --disable-lsmash --extra-asflags="-w-macro-params-legacy" \
     --host=${CROSS_PREFIX%-} \
     --cross-prefix=${CROSS_PREFIX} \
     && make -j$(nproc) && make install
