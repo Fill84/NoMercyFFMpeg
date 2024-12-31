@@ -1,4 +1,4 @@
-FROM ubuntu:latest AS base
+FROM nvidia/cuda:12.6.3-devel-ubuntu24.04 AS base
 
 LABEL maintainer="Phillippe Pelzer"
 LABEL version="1.0"
@@ -16,6 +16,7 @@ ENV ffmpeg_version=7.1 \
     fftw3_version=3.3.10 \
     freetype_version=2.13.3 \
     fribidi_version=1.0.16 \
+    libogg_version=1.3.5 \
     openssl_version=3.4.0 \
     fontconfig_version=2.15.0 \
     libpciaccess_version=0.18.1 \
@@ -28,12 +29,19 @@ ENV ffmpeg_version=7.1 \
     libdrm_version=2.4.124 \
     harfbuzz_version=10.1.0 \
     libudfread_version=1.1.2 \
+    libvorbis_version=1.3.7 \
+    libvmaf_version=3.0.0 \
     avisynth_version=3.7.3 \
     chromaprint_version=1.5.1 \
     libass_version=0.17.3 \
     libva_version=2.22.0 \
     libgcrypt_version=1.11.0 \
     libbluray_version=1.3.4 \
+    libcddb_version=1.3.2 \
+    libcdio_version=master \
+    libcdio_paranoia_version=2.0.2 \
+    dav1d_version=1.5.0 \
+    davs2_version=1.7 \
     rav1e_version=0.7.1 \
     libsrt_version=1.5.4 \
     twolame_version=0.4.0 \
@@ -43,11 +51,13 @@ ENV ffmpeg_version=7.1 \
     libvpx_version=1.15.0 \
     x264_version=stable \
     x265_version=master \
+    xavs2_version=1.4 \
     xvid_version=1.3.7 \
     libwebp_version=1.4.0 \
     openjpeg_version=2.5.3 \
     zimg_version=3.0.5 \
-    nvcodec_version=12.2.72.0
+    nvcodec_version=12.2.72.0 \
+    sdl2_version=2.30.10
 
 # Dependencies for building ffmpeg
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -75,11 +85,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libxext-dev \
     meson \
     nasm \
+    nvidia-cuda-toolkit \
     pkg-config \
     python3 \
     python3-dev \
     python3-venv \
     subversion \
+    texinfo \
     wget \
     xtrans-dev \
     xutils-dev \
@@ -121,6 +133,9 @@ RUN wget -O freetype.tar.gz https://download.savannah.gnu.org/releases/freetype/
 RUN wget https://github.com/fribidi/fribidi/releases/download/v${fribidi_version}/fribidi-${fribidi_version}.tar.xz \
     && tar -xJf fribidi-${fribidi_version}.tar.xz && rm fribidi-${fribidi_version}.tar.xz && mv fribidi-${fribidi_version} fribidi
 
+# Download libogg
+RUN git clone --branch v${libogg_version} https://github.com/xiph/ogg.git libogg
+
 # Download openssl
 RUN git clone --branch openssl-${openssl_version} https://github.com/openssl/openssl.git openssl \
     && cd openssl && git submodule update --init --recursive --depth=1 && cd ..
@@ -158,6 +173,12 @@ RUN git clone --branch ${harfbuzz_version} https://github.com/harfbuzz/harfbuzz.
 # Download libudfread
 RUN git clone --branch ${libudfread_version} https://code.videolan.org/videolan/libudfread libudfread
 
+# Download libvorbis
+RUN git clone --branch v${libvorbis_version} https://github.com/xiph/vorbis.git libvorbis
+
+# Download libvmaf
+RUN git clone --branch v${libvmaf_version} https://github.com/Netflix/vmaf.git libvmaf
+
 # Download avisynth
 RUN git clone --branch v${avisynth_version} https://github.com/AviSynth/AviSynthPlus.git avisynth
 
@@ -186,8 +207,24 @@ RUN git clone https://code.videolan.org/videolan/libaacs.git libaacs
 # Download libbluray
 RUN git clone --branch ${libbluray_version} https://code.videolan.org/videolan/libbluray.git libbluray
 
+RUN wget -O libcddb.tar.gz https://sourceforge.net/projects/libcddb/files/libcddb/${libcddb_version}/libcddb-${libcddb_version}.tar.gz/download \
+    && tar -xvf libcddb.tar.gz && rm libcddb.tar.gz \
+    && mv libcddb-* libcddb
+
+# Download libcdio
+RUN git clone --branch ${libcdio_version} https://github.com/libcdio/libcdio.git libcdio
+
+# Download libcdio-paranoia
+RUN git clone --branch release-10.2+${libcdio_paranoia_version} https://github.com/libcdio/libcdio-paranoia.git libcdio-paranoia
+
+# Download dav1d
+RUN git clone --branch ${dav1d_version} https://code.videolan.org/videolan/dav1d.git libdav1d
+
+# Download dav2
+RUN git clone --branch ${davs2_version} https://github.com/pkuvcl/davs2.git libdavs2
+
 # Download rav1e
-RUN git clone --branch v${rav1e_version} https://github.com/xiph/rav1e.git rav1e
+RUN git clone --branch v${rav1e_version} https://github.com/xiph/rav1e.git librav1e
 
 # Download libsrt
 RUN git clone --branch v${libsrt_version} https://github.com/Haivision/srt.git libsrt
@@ -216,6 +253,9 @@ RUN git clone --branch ${x264_version} https://code.videolan.org/videolan/x264.g
 RUN wget -O x265.tar.bz2 https://bitbucket.org/multicoreware/x265_git/get/${x265_version}.tar.bz2 \
     && tar xjf x265.tar.bz2 && rm x265.tar.bz2 && mv multicoreware-x265_git-* x265
 
+# Download xavs2
+RUN git clone --branch ${xavs2_version} https://github.com/pkuvcl/xavs2.git libxavs2
+
 # Download xvidcore
 RUN wget -O xvidcore.tar.gz https://downloads.xvid.com/downloads/xvidcore-${xvid_version}.tar.gz \
     && tar -xzf xvidcore.tar.gz && rm xvidcore.tar.gz
@@ -232,6 +272,9 @@ RUN git clone --branch release-${zimg_version} https://github.com/sekrit-twc/zim
 
 # Download ffnvcodec
 RUN git clone --branch n${nvcodec_version} https://github.com/FFmpeg/nv-codec-headers.git ffnvcodec
+
+# Download SDL2
+RUN git clone --branch release-${sdl2_version} https://github.com/libsdl-org/SDL.git sdl2
 
 # Download ffmpeg
 RUN wget -O ffmpeg.tar.bz2 https://ffmpeg.org/releases/ffmpeg-${ffmpeg_version}.tar.bz2 \
