@@ -287,10 +287,10 @@ RUN cd /build/libgpg-error \
     && ./configure --prefix=${PREFIX} --enable-static --disable-shared --with-pic --disable-doc  \
     --host=${CROSS_PREFIX%-} \
     && make -j$(nproc) && make install \
-    && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/libgpg-error.pc
-
-# libgcrypt
-RUN cd /build/libgcrypt \
+    && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/libgpg-error.pc \
+    \
+    # libgcrypt
+    && cd /build/libgcrypt \
     && ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared --with-pic --disable-doc  \
     --host=${CROSS_PREFIX%-} \
     && ./configure --prefix=${PREFIX} --enable-static --disable-shared --with-pic --disable-doc  \
@@ -304,19 +304,19 @@ RUN cd /build/libgcrypt \
     \
     && echo '#!/bin/sh' > /usr/local/bin/gpg-error-config \
     && echo 'pkg-config libgpg-error "$@"' >> /usr/local/bin/gpg-error-config \
-    && chmod +x /usr/local/bin/gpg-error-config
-
-# libbdplus
-RUN cd /build/libbdplus \
+    && chmod +x /usr/local/bin/gpg-error-config \
+    \
+    # libbdplus
+    && cd /build/libbdplus \
     && ./bootstrap --prefix=${PREFIX} --libdir=${PREFIX}/lib --enable-static --disable-shared --with-pic --disable-doc \
     --host=${CROSS_PREFIX%-} \
     && ./configure --prefix=${PREFIX} --libdir=${PREFIX}/lib --enable-static --disable-shared --with-pic --disable-doc \
     --host=${CROSS_PREFIX%-} \
     && make -j$(nproc) && make install \
-    && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/libbdplus.pc
-
-# libaacs
-RUN cd /build/libaacs \
+    && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/libbdplus.pc \
+    \
+    # libaacs
+    && cd /build/libaacs \
     && ./bootstrap --prefix=${PREFIX} --libdir=${PREFIX}/lib --enable-static --disable-shared --with-pic --disable-doc \
     --host=${CROSS_PREFIX%-} \
     && ./configure --prefix=${PREFIX} --libdir=${PREFIX}/lib --enable-static --disable-shared --with-pic --disable-doc \
@@ -363,10 +363,10 @@ RUN cd /build/libcdio \
     && ./configure --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
     --host=${CROSS_PREFIX%-} \
     && make -j$(nproc) && make install \
-    && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/libcdio.pc
-
-# libcdio-paranoia
-RUN cd /build/libcdio-paranoia \
+    && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/libcdio.pc \
+    \
+    # libcdio-paranoia
+    && cd /build/libcdio-paranoia \
     && ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
     --host=${CROSS_PREFIX%-} \
     && ./configure --prefix=${PREFIX} --enable-static --disable-shared --with-pic \

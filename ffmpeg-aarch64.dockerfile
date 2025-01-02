@@ -147,36 +147,36 @@ RUN cd /build/xcbproto \
     && ./configure --prefix=${PREFIX} --enable-static --disable-shared \
     --host=${CROSS_PREFIX%-} \
     && make -j$(nproc) && make install \
-    && mv ${PREFIX}/share/pkgconfig/xcb-proto.pc ${PREFIX}/lib/pkgconfig/xcb-proto.pc
-
-# xproto
-RUN cd /build/xproto \
+    && mv ${PREFIX}/share/pkgconfig/xcb-proto.pc ${PREFIX}/lib/pkgconfig/xcb-proto.pc \
+    \
+    # xproto
+    && cd /build/xproto \
     && ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared \
     --host=${CROSS_PREFIX%-} \
     && ./configure --prefix=${PREFIX} --enable-static --disable-shared \
     --host=${CROSS_PREFIX%-} \
     && make -j$(nproc) && make install \
-    && mv ${PREFIX}/share/pkgconfig/xproto.pc ${PREFIX}/lib/pkgconfig/xproto.pc
-
-# xtrans
-RUN cd /build/libxtrans \
+    && mv ${PREFIX}/share/pkgconfig/xproto.pc ${PREFIX}/lib/pkgconfig/xproto.pc \
+    \
+    # xtrans
+    && cd /build/libxtrans \
     && ./autogen.sh --prefix=${PREFIX} --without-xmlto --without-fop --without-xsltproc \
     --host=${CROSS_PREFIX%-} \
     && ./configure --prefix=${PREFIX} --without-xmlto --without-fop --without-xsltproc \
     --host=${CROSS_PREFIX%-} \
     && make -j$(nproc) && make install \
-    && cp -r ${PREFIX}/share/aclocal/. ${PREFIX}/lib/aclocal
-
-# libxcb
-RUN cd /build/libxcb \
+    && cp -r ${PREFIX}/share/aclocal/. ${PREFIX}/lib/aclocal \
+    \
+    # libxcb
+    && cd /build/libxcb \
     && ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared --with-pic --disable-devel-docs \
     --host=${CROSS_PREFIX%-} \
     && ./configure --prefix=${PREFIX} --enable-static --disable-shared --with-pic --disable-devel-docs \
     --host=${CROSS_PREFIX%-} \
-    && make -j$(nproc) && make install
-
-# libx11
-RUN cd /build/libx11 \
+    && make -j$(nproc) && make install \
+    \
+    # libx11
+    && cd /build/libx11 \
     && ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
     --without-xmlto --without-fop --without-xsltproc --without-lint --disable-specs --enable-ipv6 \
     --host=${CROSS_PREFIX%-} \
@@ -186,19 +186,19 @@ RUN cd /build/libx11 \
     --host=${CROSS_PREFIX%-} \
     --disable-malloc0returnsnull \
     && make -j$(nproc) && make install \
-    && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/x11.pc
-
-# libxfixes
-RUN cd /build/libxfixes \
+    && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/x11.pc \
+    \
+    # libxfixes
+    && cd /build/libxfixes \
     && ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
     --host=${CROSS_PREFIX%-} \
     && ./configure --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
     --host=${CROSS_PREFIX%-} \
     && make -j$(nproc) && make install \
-    && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/xfixes.pc
-
-# libdrm
-RUN cd /build/libdrm \
+    && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/xfixes.pc \
+    \
+    # libdrm
+    && cd /build/libdrm \
     && mkdir build && cd build \
     && meson --prefix=${PREFIX} --buildtype=release \
     -Ddefault_library=static -Dudev=false -Dcairo-tests=disabled \
@@ -287,10 +287,10 @@ RUN cd /build/libgpg-error \
     && ./configure --prefix=${PREFIX} --enable-static --disable-shared --with-pic --disable-doc  \
     --host=${CROSS_PREFIX%-} \
     && make -j$(nproc) && make install \
-    && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/libgpg-error.pc
-
-# libgcrypt
-RUN cd /build/libgcrypt \
+    && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/libgpg-error.pc \
+    \
+    # libgcrypt
+    && cd /build/libgcrypt \
     && ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared --with-pic --disable-doc  \
     --host=${CROSS_PREFIX%-} \
     && ./configure --prefix=${PREFIX} --enable-static --disable-shared --with-pic --disable-doc  \
@@ -304,19 +304,19 @@ RUN cd /build/libgcrypt \
     \
     && echo '#!/bin/sh' > /usr/local/bin/gpg-error-config \
     && echo 'pkg-config libgpg-error "$@"' >> /usr/local/bin/gpg-error-config \
-    && chmod +x /usr/local/bin/gpg-error-config
-
-# libbdplus
-RUN cd /build/libbdplus \
+    && chmod +x /usr/local/bin/gpg-error-config \
+    \
+    # libbdplus
+    && cd /build/libbdplus \
     && ./bootstrap --prefix=${PREFIX} --libdir=${PREFIX}/lib --enable-static --disable-shared --with-pic --disable-doc \
     --host=${CROSS_PREFIX%-} \
     && ./configure --prefix=${PREFIX} --libdir=${PREFIX}/lib --enable-static --disable-shared --with-pic --disable-doc \
     --host=${CROSS_PREFIX%-} \
     && make -j$(nproc) && make install \
-    && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/libbdplus.pc
-
-# libaacs
-RUN cd /build/libaacs \
+    && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/libbdplus.pc \
+    \
+    # libaacs
+    && cd /build/libaacs \
     && ./bootstrap --prefix=${PREFIX} --libdir=${PREFIX}/lib --enable-static --disable-shared --with-pic --disable-doc \
     --host=${CROSS_PREFIX%-} \
     && ./configure --prefix=${PREFIX} --libdir=${PREFIX}/lib --enable-static --disable-shared --with-pic --disable-doc \
@@ -363,10 +363,10 @@ RUN cd /build/libcdio \
     && ./configure --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
     --host=${CROSS_PREFIX%-} \
     && make -j$(nproc) && make install \
-    && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/libcdio.pc
-
-# libcdio-paranoia
-RUN cd /build/libcdio-paranoia \
+    && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/libcdio.pc \
+    \
+    # libcdio-paranoia
+    && cd /build/libcdio-paranoia \
     && ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
     --host=${CROSS_PREFIX%-} \
     && ./configure --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
