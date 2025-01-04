@@ -34,6 +34,7 @@ jobs:
             --cache-from=type=local,source=${{ github.workspace }}/.buildx-cache \
             --cache-to=type=local,dest=${{ github.workspace }}/.buildx-cache \
             --tag ffmpeg-base:latest \
+            --load \
             -f ffmpeg-base.dockerfile .
 
   build-linux:
@@ -60,6 +61,7 @@ jobs:
             --cache-from=type=local,source=${{ github.workspace }}/.buildx-cache \
             --cache-to=type=local,dest=${{ github.workspace }}/.buildx-cache \
             --tag ffmpeg-linux:latest \
+            --load \
             -f ffmpeg-linux.dockerfile .
 
       - name: Export Linux Artifact
@@ -99,6 +101,7 @@ jobs:
             --cache-from=type=local,source=${{ github.workspace }}/.buildx-cache \
             --cache-to=type=local,dest=${{ github.workspace }}/.buildx-cache \
             --tag ffmpeg-windows:latest \
+            --load \
             -f ffmpeg-windows.dockerfile .
 
       - name: Export Windows Artifact
@@ -138,6 +141,7 @@ jobs:
             --cache-from=type=local,source=${{ github.workspace }}/.buildx-cache \
             --cache-to=type=local,dest=${{ github.workspace }}/.buildx-cache \
             --tag ffmpeg-aarch64:latest \
+            --load \
             -f ffmpeg-aarch64.dockerfile .
 
       - name: Export AArch64 Artifact
