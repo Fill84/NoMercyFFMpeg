@@ -36,8 +36,9 @@ jobs:
         run: |
           mkdir -p tmp/.buildx-cache
           DOCKER_BUILDKIT=1 docker buildx build \
+            --squash \
             --cache-from=type=gha,source=tmp/.buildx-cache \
-            --cache-to=type=gha,mode=max,dest=tmp/.buildx-cache \
+            --cache-to=type=gha,dest=tmp/.buildx-cache \
             --tag ffmpeg-base:latest \
             --load \
             -f ffmpeg-base.dockerfile .
@@ -64,8 +65,9 @@ jobs:
         run: |
           mkdir -p tmp/.buildx-cache
           DOCKER_BUILDKIT=1 docker buildx build \
+            --squash \
             --cache-from=type=gha,source=tmp/.buildx-cache \
-            --cache-to=type=gha,mode=max,dest=tmp/.buildx-cache \
+            --cache-to=type=gha,dest=tmp/.buildx-cache \
             --tag ffmpeg-linux:latest \
             --load \
             -f ffmpeg-linux.dockerfile .
@@ -105,8 +107,9 @@ jobs:
         run: |
           mkdir -p tmp/.buildx-cache
           DOCKER_BUILDKIT=1 docker buildx build \
+            --squash \
             --cache-from=type=gha,source=tmp/.buildx-cache \
-            --cache-to=type=gha,mode=max,dest=tmp/.buildx-cache \
+            --cache-to=type=gha,dest=tmp/.buildx-cache \
             --tag ffmpeg-windows:latest \
             --load \
             -f ffmpeg-windows.dockerfile .
@@ -146,8 +149,9 @@ jobs:
         run: |
           mkdir -p tmp/.buildx-cache
           DOCKER_BUILDKIT=1 docker buildx build \
+            --squash \
             --cache-from=type=gha,source=tmp/.buildx-cache \
-            --cache-to=type=gha,mode=max,dest=tmp/.buildx-cache \
+            --cache-to=type=gha,dest=tmp/.buildx-cache \
             --tag ffmpeg-aarch64:latest \
             --load \
             -f ffmpeg-aarch64.dockerfile .

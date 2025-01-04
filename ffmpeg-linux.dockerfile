@@ -594,15 +594,9 @@ RUN cd /build/ffmpeg \
     || (cat ffbuild/config.log ; false) && \
     make -j$(nproc) && make install
 
-RUN mkdir -p /ffmpeg/linux
+RUN tar -rvf /ffmpeg/ffmpeg-linux-7.1.tar.gz ${PREFIX}/bin/ffmpeg ${PREFIX}/bin/ffprobe ${PREFIX}/bin/ffplay
 
-RUN cp ${PREFIX}/bin/ffmpeg /ffmpeg/linux \
-    # && cp ${PREFIX}/bin/ffplay /ffmpeg/linux \
-    && cp ${PREFIX}/bin/ffprobe /ffmpeg/linux 
-
-RUN tar -czf /ffmpeg-linux-7.1.tar.gz -C /ffmpeg/linux .
+COPY --from=linux /ffmpeg-linux-7.1.tar.gz /output/ffmpeg-linux-7.1.tar.gz
 
 # cleanup
-RUN rm -rf /ffmpeg/linux ${PREFIX}
-
-CMD ["/export.sh"]
+RUN rm -rf ${PREFIX}

@@ -624,15 +624,9 @@ RUN cd /build/ffmpeg \
     || (cat ffbuild/config.log ; false) && \
     make -j$(nproc) && make install
 
-RUN mkdir -p /ffmpeg/aarch64
+RUN tar -rvf /ffmpeg-aarch64-7.1.tar.gz ${PREFIX}/bin/ffmpeg ${PREFIX}/bin/ffprobe ${PREFIX}/bin/ffplay
 
-RUN cp ${PREFIX}/bin/ffmpeg /ffmpeg/aarch64 \
-    # && cp ${PREFIX}/bin/ffplay /ffmpeg/aarch64 \
-    && cp ${PREFIX}/bin/ffprobe /ffmpeg/aarch64 
-
-RUN tar -czf /ffmpeg-aarch64-7.1.tar.gz -C /ffmpeg/aarch64 .
+COPY --from=aarch64 /ffmpeg-aarch64-7.1.tar.gz /output/ffmpeg-aarch64-7.1.tar.gz
 
 # cleanup
-RUN rm -rf /ffmpeg/aarch64 ${PREFIX}
-
-CMD ["/export.sh"]
+RUN rm -rf ${PREFIX}

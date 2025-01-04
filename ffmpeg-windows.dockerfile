@@ -622,15 +622,9 @@ RUN cd /build/ffmpeg \
     || (cat ffbuild/config.log ; false) && \
     make -j$(nproc) && make install
 
-RUN mkdir -p /ffmpeg/windows
+RUN tar -rvf /ffmpeg/ffmpeg-windows-7.1.tar.gz ${PREFIX}/bin/ffmpeg ${PREFIX}/bin/ffprobe ${PREFIX}/bin/ffplay
 
-RUN cp ${PREFIX}/bin/ffmpeg.exe /ffmpeg/windows \
-    # && cp ${PREFIX}/bin/ffplay.exe /ffmpeg/windows \
-    && cp ${PREFIX}/bin/ffprobe.exe /ffmpeg/windows 
-
-RUN tar -czf /ffmpeg-windows-7.1.tar.gz -C /ffmpeg/windows .
+COPY --from=windows /ffmpeg-windows-7.1.tar.gz /output/ffmpeg-windows-7.1.tar.gz
 
 # cleanup
-RUN rm -rf /ffmpeg/windows ${PREFIX}
-
-CMD ["/export.sh"]
+RUN rm -rf ${PREFIX}
