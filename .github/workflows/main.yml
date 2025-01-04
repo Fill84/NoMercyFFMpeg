@@ -36,10 +36,7 @@ jobs:
         run: |
           mkdir -p ${{ github.workspace }}/.buildx-cache
           DOCKER_BUILDKIT=1 docker buildx build \
-            --squash \
             --load \
-            --cache-from=type=gha \
-            --cache-to=type=gha \
             --tag ffmpeg-base:latest \
             -f ffmpeg-base.dockerfile .
 
@@ -56,6 +53,7 @@ jobs:
       - name: Cache Docker layers for Linux image
         uses: actions/cache@v3
         with:
+          path: ${{ github.workspace }}/.buildx-cache
           key: ${{ runner.os }}-buildx-linux-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-buildx-linux-
@@ -64,10 +62,7 @@ jobs:
         run: |
           mkdir -p ${{ github.workspace }}/.buildx-cache
           DOCKER_BUILDKIT=1 docker buildx build \
-            --squash \
             --load \
-            --cache-from=type=gha \
-            --cache-to=type=gha \
             --tag ffmpeg-linux:latest \
             -f ffmpeg-linux.dockerfile .
 
@@ -97,6 +92,7 @@ jobs:
       - name: Cache Docker layers for Windows image
         uses: actions/cache@v3
         with:
+          path: ${{ github.workspace }}/.buildx-cache
           key: ${{ runner.os }}-buildx-windows-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-buildx-windows-
@@ -105,10 +101,7 @@ jobs:
         run: |
           mkdir -p ${{ github.workspace }}/.buildx-cache
           DOCKER_BUILDKIT=1 docker buildx build \
-            --squash \
             --load \
-            --cache-from=type=gha \
-            --cache-to=type=gha \
             --tag ffmpeg-windows:latest \
             -f ffmpeg-windows.dockerfile .
 
@@ -138,6 +131,7 @@ jobs:
       - name: Cache Docker layers for AArch64 image
         uses: actions/cache@v3
         with:
+          path: ${{ github.workspace }}/.buildx-cache
           key: ${{ runner.os }}-buildx-aarch64-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-buildx-aarch64-
@@ -146,10 +140,7 @@ jobs:
         run: |
           mkdir -p ${{ github.workspace }}/.buildx-cache
           DOCKER_BUILDKIT=1 docker buildx build \
-            --squash \
             --load \
-            --cache-from=type=gha \
-            --cache-to=type=gha \
             --tag ffmpeg-aarch64:latest \
             -f ffmpeg-aarch64.dockerfile .
 
