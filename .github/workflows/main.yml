@@ -9,6 +9,10 @@ on:
       - main
   workflow_dispatch:
 
+env:
+  cache:
+
+
 jobs:
   # Build the base image (this job runs first)
   build-base:
@@ -23,17 +27,17 @@ jobs:
       - name: Cache Docker layers for base image
         uses: actions/cache@v3
         with:
-          path: ${{ github.workspace }}/.buildx-cache  # Store cache in workspace
+          path: tmp/.buildx-cache  # Store cache in workspace
           key: ${{ runner.os }}-buildx-base-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-buildx-base-
 
       - name: Build Base Image
         run: |
-          mkdir -p ${{ github.workspace }}/.buildx-cache
+          mkdir -p tmp/.buildx-cache
           DOCKER_BUILDKIT=1 docker buildx build \
-            --cache-from=type=local,source=${{ github.workspace }}/.buildx-cache \
-            --cache-to=type=local,dest=${{ github.workspace }}/.buildx-cache \
+            --cache-from=type=gha,source=tmp/.buildx-cache \
+            --cache-to=type=gha,mode=max,dest=tmp/.buildx-cache \
             --tag ffmpeg-base:latest \
             --load \
             -f ffmpeg-base.dockerfile .
@@ -51,17 +55,17 @@ jobs:
       - name: Cache Docker layers for Linux image
         uses: actions/cache@v3
         with:
-          path: ${{ github.workspace }}/.buildx-cache
+          path: tmp/.buildx-cache
           key: ${{ runner.os }}-buildx-linux-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-buildx-linux-
 
       - name: Build Linux Image
         run: |
-          mkdir -p ${{ github.workspace }}/.buildx-cache
+          mkdir -p tmp/.buildx-cache
           DOCKER_BUILDKIT=1 docker buildx build \
-            --cache-from=type=local,source=${{ github.workspace }}/.buildx-cache \
-            --cache-to=type=local,dest=${{ github.workspace }}/.buildx-cache \
+            --cache-from=type=gha,source=tmp/.buildx-cache \
+            --cache-to=type=gha,mode=max,dest=tmp/.buildx-cache \
             --tag ffmpeg-linux:latest \
             --load \
             -f ffmpeg-linux.dockerfile .
@@ -92,17 +96,17 @@ jobs:
       - name: Cache Docker layers for Windows image
         uses: actions/cache@v3
         with:
-          path: ${{ github.workspace }}/.buildx-cache
+          path: tmp/.buildx-cache
           key: ${{ runner.os }}-buildx-windows-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-buildx-windows-
 
       - name: Build Windows Image
         run: |
-          mkdir -p ${{ github.workspace }}/.buildx-cache
+          mkdir -p tmp/.buildx-cache
           DOCKER_BUILDKIT=1 docker buildx build \
-            --cache-from=type=local,source=${{ github.workspace }}/.buildx-cache \
-            --cache-to=type=local,dest=${{ github.workspace }}/.buildx-cache \
+            --cache-from=type=gha,source=tmp/.buildx-cache \
+            --cache-to=type=gha,mode=max,dest=tmp/.buildx-cache \
             --tag ffmpeg-windows:latest \
             --load \
             -f ffmpeg-windows.dockerfile .
@@ -133,17 +137,17 @@ jobs:
       - name: Cache Docker layers for AArch64 image
         uses: actions/cache@v3
         with:
-          path: ${{ github.workspace }}/.buildx-cache
+          path: tmp/.buildx-cache
           key: ${{ runner.os }}-buildx-aarch64-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-buildx-aarch64-
 
       - name: Build AArch64 Image
         run: |
-          mkdir -p ${{ github.workspace }}/.buildx-cache
+          mkdir -p tmp/.buildx-cache
           DOCKER_BUILDKIT=1 docker buildx build \
-            --cache-from=type=local,source=${{ github.workspace }}/.buildx-cache \
-            --cache-to=type=local,dest=${{ github.workspace }}/.buildx-cache \
+            --cache-from=type=gha,source=tmp/.buildx-cache \
+            --cache-to=type=gha,mode=max,dest=tmp/.buildx-cache \
             --tag ffmpeg-aarch64:latest \
             --load \
             -f ffmpeg-aarch64.dockerfile .
