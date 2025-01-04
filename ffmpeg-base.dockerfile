@@ -284,5 +284,4 @@ ADD ./start.sh /start.sh
 ADD ./export.sh /export.sh
 RUN chmod 755 /start.sh /export.sh
 
-# Set the entrypoint
 CMD ["/start.sh"]

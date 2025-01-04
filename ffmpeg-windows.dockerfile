@@ -1,5 +1,5 @@
 # Create a Windows ffmpeg build
-FROM nomercyffmpeg_ffmpeg-base AS windows
+FROM ffmpeg-base AS windows
 
 LABEL maintainer="Phillippe Pelzer"
 LABEL version="1.0"
@@ -624,7 +624,7 @@ RUN cd /build/ffmpeg \
 
 RUN tar -rvf /ffmpeg/ffmpeg-windows-7.1.tar.gz ${PREFIX}/bin/ffmpeg ${PREFIX}/bin/ffprobe ${PREFIX}/bin/ffplay
 
-COPY --from=windows /ffmpeg-windows-7.1.tar.gz /output/ffmpeg-windows-7.1.tar.gz
-
 # cleanup
 RUN rm -rf ${PREFIX}
+
+CMD ["/export.sh"]

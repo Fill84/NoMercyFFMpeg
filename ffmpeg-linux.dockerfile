@@ -1,5 +1,5 @@
 # Create a Linux ffmpeg build
-FROM nomercyffmpeg_ffmpeg-base AS linux
+FROM ffmpeg-base AS linux
 
 LABEL maintainer="Phillippe Pelzer"
 LABEL version="1.0"
@@ -596,7 +596,7 @@ RUN cd /build/ffmpeg \
 
 RUN tar -rvf /ffmpeg/ffmpeg-linux-7.1.tar.gz ${PREFIX}/bin/ffmpeg ${PREFIX}/bin/ffprobe ${PREFIX}/bin/ffplay
 
-COPY --from=linux /ffmpeg-linux-7.1.tar.gz /output/ffmpeg-linux-7.1.tar.gz
-
 # cleanup
 RUN rm -rf ${PREFIX}
+
+CMD ["/export.sh"]

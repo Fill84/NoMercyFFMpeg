@@ -1,5 +1,5 @@
 # Create an Aarch64 ffmpeg build
-FROM nomercyffmpeg_ffmpeg-base AS aarch64
+FROM ffmpeg-base AS aarch64
 
 LABEL maintainer="Phillippe Pelzer"
 LABEL version="1.0"
@@ -626,7 +626,7 @@ RUN cd /build/ffmpeg \
 
 RUN tar -rvf /ffmpeg-aarch64-7.1.tar.gz ${PREFIX}/bin/ffmpeg ${PREFIX}/bin/ffprobe ${PREFIX}/bin/ffplay
 
-COPY --from=aarch64 /ffmpeg-aarch64-7.1.tar.gz /output/ffmpeg-aarch64-7.1.tar.gz
-
 # cleanup
 RUN rm -rf ${PREFIX}
+
+CMD ["/export.sh"]
