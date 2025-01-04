@@ -1,3 +1,5 @@
+name: Parallel Docker Builds with Caching
+
 on:
   push:
     branches:
@@ -8,6 +10,7 @@ on:
   workflow_dispatch:
 
 jobs:
+  # Build the base image (this job runs first)
   build-base:
     runs-on: ubuntu-latest
     steps:
@@ -20,7 +23,7 @@ jobs:
       - name: Cache Docker layers for base image
         uses: actions/cache@v3
         with:
-          path: /tmp/.buildx-cache
+          path: ${{ github.workspace }}/.buildx-cache  # Store cache in workspace
           key: ${{ runner.os }}-buildx-base-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-buildx-base-
@@ -28,8 +31,8 @@ jobs:
       - name: Build Base Image
         run: |
           DOCKER_BUILDKIT=1 docker buildx build \
-            --cache-from=type=local,source=/tmp/.buildx-cache \
-            --cache-to=type=local,dest=/tmp/.buildx-cache \
+            --cache-from=type=local,source=${{ github.workspace }}/.buildx-cache \
+            --cache-to=type=local,dest=${{ github.workspace }}/.buildx-cache \
             --tag ffmpeg-base:latest \
             -f ffmpeg-base.dockerfile .
 
@@ -46,7 +49,7 @@ jobs:
       - name: Cache Docker layers for Linux image
         uses: actions/cache@v3
         with:
-          path: /tmp/.buildx-cache
+          path: ${{ github.workspace }}/.buildx-cache
           key: ${{ runner.os }}-buildx-linux-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-buildx-linux-
@@ -54,8 +57,8 @@ jobs:
       - name: Build Linux Image
         run: |
           DOCKER_BUILDKIT=1 docker buildx build \
-            --cache-from=type=local,source=/tmp/.buildx-cache \
-            --cache-to=type=local,dest=/tmp/.buildx-cache \
+            --cache-from=type=local,source=${{ github.workspace }}/.buildx-cache \
+            --cache-to=type=local,dest=${{ github.workspace }}/.buildx-cache \
             --tag ffmpeg-linux:latest \
             -f ffmpeg-linux.dockerfile .
 
@@ -85,7 +88,7 @@ jobs:
       - name: Cache Docker layers for Windows image
         uses: actions/cache@v3
         with:
-          path: /tmp/.buildx-cache
+          path: ${{ github.workspace }}/.buildx-cache
           key: ${{ runner.os }}-buildx-windows-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-buildx-windows-
@@ -93,8 +96,8 @@ jobs:
       - name: Build Windows Image
         run: |
           DOCKER_BUILDKIT=1 docker buildx build \
-            --cache-from=type=local,source=/tmp/.buildx-cache \
-            --cache-to=type=local,dest=/tmp/.buildx-cache \
+            --cache-from=type=local,source=${{ github.workspace }}/.buildx-cache \
+            --cache-to=type=local,dest=${{ github.workspace }}/.buildx-cache \
             --tag ffmpeg-windows:latest \
             -f ffmpeg-windows.dockerfile .
 
@@ -124,7 +127,7 @@ jobs:
       - name: Cache Docker layers for AArch64 image
         uses: actions/cache@v3
         with:
-          path: /tmp/.buildx-cache
+          path: ${{ github.workspace }}/.buildx-cache
           key: ${{ runner.os }}-buildx-aarch64-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-buildx-aarch64-
@@ -132,8 +135,8 @@ jobs:
       - name: Build AArch64 Image
         run: |
           DOCKER_BUILDKIT=1 docker buildx build \
-            --cache-from=type=local,source=/tmp/.buildx-cache \
-            --cache-to=type=local,dest=/tmp/.buildx-cache \
+            --cache-from=type=local,source=${{ github.workspace }}/.buildx-cache \
+            --cache-to=type=local,dest=${{ github.workspace }}/.buildx-cache \
             --tag ffmpeg-aarch64:latest \
             -f ffmpeg-aarch64.dockerfile .
 
