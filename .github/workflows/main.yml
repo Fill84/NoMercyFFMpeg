@@ -30,6 +30,7 @@ jobs:
 
       - name: Build Base Image
         run: |
+          mkdir -p ${{ github.workspace }}/.buildx-cache
           DOCKER_BUILDKIT=1 docker buildx build \
             --cache-from=type=local,source=${{ github.workspace }}/.buildx-cache \
             --cache-to=type=local,dest=${{ github.workspace }}/.buildx-cache \
@@ -57,6 +58,7 @@ jobs:
 
       - name: Build Linux Image
         run: |
+          mkdir -p ${{ github.workspace }}/.buildx-cache
           DOCKER_BUILDKIT=1 docker buildx build \
             --cache-from=type=local,source=${{ github.workspace }}/.buildx-cache \
             --cache-to=type=local,dest=${{ github.workspace }}/.buildx-cache \
@@ -97,6 +99,7 @@ jobs:
 
       - name: Build Windows Image
         run: |
+          mkdir -p ${{ github.workspace }}/.buildx-cache
           DOCKER_BUILDKIT=1 docker buildx build \
             --cache-from=type=local,source=${{ github.workspace }}/.buildx-cache \
             --cache-to=type=local,dest=${{ github.workspace }}/.buildx-cache \
@@ -137,6 +140,7 @@ jobs:
 
       - name: Build AArch64 Image
         run: |
+          mkdir -p ${{ github.workspace }}/.buildx-cache
           DOCKER_BUILDKIT=1 docker buildx build \
             --cache-from=type=local,source=${{ github.workspace }}/.buildx-cache \
             --cache-to=type=local,dest=${{ github.workspace }}/.buildx-cache \
