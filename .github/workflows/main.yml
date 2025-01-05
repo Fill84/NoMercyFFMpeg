@@ -64,7 +64,7 @@ jobs:
           mkdir -p ${{ github.workspace }}/.buildx-cache
           DOCKER_BUILDKIT=1 docker buildx build \
             --load \
-            --tag ffmpeg-linux:latest \
+            --tag nomercyentertainment/ffmpeg-linux:latest \
             -f ffmpeg-linux.dockerfile .
 
       - name: Export Linux Artifact
@@ -103,7 +103,7 @@ jobs:
           mkdir -p ${{ github.workspace }}/.buildx-cache
           DOCKER_BUILDKIT=1 docker buildx build \
             --load \
-            --tag ffmpeg-windows:latest \
+            --tag nomercyentertainment/ffmpeg-windows:latest \
             -f ffmpeg-windows.dockerfile .
 
       - name: Export Windows Artifact
@@ -142,7 +142,7 @@ jobs:
           mkdir -p ${{ github.workspace }}/.buildx-cache
           DOCKER_BUILDKIT=1 docker buildx build \
             --load \
-            --tag ffmpeg-aarch64:latest \
+            --tag nomercyentertainment/ffmpeg-aarch64:latest \
             -f ffmpeg-aarch64.dockerfile .
 
       - name: Export AArch64 Artifact

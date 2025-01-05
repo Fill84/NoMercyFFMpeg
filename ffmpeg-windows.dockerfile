@@ -10,6 +10,9 @@ ENV DEBIAN_FRONTEND=noninteractive \
     NVIDIA_DRIVER_CAPABILITIES=compute,utility,video
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    software-properties-common \
+    && add-apt-repository universe \
+    && apt-get update && apt-get install -y --no-install-recommends \
     mingw-w64 libgit2-dev \
     && rm -rf /var/lib/apt/lists/*
 

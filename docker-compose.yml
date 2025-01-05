@@ -9,7 +9,7 @@ services:
     build:
       context: .
       dockerfile: ffmpeg-base.dockerfile
-    image: ffmpeg-base:latest
+    image: nomercyentertainment/ffmpeg-base:latest
     volumes:
       - tmp:/tmp
       - ./output:/output
