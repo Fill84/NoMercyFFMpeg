@@ -1,5 +1,5 @@
 # Create a Windows ffmpeg build
-FROM ffmpeg-base AS windows
+FROM nomercyentertainment/ffmpeg-base AS windows
 
 LABEL maintainer="Phillippe Pelzer"
 LABEL version="1.0"

@@ -36,8 +36,8 @@ jobs:
         run: |
           mkdir -p ${{ github.workspace }}/.buildx-cache
           DOCKER_BUILDKIT=1 docker buildx build \
-            --load \
-            --tag ffmpeg-base:latest \
+            --push \
+            --tag nomercyentertainment/ffmpeg-base:latest \
             -f ffmpeg-base.dockerfile .
 
   build-linux:

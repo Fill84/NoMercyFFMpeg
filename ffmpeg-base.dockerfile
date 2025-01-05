@@ -1,4 +1,4 @@
-FROM nvidia/cuda:12.6.3-devel-ubuntu24.04 AS base
+FROM nvidia/cuda:12.6.3-devel-ubuntu24.04 AS ffmpeg-base
 
 LABEL maintainer="Phillippe Pelzer"
 LABEL version="1.0"

@@ -1,5 +1,5 @@
 # Create an Aarch64 ffmpeg build
-FROM ffmpeg-base AS aarch64
+FROM nomercyentertainment/ffmpeg-base AS aarch64
 
 LABEL maintainer="Phillippe Pelzer"
 LABEL version="1.0"
