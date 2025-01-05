@@ -624,7 +624,8 @@ RUN cd /build/ffmpeg \
     || (cat ffbuild/config.log ; false) && \
     make -j$(nproc) && make install
 
-RUN tar -rvf /ffmpeg-aarch64-7.1.tar.gz ${PREFIX}/bin/ffmpeg ${PREFIX}/bin/ffprobe ${PREFIX}/bin/ffplay
+RUN tar -cvf /ffmpeg-aarch64-7.1.tar.gz ${PREFIX}/bin/ffmpeg ${PREFIX}/bin/ffprobe
+#  ${PREFIX}/bin/ffplay
 
 # cleanup
 RUN rm -rf ${PREFIX}
