@@ -116,11 +116,24 @@ ENV CFLAGS="${CFLAGS} -fno-strict-aliasing"
 ENV CXXFLAGS="${CXXFLAGS} -fno-strict-aliasing"
 
 # openssl
-RUN cd /build/openssl \
-    && ./Configure threads zlib no-shared enable-camellia enable-ec enable-srp --prefix=${PREFIX} linux-aarch64 --libdir=${PREFIX}/lib \
-    --cross-compile-prefix='' \
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    zlib1g-dev \
+    libssl-dev \
+    perl \
+    make \
+    automake \
+    autoconf \
+    libtool \
+    pkg-config \
+    && rm -rf /var/lib/apt/lists/* \
+    && cd /build/openssl \
+    && ./Configure threads zlib no-shared enable-camellia enable-ec enable-srp \
+        --prefix=${PREFIX} linux-aarch64 --libdir=${PREFIX}/lib \
+        --cross-compile-prefix='' \
     && sed -i -e "/^CFLAGS=/s|=.*|=${CFLAGS}|" -e "/^LDFLAGS=/s|=[[:space:]]*$|=${LDFLAGS}|" Makefile \
-    && make -j$(nproc) build_sw && make install_sw
+    && make -j$(nproc) build_sw \
+    && make install_sw
 
 ENV CFLAGS=${OLD_CFLAGS}
 ENV CXXFLAGS=${OLD_CXXFLAGS}
