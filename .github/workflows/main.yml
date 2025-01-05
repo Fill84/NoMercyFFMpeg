@@ -93,7 +93,7 @@ jobs:
         run: |
           mkdir -p downloads
           docker create --name linux-container ffmpeg-linux:latest
-          docker cp linux-container:/output/ffmpeg-linux-7.1.tar.gz downloads/
+          docker cp linux-container:/build/ffmpeg-linux-7.1.tar.gz downloads/
           docker rm linux-container
 
       - name: Upload Linux Artifact
@@ -143,7 +143,7 @@ jobs:
         run: |
           mkdir -p downloads
           docker create --name windows-container ffmpeg-windows:latest
-          docker cp windows-container:/output/ffmpeg-windows-7.1.tar.gz downloads/
+          docker cp windows-container:/build/ffmpeg-windows-7.1.tar.gz downloads/
           docker rm windows-container
 
       - name: Upload Windows Artifact
@@ -193,7 +193,7 @@ jobs:
         run: |
           mkdir -p downloads
           docker create --name aarch64-container ffmpeg-aarch64:latest
-          docker cp aarch64-container:/output/ffmpeg-aarch64-7.1.tar.gz downloads/
+          docker cp aarch64-container:/build/ffmpeg-aarch64-7.1.tar.gz downloads/
           docker rm aarch64-container
 
       - name: Upload AArch64 Artifact
