@@ -3,10 +3,10 @@ name: Parallel Docker Builds with Caching
 on:
   push:
     branches:
-      - main
+      - master
   pull_request:
     branches:
-      - main
+      - master
   workflow_dispatch:
 
 jobs:
@@ -166,7 +166,7 @@ jobs:
           large-packages: true
           docker-images: true
           swap-storage: true
-          
+
       - name: Checkout Code
         uses: actions/checkout@v3
 
