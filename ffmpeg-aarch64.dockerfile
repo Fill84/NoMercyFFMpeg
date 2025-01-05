@@ -8,7 +8,7 @@ LABEL description="FFmpeg for Aarch64"
 ENV DEBIAN_FRONTEND=noninteractive \
     NVIDIA_VISIBLE_DEVICES=all \
     NVIDIA_DRIVER_CAPABILITIES=compute,utility,video
-
+    
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc-aarch64-linux-gnu g++-aarch64-linux-gnu libgit2-dev \
     && rm -rf /var/lib/apt/lists/*
@@ -116,24 +116,11 @@ ENV CFLAGS="${CFLAGS} -fno-strict-aliasing"
 ENV CXXFLAGS="${CXXFLAGS} -fno-strict-aliasing"
 
 # openssl
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    zlib1g-dev \
-    libssl-dev \
-    perl \
-    make \
-    automake \
-    autoconf \
-    libtool \
-    pkg-config \
-    && rm -rf /var/lib/apt/lists/* \
-    && cd /build/openssl \
-    && ./Configure threads zlib no-shared enable-camellia enable-ec enable-srp \
-        --prefix=${PREFIX} linux-aarch64 --libdir=${PREFIX}/lib \
-        --cross-compile-prefix='' \
+RUN cd /build/openssl \
+    && ./Configure threads zlib no-shared enable-camellia enable-ec enable-srp --prefix=${PREFIX} linux-aarch64 --libdir=${PREFIX}/lib \
+    --cross-compile-prefix='' \
     && sed -i -e "/^CFLAGS=/s|=.*|=${CFLAGS}|" -e "/^LDFLAGS=/s|=[[:space:]]*$|=${LDFLAGS}|" Makefile \
-    && make -j$(nproc) build_sw \
-    && make install_sw
+    && make -j$(nproc) build_sw && make install_sw
 
 ENV CFLAGS=${OLD_CFLAGS}
 ENV CXXFLAGS=${OLD_CXXFLAGS}

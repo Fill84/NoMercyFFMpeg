@@ -9,12 +9,8 @@ ENV DEBIAN_FRONTEND=noninteractive \
     NVIDIA_VISIBLE_DEVICES=all \
     NVIDIA_DRIVER_CAPABILITIES=compute,utility,video
 
-RUN apt-get clean && rm -rf /var/lib/apt/lists/* \
-    && apt-get update \
-    && apt-get install -y --no-install-recommends \
-       software-properties-common \
-       mingw-w64 \
-       libgit2-dev \
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    mingw-w64 libgit2-dev \
     && rm -rf /var/lib/apt/lists/*
 
 RUN rustup target add x86_64-pc-windows-gnu \
