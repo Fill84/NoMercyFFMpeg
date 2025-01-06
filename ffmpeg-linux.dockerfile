@@ -11,7 +11,8 @@ ENV DEBIAN_FRONTEND=noninteractive \
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     g++ gcc \
-    && rm -rf /var/lib/apt/lists/*
+    && apt-get upgrade -y && apt-get autoremove -y && apt-get autoclean -y && apt-get clean -y \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 RUN cd /build
 
@@ -41,20 +42,20 @@ ENV LDFLAGS="-static-libgcc -static-libstdc++ -L${PREFIX}/lib -O2 -pipe -fstack-
 RUN mkdir -p ${PREFIX}
 
 # Create Meson cross file for Linux
-RUN echo "[binaries]" > cross_file.txt && \
-    echo "c = '${CC}'" >> cross_file.txt && \
-    echo "cpp = '${CXX}'" >> cross_file.txt && \
-    echo "ld = '${LD}'" >> cross_file.txt && \
-    echo "ar = '${AR}'" >> cross_file.txt && \
-    echo "ranlib = '${RANLIB}'" >> cross_file.txt && \
-    echo "strip = '${STRIP}'" >> cross_file.txt && \
-    echo "pkgconfig = '${PKG_CONFIG}'" >> cross_file.txt && \
-    echo "" >> cross_file.txt && \
-    echo "[host_machine]" >> cross_file.txt && \
-    echo "system = 'linux'" >> cross_file.txt && \
-    echo "cpu_family = '${ARCH}'" >> cross_file.txt && \
-    echo "cpu = '${ARCH}'" >> cross_file.txt && \
-    echo "endian = 'little'" >> cross_file.txt
+RUN echo "[binaries]" > /build/cross_file.txt && \
+    echo "c = '${CC}'" >> /build/cross_file.txt && \
+    echo "cpp = '${CXX}'" >> /build/cross_file.txt && \
+    echo "ld = '${LD}'" >> /build/cross_file.txt && \
+    echo "ar = '${AR}'" >> /build/cross_file.txt && \
+    echo "ranlib = '${RANLIB}'" >> /build/cross_file.txt && \
+    echo "strip = '${STRIP}'" >> /build/cross_file.txt && \
+    echo "pkgconfig = '${PKG_CONFIG}'" >> /build/cross_file.txt && \
+    echo "" >> /build/cross_file.txt && \
+    echo "[host_machine]" >> /build/cross_file.txt && \
+    echo "system = 'linux'" >> /build/cross_file.txt && \
+    echo "cpu_family = '${ARCH}'" >> /build/cross_file.txt && \
+    echo "cpu = '${ARCH}'" >> /build/cross_file.txt && \
+    echo "endian = 'little'" >> /build/cross_file.txt
 
 ENV CMAKE_COMMON_ARG="-DCMAKE_INSTALL_PREFIX=${PREFIX} -DENABLE_SHARED=OFF -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=Release"
 
@@ -63,17 +64,20 @@ RUN cd /build/iconv \
     && ./configure --prefix=${PREFIX} --enable-extra-encodings --enable-static --disable-shared --with-pic \
     --host=${CROSS_PREFIX%-} \
     && make -j$(nproc) && make install \
+    && rm -rf /build/iconv \
     \
     # libxml2
     && cd /build/libxml2 \
     && ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared --without-python --disable-maintainer-mode \
     && ./configure --prefix=${PREFIX} --enable-static --disable-shared --without-python --disable-maintainer-mode \
     && make -j$(nproc) && make install \
+    && rm -rf /build/libxml2 \
     \
     # zlib
     && cd /build/zlib \
     && ./configure --prefix=${PREFIX} --static \
     && make -j$(nproc) && make install \
+    && rm -rf /build/zlib \
     \
     # fftw3
     && cd /build/fftw3 \
@@ -82,17 +86,20 @@ RUN cd /build/iconv \
     --enable-sse2 --enable-avx --enable-avx2 \
     --host=${CROSS_PREFIX%-} \
     && make -j$(nproc) && make install \
+    && rm -rf /build/fftw3 \
     \
     # libfreetype
     && cd /build/freetype \
     && ./configure --prefix=${PREFIX} --enable-static --disable-shared \
     && make -j$(nproc) && make install \
+    && rm -rf /build/freetype \
     \
     # fribidi
     && cd /build/fribidi \
     && ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared --disable-bin --disable-docs --disable-tests \
     && ./configure --prefix=${PREFIX} --enable-static --disable-shared --disable-bin --disable-docs --disable-tests \
     && make -j$(nproc) && make install \
+    && rm -rf /build/fribidi \
     \
     # libogg
     && cd /build/libogg \
@@ -100,7 +107,8 @@ RUN cd /build/iconv \
     --host=${CROSS_PREFIX%-} \
     && ./configure --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
     --host=${CROSS_PREFIX%-} \
-    && make -j$(nproc) && make install
+    && make -j$(nproc) && make install \
+    && rm -rf /build/libogg
 
 ENV OLD_CFLAGS=${CFLAGS}
 ENV OLD_CXXFLAGS=${CXXFLAGS}
@@ -112,7 +120,8 @@ RUN cd /build/openssl \
     && ./Configure threads zlib no-shared enable-camellia enable-ec enable-srp --prefix=${PREFIX} linux-x86_64 --libdir=${PREFIX}/lib \
     --cross-compile-prefix='' \
     && sed -i -e "/^CFLAGS=/s|=.*|=${CFLAGS}|" -e "/^LDFLAGS=/s|=[[:space:]]*$|=${LDFLAGS}|" Makefile \
-    && make -j$(nproc) build_sw && make install_sw
+    && make -j$(nproc) build_sw && make install_sw \
+    && rm -rf /build/openssl
 
 ENV CFLAGS=${OLD_CFLAGS}
 ENV CXXFLAGS=${OLD_CXXFLAGS}
@@ -121,23 +130,26 @@ ENV CXXFLAGS=${OLD_CXXFLAGS}
 RUN cd /build/fontconfig \
     && ./autogen.sh --prefix=${PREFIX} --disable-docs --enable-iconv --enable-libxml2 --enable-static --disable-shared --sysconfdir=/etc --localstatedir=/var \
     && ./configure --prefix=${PREFIX} --disable-docs --enable-iconv --enable-libxml2 --enable-static --disable-shared --sysconfdir=/etc --localstatedir=/var \
-    && make -j$(nproc) && make install
+    && make -j$(nproc) && make install \
+    && rm -rf /build/fontconfig
 
 # libpciaccess
 RUN cd /build/libpciaccess \
     && meson build --prefix=${PREFIX} --buildtype=release -Ddefault_library=static \
     --cross-file=../cross_file.txt \
     && ninja -j$(nproc) -C build && ninja -C build install \
-    && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/libpciaccess.pc
-
-# xcbproto
-RUN cd /build/xcbproto \
+    && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/libpciaccess.pc \
+    && rm -rf /build/libpciaccess \
+    \
+    # xcbproto
+    && cd /build/xcbproto \
     && ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared \
     --host=${CROSS_PREFIX%-} \
     && ./configure --prefix=${PREFIX} --enable-static --disable-shared \
     --host=${CROSS_PREFIX%-} \
     && make -j$(nproc) && make install \
     && mv ${PREFIX}/share/pkgconfig/xcb-proto.pc ${PREFIX}/lib/pkgconfig/xcb-proto.pc \
+    && rm -rf /build/xcbproto \
     \
     # xproto
     && cd /build/xproto \
@@ -147,6 +159,7 @@ RUN cd /build/xcbproto \
     --host=${CROSS_PREFIX%-} \
     && make -j$(nproc) && make install \
     && mv ${PREFIX}/share/pkgconfig/xproto.pc ${PREFIX}/lib/pkgconfig/xproto.pc \
+    && rm -rf /build/xproto \
     \
     # xtrans
     && cd /build/libxtrans \
@@ -156,6 +169,7 @@ RUN cd /build/xcbproto \
     --host=${CROSS_PREFIX%-} \
     && make -j$(nproc) && make install \
     && cp -r ${PREFIX}/share/aclocal/. ${PREFIX}/lib/aclocal \
+    && rm -rf /build/libxtrans \
     \
     # libxcb
     && cd /build/libxcb \
@@ -164,6 +178,7 @@ RUN cd /build/xcbproto \
     && ./configure --prefix=${PREFIX} --enable-static --disable-shared --with-pic --disable-devel-docs \
     --host=${CROSS_PREFIX%-} \
     && make -j$(nproc) && make install \
+    && rm -rf /build/libxcb \
     \
     # libx11
     && cd /build/libx11 \
@@ -177,6 +192,7 @@ RUN cd /build/xcbproto \
     --disable-malloc0returnsnull \
     && make -j$(nproc) && make install \
     && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/x11.pc \
+    && rm -rf /build/libx11 \
     \
     # libxfixes
     && cd /build/libxfixes \
@@ -186,6 +202,7 @@ RUN cd /build/xcbproto \
     --host=${CROSS_PREFIX%-} \
     && make -j$(nproc) && make install \
     && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/xfixes.pc \
+    && rm -rf /build/libxfixes \
     \
     # libdrm
     && cd /build/libdrm \
@@ -197,20 +214,23 @@ RUN cd /build/xcbproto \
     -Dnouveau=enabled -Dradeon=enabled -Damdgpu=enabled \
     --cross-file=../../cross_file.txt .. \
     && ninja -j$(nproc) && ninja install install \
-    && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/libdrm.pc
+    && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/libdrm.pc \
+    && rm -rf /build/libdrm
 
 # harfbuzz
 RUN cd /build/harfbuzz \
     && meson build --prefix=${PREFIX} --buildtype=release -Ddefault_library=static \
     --cross-file=../cross_file.txt \
-    && ninja -j$(nproc) -C build && ninja -C build install
+    && ninja -j$(nproc) -C build && ninja -C build install \
+    && rm -rf /build/harfbuzz
 
 # libudfread
 RUN cd /build/libudfread \
     && ./bootstrap --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
     && ./configure --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
     && make -j$(nproc) && make install \
-    && ln -s libudfread.pc ${PREFIX}/lib/pkgconfig/udfread.pc
+    && ln -s libudfread.pc ${PREFIX}/lib/pkgconfig/udfread.pc \
+    && rm -rf /build/libudfread
 
 # libvorbis
 RUN cd /build/libvorbis \
@@ -218,7 +238,8 @@ RUN cd /build/libvorbis \
     --host=${CROSS_PREFIX%-} \
     && ./configure --prefix=${PREFIX} --enable-static --disable-shared --disable-oggtest \
     --host=${CROSS_PREFIX%-} \
-    && make -j$(nproc) && make install
+    && make -j$(nproc) && make install \
+    && rm -rf /build/libvorbis
 
 # libvmaf
 RUN cd /build/libvmaf \
@@ -227,7 +248,8 @@ RUN cd /build/libvmaf \
     --buildtype=release --default-library=static -Dbuilt_in_models=true -Denable_tests=false -Denable_docs=false -Denable_avx512=true -Denable_float=true \
     --cross-file=../../cross_file.txt ../libvmaf \
     && ninja -j$(nproc) && ninja install \
-    && sed -i 's/Libs.private:/Libs.private: -lstdc++/; t; $ a Libs.private: -lstdc++' ${PREFIX}/lib/pkgconfig/libvmaf.pc
+    && sed -i 's/Libs.private:/Libs.private: -lstdc++/; t; $ a Libs.private: -lstdc++' ${PREFIX}/lib/pkgconfig/libvmaf.pc \
+    && rm -rf /build/libvmaf
 
 # avisynth
 RUN cd /build/avisynth \
@@ -235,7 +257,8 @@ RUN cd /build/avisynth \
     && cmake -S .. -B . \
     ${CMAKE_COMMON_ARG} \
     -DHEADERS_ONLY=ON \
-    && make -j$(nproc) && make VersionGen install
+    && make -j$(nproc) && make VersionGen install \
+    && rm -rf /build/avisynth
 
 # chromaprint
 RUN cd /build/chromaprint \
@@ -247,13 +270,15 @@ RUN cd /build/chromaprint \
     -DFFT_LIB=fftw3 \
     && make -j$(nproc) && make install \
     && echo "Libs.private: -lfftw3 -lstdc++" >> ${PREFIX}/lib/pkgconfig/libchromaprint.pc \
-    && echo "Cflags.private: -DCHROMAPRINT_NODLL" >> ${PREFIX}/lib/pkgconfig/libchromaprint.pc
+    && echo "Cflags.private: -DCHROMAPRINT_NODLL" >> ${PREFIX}/lib/pkgconfig/libchromaprint.pc \
+    && rm -rf /build/chromaprint
 
 # libass
 RUN cd /build/libass \
     && ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
     && ./configure --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
-    && make -j$(nproc) && make install
+    && make -j$(nproc) && make install \
+    && rm -rf /build/libass
 
 # libva
 RUN cd /build/libva \
@@ -264,7 +289,8 @@ RUN cd /build/libva \
     --enable-x11 --enable-drm --disable-docs --disable-glx --disable-wayland \
     --host=${CROSS_PREFIX%-} \
     && make -j$(nproc) && make install \
-    && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/libva.pc
+    && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/libva.pc \
+    && rm -rf /build/libva
 
 # libgpg-error
 RUN cd /build/libgpg-error \
@@ -274,6 +300,7 @@ RUN cd /build/libgpg-error \
     --host=${CROSS_PREFIX%-} \
     && make -j$(nproc) && make install \
     && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/libgpg-error.pc \
+    && rm -rf /build/libgpg-error \
     \
     # libgcrypt
     && cd /build/libgcrypt \
@@ -291,6 +318,7 @@ RUN cd /build/libgpg-error \
     && echo '#!/bin/sh' > /usr/local/bin/gpg-error-config \
     && echo 'pkg-config libgpg-error "$@"' >> /usr/local/bin/gpg-error-config \
     && chmod +x /usr/local/bin/gpg-error-config \
+    && rm -rf /build/libgcrypt \
     \
     # libbdplus
     && cd /build/libbdplus \
@@ -300,6 +328,7 @@ RUN cd /build/libgpg-error \
     --host=${CROSS_PREFIX%-} \
     && make -j$(nproc) && make install \
     && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/libbdplus.pc \
+    && rm -rf /build/libbdplus \
     \
     # libaacs
     && cd /build/libaacs \
@@ -308,17 +337,17 @@ RUN cd /build/libgpg-error \
     && ./configure --prefix=${PREFIX} --libdir=${PREFIX}/lib --enable-static --disable-shared --with-pic --disable-doc \
     --host=${CROSS_PREFIX%-} \
     && make -j$(nproc) && make install \
-    && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/libaacs.pc 
+    && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/libaacs.pc \
+    && rm -rf /build/libaacs
 
 # libbluray
-RUN cd /build/libbluray \
-    && sed -i 's/dec_init/libbluray_dec_init/g' src/libbluray/disc/dec.c \ 
-    && sed -i 's/dec_init/libbluray_dec_init/g' src/libbluray/disc/dec.h \ 
-    && sed -i 's/dec_init/libbluray_dec_init/g' src/libbluray/disc/disc.c
-
 ENV EXTRA_LIBS="-L${PREFIX}/lib -laacs -lbdplus"
 
 RUN cd /build/libbluray \
+    && sed -i 's/dec_init/libbluray_dec_init/g' src/libbluray/disc/dec.c \ 
+    && sed -i 's/dec_init/libbluray_dec_init/g' src/libbluray/disc/dec.h \ 
+    && sed -i 's/dec_init/libbluray_dec_init/g' src/libbluray/disc/disc.c \
+    && cd /build/libbluray \
     && export EXTRA_LIBS=${EXTRA_LIBS} \
     && ./bootstrap --prefix=${PREFIX} --enable-static --disable-shared --with-pic --with-libxml2 \
     --disable-doxygen-doc --disable-doxygen-dot --disable-doxygen-html --disable-doxygen-ps --disable-doxygen-pdf --disable-examples --disable-bdjava-jar \
@@ -330,7 +359,8 @@ RUN cd /build/libbluray \
     LIBS="-laacs -lbdplus" \
     && make -j$(nproc) && make install \
     && echo "Libs.private: -laacs -lbdplus -lstdc++" >> ${PREFIX}/lib/pkgconfig/libbluray.pc \
-    && export EXTRA_LIBS=""
+    && export EXTRA_LIBS="" \
+    && rm -rf /build/libbluray
 
 ENV EXTRA_LIBS=""
 
@@ -340,6 +370,7 @@ RUN cd /build/libcddb \
     --host=${CROSS_PREFIX%-} \
     && make -j$(nproc) && make install \
     && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/libcddb.pc \
+    && rm -rf /build/libcddb \
     \
     # libcdio
     && cd /build/libcdio \
@@ -350,6 +381,7 @@ RUN cd /build/libcddb \
     --host=${CROSS_PREFIX%-} \
     && make -j$(nproc) && make install \
     && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/libcdio.pc \
+    && rm -rf /build/libcdio \
     \
     # libcdio-paranoia
     && cd /build/libcdio-paranoia \
@@ -358,14 +390,16 @@ RUN cd /build/libcddb \
     && ./configure --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
     --host=${CROSS_PREFIX%-} \
     && make -j$(nproc) && make install \
-    && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/libcdio_paranoia.pc
+    && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/libcdio_paranoia.pc \
+    && rm -rf /build/libcdio-paranoia
 
 # libdav1d
 RUN cd /build/libdav1d \
     && mkdir build && cd build \
     && meson --prefix=${PREFIX} --buildtype=release -Ddefault_library=static \
     --cross-file=../../cross_file.txt .. \
-    && ninja -j$(nproc) && ninja install
+    && ninja -j$(nproc) && ninja install \
+    && rm -rf /build/libdav1d
 
 # libdavs2
 RUN cd /build/libdavs2/build/linux \
@@ -373,13 +407,15 @@ RUN cd /build/libdavs2/build/linux \
     && ./configure --prefix=${PREFIX} --disable-cli --enable-static --disable-shared --with-pic \
     --host=${CROSS_PREFIX%-} \
     --cross-prefix=${CROSS_PREFIX} \
-    && make -j$(nproc) && make install
+    && make -j$(nproc) && make install \
+    && rm -rf /build/libdavs2
 
 # librav1e
 RUN cd /build/librav1e \
     && cargo cinstall -v --prefix=${PREFIX} --library-type=staticlib --crt-static --release \
     && sed -i 's/-lgcc_s//' ${PREFIX}/lib/x86_64-linux-gnu/pkgconfig/rav1e.pc \
-    && cp ${PREFIX}/lib/x86_64-linux-gnu/pkgconfig/rav1e.pc ${PREFIX}/lib/pkgconfig/rav1e.pc
+    && cp ${PREFIX}/lib/x86_64-linux-gnu/pkgconfig/rav1e.pc ${PREFIX}/lib/pkgconfig/rav1e.pc \
+    && rm -rf /build/librav1e
 
 # libsrt
 RUN cd /build/libsrt \
@@ -388,7 +424,8 @@ RUN cd /build/libsrt \
     ${CMAKE_COMMON_ARG} \
     -DENABLE_SHARED=OFF -DENABLE_STATIC=ON -DENABLE_CXX_DEPS=ON -DUSE_STATIC_LIBSTDCXX=ON -DENABLE_ENCRYPTION=ON -DENABLE_APPS=OFF \
     && make -j$(nproc) && make install \
-    && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/srt.pc
+    && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/srt.pc \
+    && rm -rf /build/libsrt
 
 # twolame
 RUN cd /build/twolame \
@@ -397,37 +434,43 @@ RUN cd /build/twolame \
     && ./configure --prefix=${PREFIX} --enable-static --disable-shared --with-pic --disable-sndfile \
     --host=${CROSS_PREFIX%-} \
     && make -j$(nproc) && make install \
-    && sed -i 's/Cflags:/Cflags: -DLIBTWOLAME_STATIC/' ${PREFIX}/lib/pkgconfig/twolame.pc
+    && sed -i 's/Cflags:/Cflags: -DLIBTWOLAME_STATIC/' ${PREFIX}/lib/pkgconfig/twolame.pc \
+    && rm -rf /build/twolame
 
 ENV CFLAGS="${CFLAGS} -DLIBTWOLAME_STATIC"
 
 # mp3lame
 RUN cd /build/lame \
     && ./configure --prefix=${PREFIX} --enable-static --disable-shared --enable-nasm --disable-gtktest --disable-cpml --disable-frontend --disable-decoder \
-    && make -j$(nproc) && make install
+    && make -j$(nproc) && make install\
+    && rm -rf /build/lame
 
 # fdk-aac
 RUN cd /build/fdk-aac \
     && ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared \
     && ./configure --prefix=${PREFIX} --enable-static --disable-shared \
-    && make -j$(nproc) && make install
+    && make -j$(nproc) && make install \
+    && rm -rf /build/fdk-aac
 
 # opus
 RUN cd /build/opus \
     && ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared --disable-extra-programs \
     && ./configure --prefix=${PREFIX} --enable-static --disable-shared --disable-extra-programs \
-    && make -j$(nproc) && make install
+    && make -j$(nproc) && make install \
+    && rm -rf /build/opus
 
 # libvpx
 RUN cd /build/libvpx \
     && ./configure --prefix=${PREFIX} --enable-vp9-highbitdepth --enable-static --enable-pic \
     --disable-shared --disable-examples --disable-tools --disable-docs --disable-unit-tests \
-    && make -j$(nproc) && make install
+    && make -j$(nproc) && make install \
+    && rm -rf /build/libvpx
 
 # x264
 RUN cd /build/x264 \
     && ./configure --prefix=${PREFIX} --disable-cli --enable-static --enable-pic --disable-shared --disable-lavf --disable-swscale \
-    && make -j$(nproc) && make install
+    && make -j$(nproc) && make install \
+    && rm -rf /build/x264
 
 # x265
 # build x265 12bit
@@ -457,7 +500,8 @@ RUN cd /build/x265 \
     echo "END"; \
     } | ar -M \
     && make -j$(nproc) && make install \
-    && echo "Libs.private: -lstdc++" >> "${PREFIX}/lib/pkgconfig/x265.pc"
+    && echo "Libs.private: -lstdc++" >> "${PREFIX}/lib/pkgconfig/x265.pc" \
+    && rm -rf /build/x265
 
 # xavs2
 RUN cd /build/libxavs2/build/linux \
@@ -465,7 +509,8 @@ RUN cd /build/libxavs2/build/linux \
     --disable-cli --enable-static --enable-pic --disable-avs --disable-swscale --disable-lavf --disable-ffms --disable-gpac --disable-lsmash --extra-asflags="-w-macro-params-legacy" \
     --host=${CROSS_PREFIX%-} \
     --cross-prefix=${CROSS_PREFIX} \
-    && make -j$(nproc) && make install
+    && make -j$(nproc) && make install \
+    && rm -rf /build/libxavs2
 
 ENV OLD_CFLAGS=${CFLAGS}
 ENV CFLAGS="${CFLAGS} -fstrength-reduce -ffast-math"
@@ -480,15 +525,21 @@ RUN cd /build/xvidcore \
     --host=${CROSS_PREFIX%-} \ 
     CC=${CC} \
     CXX=${CXX} \
-    && make -j$(nproc) && make install
+    && make -j$(nproc) && make install \
+    && rm -rf /build/xvidcore
 
 ENV CFLAGS=${OLD_CFLAGS}
 
 # libwebp
 RUN cd /build/libwebp \
-    && ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared --with-pic --enable-libwebpmux --disable-libwebpextras --disable-libwebpdemux --disable-sdl --disable-gl --disable-png --disable-jpeg --disable-tiff --disable-gif \
-    && ./configure --prefix=${PREFIX} --enable-static --disable-shared --with-pic --enable-libwebpmux --disable-libwebpextras --disable-libwebpdemux --disable-sdl --disable-gl --disable-png --disable-jpeg --disable-tiff --disable-gif \
+    && ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
+    --enable-libwebpmux --enable-libwebpextras --enable-libwebpdemux --enable-libwebpdecoder \
+    --disable-sdl --disable-gl --disable-png --disable-jpeg --disable-tiff --disable-gif \
+    && ./configure --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
+    --enable-libwebpmux --enable-libwebpextras --enable-libwebpdemux --enable-libwebpdecoder \
+    --disable-sdl --disable-gl --disable-png --disable-jpeg --disable-tiff --disable-gif \
     && make -j$(nproc) && make install \
+    && rm -rf /build/libwebp \
     \
     # openjpeg
     && cd /build/openjpeg \
@@ -501,16 +552,58 @@ RUN cd /build/libwebp \
     -DWITH_ASTYLE=OFF \
     -DBUILD_TESTING=OFF \
     && make -j$(nproc) && make install \
+    && rm -rf /build/openjpeg \
     \
     # zimg
     && cd /build/zimg \
     && ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
     && ./configure --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
     && make -j$(nproc) && make install \
+    && rm -rf /build/zimg \
     \
     # ffnvcodec
     && cd /build/ffnvcodec \
-    && make PREFIX=${PREFIX} install
+    && make PREFIX=${PREFIX} install \
+    && rm -rf /build/ffnvcodec \
+    \
+    # cuda
+    && cp -R /usr/local/cuda/include/* ${PREFIX}/include \
+    && cp -R /usr/local/cuda/lib64/* ${PREFIX}/lib
+
+# leptonica
+RUN cd /build/leptonica \
+    && ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared --with-pic --disable-programs \
+    --with-openjpeg \
+    --host=${CROSS_PREFIX%-} \
+    && ./configure --prefix=${PREFIX} --enable-static --disable-shared --with-pic --disable-programs \
+    --with-openjpeg \
+    --host=${CROSS_PREFIX%-} \
+    && make -j$(nproc) && make install \
+    && cp ${PREFIX}/lib/pkgconfig/libsharpyuv.pc ${PREFIX}/lib/pkgconfig/sharpyuv.pc \
+    && rm -rf /build/leptonica \
+    \
+    # libtesseract (tesseract-ocr)
+    && cd /build/libtesseract \
+    && ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared \
+    --disable-doc \
+    --without-archive \
+    --disable-openmp \
+    --without-curl \
+    --with-extra-includes=${PREFIX}/include \
+    --with-extra-libraries=${PREFIX}/lib \
+    --host=${CROSS_PREFIX%-} \
+    && ./configure --prefix=${PREFIX} --enable-static --disable-shared \
+    --disable-doc \
+    --without-archive \
+    --disable-openmp \
+    --without-curl \
+    --with-extra-includes=${PREFIX}/include \
+    --with-extra-libraries=${PREFIX}/lib \
+    --host=${CROSS_PREFIX%-} \
+    && make -j$(nproc) && make install \
+    && echo "Libs.private: -lstdc++ " >> ${PREFIX}/lib/pkgconfig/tesseract.pc \
+    && cp ${PREFIX}/lib/pkgconfig/tesseract.pc ${PREFIX}/lib/pkgconfig/libtesseract.pc \
+    && rm -rf /build/libtesseract
 
 # # sdl2
 # RUN cd /build/sdl2 \
@@ -529,12 +622,12 @@ RUN cd /build/libwebp \
 #     -DSDL_PULSEAUDIO_SHARED=OFF \
 #     && ninja -j$(nproc) && ninja install \
 #     && sed -ri -e 's/\-Wl,\-\-no\-undefined.*//' -e 's/ \-l\/.+?\.a//g' ${PREFIX}/lib/pkgconfig/sdl2.pc \
+#     && echo 'Requires: libpulse-simple xxf86vm xscrnsaver xrandr xfixes xi xinerama xcursor' >> ${PREFIX}/lib/pkgconfig/sdl2.pc \
 #     && sed -ri -e 's/ -lSDL2//g' -e 's/Libs: /Libs: -lSDL2 /' ${PREFIX}/lib/pkgconfig/sdl2.pc \
-#     && echo 'Requires: samplerate' >> ${PREFIX}/lib/pkgconfig/sdl2.pc
-
-# cuda
-RUN cp -R /usr/local/cuda/include/* ${PREFIX}/include \
-    && cp -R /usr/local/cuda/lib64/* ${PREFIX}/lib
+#     && echo 'Requires: samplerate' >> ${PREFIX}/lib/pkgconfig/sdl2.pc \
+#     && cp ${PREFIX}/lib/pkgconfig/sdl2.pc ${PREFIX}/lib/pkgconfig/sdl2-static.pc \
+#     && cp ${PREFIX}/lib/pkgconfig/sdl2.pc ${PREFIX}/lib/pkgconfig/sdl.pc \
+#     && rm -rf /build/sdl2
 
 # ffmpeg
 RUN cd /build/ffmpeg \
@@ -546,6 +639,7 @@ RUN cd /build/ffmpeg \
     --prefix=${PREFIX} \
     --enable-cross-compile \
     --disable-shared \
+    --enable-ffplay \
     --enable-static \
     --enable-gpl \
     --enable-version3 \
@@ -555,6 +649,7 @@ RUN cd /build/ffmpeg \
     --enable-libfreetype \
     --enable-libfribidi \
     --enable-fontconfig \
+    --enable-libtesseract \
     --enable-libdrm \
     --enable-libvorbis \
     --enable-libvmaf \
@@ -590,17 +685,27 @@ RUN cd /build/ffmpeg \
     --extra-version="NoMercy-MediaServer" \
     --extra-cflags="-static -static-libgcc -static-libstdc++ -I${PREFIX}/include" \
     --extra-ldflags="-static -static-libgcc -static-libstdc++ -L${PREFIX}/lib" \
-    --extra-libs="-lpthread -lm" \
+    --extra-libs="-lpthread -lm -lsharpyuv" \
     || (cat ffbuild/config.log ; false) && \
-    make -j$(nproc) && make install
+    make -j$(nproc) && make install \
+    && rm -rf /build/ffmpeg
 
-RUN mkdir -p /output && \
-    tar -cvf /output/ffmpeg-aarch64-7.1.tar.gz \
-        ${PREFIX}/bin/ffmpeg \
-        ${PREFIX}/bin/ffprobe
-#  ${PREFIX}/bin/ffplay
+RUN mkdir -p /ffmpeg/linux \
+    # && cp ${PREFIX}/bin/ffplay /ffmpeg/linux \
+    && cp ${PREFIX}/bin/ffmpeg /ffmpeg/linux \
+    && cp ${PREFIX}/bin/ffprobe /ffmpeg/linux
 
 # cleanup
-RUN rm -rf ${PREFIX}
+RUN rm -rf ${PREFIX} /build
 
-# CMD ["/export.sh"]
+RUN mkdir -p /build /output \
+    && tar -czf /build/ffmpeg-linux-7.1.tar.gz \
+    -C /ffmpeg/linux . \
+    && cp /build/ffmpeg-linux-7.1.tar.gz /output
+
+RUN apt-get autoremove -y && apt-get autoclean -y && apt-get clean -y \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+WORKDIR /
+
+CMD ["cp", "/build/ffmpeg-linux-7.1.tar.gz", "/output"]

@@ -57,6 +57,8 @@ ENV ffmpeg_version=7.1 \
     openjpeg_version=2.5.3 \
     zimg_version=3.0.5 \
     nvcodec_version=12.2.72.0 \
+    leptonica_version=1.85.0 \
+    libtesseract_version=5.5.0 \
     sdl2_version=2.30.10
 
 # Dependencies for building ffmpeg
@@ -96,7 +98,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     xtrans-dev \
     xutils-dev \
     yasm \
-    && apt-get clean && rm -rf /var/lib/apt/lists/* \
     && apt-get upgrade -y && apt-get autoremove -y && apt-get autoclean -y && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
@@ -273,6 +274,12 @@ RUN git clone --branch release-${zimg_version} https://github.com/sekrit-twc/zim
 # Download ffnvcodec
 RUN git clone --branch n${nvcodec_version} https://github.com/FFmpeg/nv-codec-headers.git ffnvcodec
 
+# Download leptonica
+RUN git clone --branch ${leptonica_version} https://github.com/DanBloomberg/leptonica.git leptonica
+
+# Download libtesseract (for OCR)
+RUN git clone --branch ${libtesseract_version} https://github.com/tesseract-ocr/tesseract.git libtesseract
+
 # Download SDL2
 RUN git clone --branch release-${sdl2_version} https://github.com/libsdl-org/SDL.git sdl2
 
@@ -280,8 +287,8 @@ RUN git clone --branch release-${sdl2_version} https://github.com/libsdl-org/SDL
 RUN wget -O ffmpeg.tar.bz2 https://ffmpeg.org/releases/ffmpeg-${ffmpeg_version}.tar.bz2 \
     && tar -xjf ffmpeg.tar.bz2 && rm ffmpeg.tar.bz2 && mv ffmpeg-${ffmpeg_version} ffmpeg
 
-ADD ./start.sh /start.sh
-ADD ./export.sh /export.sh
-RUN chmod 755 /start.sh /export.sh
+RUN mkdir -p /output
 
-CMD ["/start.sh"]
+WORKDIR /
+
+CMD ["rm", "-f", "/output/*.tar.gz"]
