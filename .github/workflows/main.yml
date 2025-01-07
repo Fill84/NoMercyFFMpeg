@@ -86,6 +86,7 @@ jobs:
           mkdir -p ${{ github.workspace }}/.buildx-cache
           DOCKER_BUILDKIT=1 docker buildx build \
             --load \
+            --no-cache \
             --tag nomercyentertainment/ffmpeg-linux:latest \
             -f ffmpeg-linux.dockerfile .
 
@@ -136,6 +137,7 @@ jobs:
           mkdir -p ${{ github.workspace }}/.buildx-cache
           DOCKER_BUILDKIT=1 docker buildx build \
             --load \
+            --no-cache \
             --tag nomercyentertainment/ffmpeg-windows:latest \
             -f ffmpeg-windows.dockerfile .
 
@@ -186,6 +188,7 @@ jobs:
           mkdir -p ${{ github.workspace }}/.buildx-cache
           DOCKER_BUILDKIT=1 docker buildx build \
             --load \
+            --no-cache \
             --tag nomercyentertainment/ffmpeg-aarch64:latest \
             -f ffmpeg-aarch64.dockerfile .
 

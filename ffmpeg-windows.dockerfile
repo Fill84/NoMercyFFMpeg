@@ -60,7 +60,7 @@ RUN echo "[binaries]" > /build/cross_file.txt && \
     echo "cpu = '${ARCH}'" >> /build/cross_file.txt && \
     echo "endian = 'little'" >> /build/cross_file.txt
 
-ENV CMAKE_COMMON_ARG="-DCMAKE_INSTALL_PREFIX=${PREFIX} -DCMAKE_SYSTEM_NAME=Windows -DCMAKE_C_COMPILER=${CC} -DCMAKE_CXX_COMPILER=${CXX} -DCMAKE_RC_COMPILER=${WINDRES} -DENABLE_SHARED=OFF -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=Release"
+ENV CMAKE_COMMON_ARG="-DCMAKE_INSTALL_PREFIX=${PREFIX} -DCMAKE_SYSTEM_NAME=Windows -DCMAKE_SYSTEM_PROCESSOR=${ARCH} -DCMAKE_C_COMPILER=${CC} -DCMAKE_CXX_COMPILER=${CXX} -DCMAKE_RC_COMPILER=${WINDRES} -DENABLE_SHARED=OFF -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=Release"
 
 # iconv
 RUN cd /build/iconv \
@@ -608,52 +608,59 @@ RUN cd /build/libwebp \
 
 # # leptonica
 # RUN cd /build/leptonica \
-#     && ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared --with-pic --disable-programs \
-#     --with-openjpeg \
+#     && ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
+#     --disable-programs \
+#     --without-giflib \
+#     --without-jpeg \
 #     --host=${CROSS_PREFIX%-} \
-#     && ./configure --prefix=${PREFIX} --enable-static --disable-shared --with-pic --disable-programs \
-#     --with-openjpeg \
+#     && ./configure --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
+#     --disable-programs \
+#     --without-giflib \
+#     --without-jpeg \
 #     --host=${CROSS_PREFIX%-} \
 #     && make -j$(nproc) && make install \
 #     && cp ${PREFIX}/lib/pkgconfig/libsharpyuv.pc ${PREFIX}/lib/pkgconfig/sharpyuv.pc \
-#     && rm -rf /build/leptonica \
-#     \
-#     # libtesseract (tesseract-ocr)
-#     && cd /build/libtesseract \
-#     && ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared \
-#     --disable-doc \
-#     --without-archive \
-#     --disable-openmp \
-#     --without-curl \
-#     --with-extra-includes=${PREFIX}/include \
-#     --with-extra-libraries=${PREFIX}/lib \
-#     --host=${CROSS_PREFIX%-} \
-#     && ./configure --prefix=${PREFIX} --enable-static --disable-shared \
-#     --disable-doc \
-#     --without-archive \
-#     --disable-openmp \
-#     --without-curl \
-#     --with-extra-includes=${PREFIX}/include \
-#     --with-extra-libraries=${PREFIX}/lib \
-#     --host=${CROSS_PREFIX%-} \
+#     && rm -rf /build/leptonica && cd /build 
+
+# # libtesseract (tesseract-ocr)
+# RUN  cd /build/libtesseract \
+#     && mkdir build && cd build \
+#     && cmake -S .. -B . \
+#     ${CMAKE_COMMON_ARG} \
+#     -DBUILD_DOCS=OFF \
+#     -DBUILD_EXAMPLES=OFF \
+#     -DBUILD_TESTS=OFF \
+#     -DUSE_SYSTEM_ICU=ON \
+#     -DSW_BUILD=OFF -DENABLE_LTO=ON -DBUILD_TRAINING_TOOLS=OFF -DFAST_FLOAT=ON -DGRAPHICS_DISABLED=OFF -DOPENMP_BUILD=OFF \
+#     -DCMAKE_PREFIX_PATH=${PREFIX} \
+#     -DCMAKE_INSTALL_PREFIX=${PREFIX} \
 #     && make -j$(nproc) && make install \
 #     && echo "Libs.private: -lstdc++ " >> ${PREFIX}/lib/pkgconfig/tesseract.pc \
 #     && cp ${PREFIX}/lib/pkgconfig/tesseract.pc ${PREFIX}/lib/pkgconfig/libtesseract.pc \
 #     && rm -rf /build/libtesseract
 
-# # sdl2
-# RUN cd /build/sdl2 \
-#     && mkdir -p build && cd build \
-#     && cmake -GNinja -S .. -B . \
-#     ${CMAKE_COMMON_ARG} \
-#     -DSDL_SHARED=OFF \
-#     -DSDL_STATIC=ON \
-#     -DSDL_STATIC_PIC=ON \
-#     -DSDL_TEST=OFF \
-#     && ninja -j$(nproc) && ninja install \
-#     && sed -ri -e 's/\-Wl,\-\-no\-undefined.*//' -e 's/ \-mwindows//g' -e 's/ \-lSDL2main//g' -e 's/ \-Dmain=SDL_main//g' ${PREFIX}/lib/pkgconfig/sdl2.pc \
-#     && sed -ri -e 's/ -lSDL2//g' -e 's/Libs: /Libs: -lSDL2 /' ${PREFIX}/lib/pkgconfig/sdl2.pc \
-#     && echo 'Requires: samplerate' >> ${PREFIX}/lib/pkgconfig/sdl2.pc
+# libsamplerate
+RUN git clone --branch 0.2.2 https://github.com/libsndfile/libsamplerate.git /build/libsamplerate \
+    && mkdir -p /build/libsamplerate/build && cd /build/libsamplerate/build \
+    && cmake -S .. -B . \
+    ${CMAKE_COMMON_ARG} \
+    -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTING=OFF -DLIBSAMPLERATE_EXAMPLES=OFF -DLIBSAMPLERATE_INSTALL=ON \
+    && make -j$(nproc) && make install \
+    && rm -rf /build/libsamplerate && cd /build \
+    \    
+    # sdl2
+    && cd /build/sdl2 \
+    && mkdir -p build && cd build \
+    && cmake -S .. -B . \
+    ${CMAKE_COMMON_ARG} \
+    -DSDL_SHARED=OFF \
+    -DSDL_STATIC=ON \
+    -DSDL_STATIC_PIC=ON \
+    && make -j$(nproc) && make install \
+    && sed -ri -e 's/\-Wl,\-\-no\-undefined.*//' -e 's/ \-mwindows//g' -e 's/ \-lSDL2main//g' -e 's/ \-Dmain=SDL_main//g' ${PREFIX}/lib/pkgconfig/sdl2.pc \
+    && sed -ri -e 's/ -lSDL2//g' -e 's/Libs: /Libs: -lSDL2 /' ${PREFIX}/lib/pkgconfig/sdl2.pc \
+    && echo 'Requires: samplerate' >> ${PREFIX}/lib/pkgconfig/sdl2.pc \
+    && rm -rf /build/sdl2 && cd /build
 
 # ffmpeg
 RUN cd /build/ffmpeg \
@@ -706,7 +713,7 @@ RUN cd /build/ffmpeg \
     --enable-nvenc \
     --enable-cuda \
     --enable-cuvid \
-    # --enable-sdl2 \
+    --enable-sdl2 \
     --enable-runtime-cpudetect \
     --extra-version="NoMercy-MediaServer" \
     --extra-cflags="-static -static-libgcc -static-libstdc++ -I${PREFIX}/include" \
@@ -716,7 +723,7 @@ RUN cd /build/ffmpeg \
     make -j$(nproc) && make install
 
 RUN mkdir -p /ffmpeg/windows \
-    # && cp ${PREFIX}/bin/ffplay.exe /ffmpeg/windows \
+    && cp ${PREFIX}/bin/ffplay.exe /ffmpeg/windows \
     && cp ${PREFIX}/bin/ffmpeg.exe /ffmpeg/windows \
     && cp ${PREFIX}/bin/ffprobe.exe /ffmpeg/windows
 
