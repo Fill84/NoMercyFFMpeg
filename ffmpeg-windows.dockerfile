@@ -738,6 +738,9 @@ RUN mkdir -p /build /output \
 RUN apt-get autoremove -y && apt-get autoclean -y && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-WORKDIR /
+FROM alpine as final
+
+RUN mkdir -p /output /build
+COPY --from=windows /build /build
 
 CMD ["cp", "/build/ffmpeg-windows-7.1.tar.gz", "/output"]
