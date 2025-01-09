@@ -91,23 +91,23 @@ jobs:
 
       - name: Export Linux Artifact
         run: |
-          mkdir -p /downloads/linux
+          mkdir -p downloads/linux
           docker create --name linux-container nomercyentertainment/ffmpeg-linux:latest
-          docker cp linux-container:/build/ffmpeg-linux-7.1.tar.gz /downloads
-          docker cp linux-container:/build/linux /downloads/linux
+          docker cp linux-container:/build/ffmpeg-linux-7.1.tar.gz downloads
+          docker cp linux-container:/build/linux downloads/linux
           docker rm linux-container
 
       - name: Upload Linux Artifact
         uses: actions/upload-artifact@v3
         with:
           name: ffmpeg-linux-7.1
-          path: /downloads/ffmpeg-linux-7.1.tar.gz
+          path: downloads/ffmpeg-linux-7.1.tar.gz
 
       - name: Upload Linux Artifact
         uses: actions/upload-artifact@v3
         with:
           name: ffmpeg-linux-7.1-files
-          path: /downloads/linux
+          path: downloads/linux
 
   build-windows:
     runs-on: ubuntu-latest
@@ -148,23 +148,23 @@ jobs:
 
       - name: Export Windows Artifact
         run: |
-          mkdir -p /downloads/windows
+          mkdir -p downloads/windows
           docker create --name windows-container nomercyentertainment/ffmpeg-windows:latest
-          docker cp windows-container:/build/ffmpeg-windows-7.1.tar.gz /downloads
-          docker cp windows-container:/build/windows /downloads/windows
+          docker cp windows-container:/build/ffmpeg-windows-7.1.tar.gz downloads
+          docker cp windows-container:/build/windows downloads/windows
           docker rm windows-container
 
       - name: Upload Windows Artifact
         uses: actions/upload-artifact@v3
         with:
           name: ffmpeg-windows-7.1
-          path: /downloads/ffmpeg-windows-7.1.tar.gz
+          path: downloads/ffmpeg-windows-7.1.tar.gz
 
       - name: Upload Windows Artifact
         uses: actions/upload-artifact@v3
         with:
           name: ffmpeg-windows-7.1-files
-          path: /downloads/windows
+          path: downloads/windows
 
   build-aarch64:
     runs-on: ubuntu-latest
@@ -205,20 +205,20 @@ jobs:
 
       - name: Export Aarch64 Artifact
         run: |
-          mkdir -p /downloads/aarch64
+          mkdir -p downloads/aarch64
           docker create --name aarch64-container nomercyentertainment/ffmpeg-aarch64:latest
-          docker cp aarch64-container:/build/ffmpeg-aarch64-7.1.tar.gz /downloads
-          docker cp aarch64-container:/build/aarch64 /downloads/aarch64
+          docker cp aarch64-container:/build/ffmpeg-aarch64-7.1.tar.gz downloads
+          docker cp aarch64-container:/build/aarch64 downloads/aarch64
           docker rm aarch64-container
 
       - name: Upload Aarch64 Artifact
         uses: actions/upload-artifact@v3
         with:
           name: ffmpeg-aarch64-7.1
-          path: /downloads/ffmpeg-aarch64-7.1.tar.gz
+          path: downloads/ffmpeg-aarch64-7.1.tar.gz
 
       - name: Upload Aarch64 Artifact
         uses: actions/upload-artifact@v3
         with:
           name: ffmpeg-aarch64-7.1-files
-          path: /downloads/aarch64
+          path: downloads/aarch64
