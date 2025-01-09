@@ -864,13 +864,15 @@ RUN mkdir -p /ffmpeg/aarch64 \
 # cleanup
 RUN rm -rf ${PREFIX} /build
 
-RUN mkdir -p /build /output \
+RUN mkdir -p /build/aarch64 /output \
     && tar -czf /build/ffmpeg-aarch64-7.1.tar.gz \
     -C /ffmpeg/aarch64 . \
     && cp /build/ffmpeg-aarch64-7.1.tar.gz /output
 
 RUN apt-get autoremove -y && apt-get autoclean -y && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+RUN cp /ffmpeg/aarch64 /build/aarch64 -r
 
 FROM debian as final
 
