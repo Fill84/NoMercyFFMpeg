@@ -98,13 +98,13 @@ jobs:
           docker rm linux-container
 
       - name: Upload Linux Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ffmpeg-linux-7.1
           path: downloads/ffmpeg-linux-7.1.tar.gz
 
       - name: Upload Linux Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ffmpeg-linux-7.1-files
           path: downloads/linux
@@ -155,13 +155,13 @@ jobs:
           docker rm windows-container
 
       - name: Upload Windows Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ffmpeg-windows-7.1
           path: downloads/ffmpeg-windows-7.1.tar.gz
 
       - name: Upload Windows Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ffmpeg-windows-7.1-files
           path: downloads/windows
@@ -212,13 +212,13 @@ jobs:
           docker rm aarch64-container
 
       - name: Upload Aarch64 Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ffmpeg-aarch64-7.1
           path: downloads/ffmpeg-aarch64-7.1.tar.gz
 
       - name: Upload Aarch64 Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ffmpeg-aarch64-7.1-files
           path: downloads/aarch64
