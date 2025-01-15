@@ -131,7 +131,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ job.create_release.outputs.upload_url }}
+          upload_url: ${{ job.status.needs.create-release.outputs.upload_url }}
           asset_path: downloads/ffmpeg-linux-7.1.tar.gz
           asset_name: ffmpeg-linux-7.1-${{ steps.get_short_sha.outputs.short_sha }}.tar.gz
           asset_content_type: application/gzip
@@ -191,7 +191,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ job.create_release.outputs.upload_url }}
+          upload_url: ${{ job.status.needs.create-release.outputs.upload_url }}
           asset_path: downloads/ffmpeg-windows-7.1.tar.gz
           asset_name: ffmpeg-windows-7.1-${{ steps.get_short_sha.outputs.short_sha }}.tar.gz
           asset_content_type: application/gzip
@@ -252,7 +252,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ job.create_release.outputs.upload_url }}
+          upload_url: ${{ job.status.needs.create-release.outputs.upload_url }}
           asset_path: downloads/ffmpeg-aarch64-7.1.tar.gz
           asset_name: ffmpeg-aarch64-7.1-${{ steps.get_short_sha.outputs.short_sha }}.tar.gz
           asset_content_type: application/gzip
