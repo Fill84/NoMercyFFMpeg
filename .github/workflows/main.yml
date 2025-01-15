@@ -13,6 +13,17 @@ jobs:
   build-base:
     runs-on: ubuntu-latest
     steps:
+      - name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: false
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: true
+          swap-storage: true
+
       - name: Checkout Code
         uses: actions/checkout@v3
 
@@ -45,6 +56,17 @@ jobs:
     runs-on: ubuntu-latest
     needs: build-base
     steps:
+      - name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: false
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: true
+          swap-storage: true
+
       - name: Checkout Code
         uses: actions/checkout@v3
 
@@ -75,22 +97,33 @@ jobs:
           docker cp linux-container:/build/linux downloads/
           docker rm linux-container
 
-      - name: Upload Linux Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: ffmpeg-linux-7.1
-          path: downloads/ffmpeg-linux-7.1.tar.gz
+      # - name: Upload Linux Artifact
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: ffmpeg-linux-7.1
+      #     path: downloads/ffmpeg-linux-7.1.tar.gz
 
-      - name: Upload Linux Files
-        uses: actions/upload-artifact@v4
-        with:
-          name: ffmpeg-linux-7.1-files
-          path: downloads/linux/
+      # - name: Upload Linux Files
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: ffmpeg-linux-7.1-files
+      #     path: downloads/linux/
 
   build-windows:
     runs-on: ubuntu-latest
     needs: build-base
     steps:
+      - name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: false
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: true
+          swap-storage: true
+
       - name: Checkout Code
         uses: actions/checkout@v3
 
@@ -121,22 +154,33 @@ jobs:
           docker cp windows-container:/build/windows downloads/
           docker rm windows-container
 
-      - name: Upload Windows Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: ffmpeg-windows-7.1
-          path: downloads/ffmpeg-windows-7.1.tar.gz
+      # - name: Upload Windows Artifact
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: ffmpeg-windows-7.1
+      #     path: downloads/ffmpeg-windows-7.1.tar.gz
 
-      - name: Upload Windows Files
-        uses: actions/upload-artifact@v4
-        with:
-          name: ffmpeg-windows-7.1-files
-          path: downloads/windows/
+      # - name: Upload Windows Files
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: ffmpeg-windows-7.1-files
+      #     path: downloads/windows/
 
   build-aarch64:
     runs-on: ubuntu-latest
     needs: build-base
     steps:
+      - name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: false
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: true
+          swap-storage: true
+          
       - name: Checkout Code
         uses: actions/checkout@v3
 
@@ -167,17 +211,17 @@ jobs:
           docker cp aarch64-container:/build/aarch64 downloads/
           docker rm aarch64-container
 
-      - name: Upload Aarch64 Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: ffmpeg-aarch64-7.1
-          path: downloads/ffmpeg-aarch64-7.1.tar.gz
+      # - name: Upload Aarch64 Artifact
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: ffmpeg-aarch64-7.1
+      #     path: downloads/ffmpeg-aarch64-7.1.tar.gz
 
-      - name: Upload Aarch64 Files
-        uses: actions/upload-artifact@v4
-        with:
-          name: ffmpeg-aarch64-7.1-files
-          path: downloads/aarch64/
+      # - name: Upload Aarch64 Files
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: ffmpeg-aarch64-7.1-files
+      #     path: downloads/aarch64/
 
   build-release:
     runs-on: ubuntu-latest
