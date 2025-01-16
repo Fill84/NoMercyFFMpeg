@@ -8,6 +8,12 @@ on:
     branches:
       - master
   workflow_dispatch:
+    inputs:
+      force_rebuild:
+        description: 'Force rebuild of all images'
+        required: true
+        type: boolean
+        default: true
 
 jobs:
   check-changes:
