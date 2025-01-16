@@ -26,33 +26,49 @@ jobs:
       - name: Check base image changes
         id: check-base
         run: |
-          CHANGED=false
-          git diff --name-only HEAD^ HEAD | grep -q "ffmpeg-base.dockerfile" && CHANGED=true
-          git diff --name-only HEAD^ HEAD | grep -q "^scripts/base/" && CHANGED=true
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.force_rebuild }}" == "true" ]]; then
+            CHANGED=true
+          else
+            CHANGED=false
+            git diff --name-only HEAD^ HEAD | grep -q "ffmpeg-base.dockerfile" && CHANGED=true
+            git diff --name-only HEAD^ HEAD | grep -q "^scripts/base/" && CHANGED=true
+          fi
           echo "changed=$CHANGED" >> $GITHUB_OUTPUT
 
       - name: Check Linux image changes
         id: check-linux
         run: |
-          CHANGED=false
-          git diff --name-only HEAD^ HEAD | grep -q "ffmpeg-linux.dockerfile" && CHANGED=true
-          git diff --name-only HEAD^ HEAD | grep -q "^scripts/linux/" && CHANGED=true
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.force_rebuild }}" == "true" ]]; then
+            CHANGED=true
+          else
+            CHANGED=false
+            git diff --name-only HEAD^ HEAD | grep -q "ffmpeg-linux.dockerfile" && CHANGED=true
+            git diff --name-only HEAD^ HEAD | grep -q "^scripts/linux/" && CHANGED=true
+          fi
           echo "changed=$CHANGED" >> $GITHUB_OUTPUT
 
       - name: Check Windows image changes
         id: check-windows
         run: |
-          CHANGED=false
-          git diff --name-only HEAD^ HEAD | grep -q "ffmpeg-windows.dockerfile" && CHANGED=true
-          git diff --name-only HEAD^ HEAD | grep -q "^scripts/windows/" && CHANGED=true
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.force_rebuild }}" == "true" ]]; then
+            CHANGED=true
+          else
+            CHANGED=false
+            git diff --name-only HEAD^ HEAD | grep -q "ffmpeg-windows.dockerfile" && CHANGED=true
+            git diff --name-only HEAD^ HEAD | grep -q "^scripts/windows/" && CHANGED=true
+          fi
           echo "changed=$CHANGED" >> $GITHUB_OUTPUT
 
       - name: Check Aarch64 image changes
         id: check-aarch64
         run: |
-          CHANGED=false
-          git diff --name-only HEAD^ HEAD | grep -q "ffmpeg-aarch64.dockerfile" && CHANGED=true
-          git diff --name-only HEAD^ HEAD | grep -q "^scripts/aarch64/" && CHANGED=true
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.force_rebuild }}" == "true" ]]; then
+            CHANGED=true
+          else
+            CHANGED=false
+            git diff --name-only HEAD^ HEAD | grep -q "ffmpeg-aarch64.dockerfile" && CHANGED=true
+            git diff --name-only HEAD^ HEAD | grep -q "^scripts/aarch64/" && CHANGED=true
+          fi
           echo "changed=$CHANGED" >> $GITHUB_OUTPUT
 
   build-base:
@@ -108,7 +124,7 @@ jobs:
           large-packages: true
           docker-images: true
           swap-storage: true
-          
+
       - name: Checkout Code
         uses: actions/checkout@v3
 
