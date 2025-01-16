@@ -36,15 +36,11 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Get Short SHA
-        id: get_short_sha
-        run: echo "::set-output name=short_sha::${GITHUB_SHA::7}"
-
       - name: Cache Docker layers for base image
         uses: actions/cache@v3
         with:
           path: ${{ github.workspace }}/.buildx-cache
-          key: ${{ runner.os }}-buildx-base-${{ steps.get_short_sha.outputs.short_sha }}
+          key: ${{ runner.os }}-buildx-base-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-buildx-base-
 
@@ -77,15 +73,11 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
-      - name: Get Short SHA
-        id: get_short_sha
-        run: echo "::set-output name=short_sha::${GITHUB_SHA::7}"
-
       - name: Cache Docker layers for Linux image
         uses: actions/cache@v3
         with:
           path: ${{ github.workspace }}/.buildx-cache
-          key: ${{ runner.os }}-buildx-linux-${{ steps.get_short_sha.outputs.short_sha }}
+          key: ${{ runner.os }}-buildx-linux-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-buildx-linux-
 
@@ -97,24 +89,20 @@ jobs:
             --tag nomercyentertainment/ffmpeg-linux:latest \
             -f ffmpeg-linux.dockerfile .
 
+      - name: Debug - List Container Files
+        run: |
+          docker create --name linux-container nomercyentertainment/ffmpeg-linux:latest
+          docker start linux-container
+          docker exec linux-container ls -l /build || echo "Directory /build does not exist or is empty."
+          docker rm -f linux-container
+
       - name: Export Linux Artifact
         run: |
           mkdir -p downloads/linux
           docker create --name linux-container nomercyentertainment/ffmpeg-linux:latest
-          docker cp linux-container:/build/ffmpeg-linux-7.1.tar.gz downloads/ffmpeg-linux-7.1.tar.gz
-          docker cp linux-container:/build/linux downloads/
+          docker cp linux-container:/build/ffmpeg-linux-7.1.tar.gz downloads/ffmpeg-linux-7.1.tar.gz || echo "File not found in container."
+          docker cp linux-container:/build/linux downloads/linux || echo "Directory not found in container."
           docker rm linux-container
-
-      # # Upload Linux Release Asset
-      # - name: Upload Linux Release Asset
-      #   uses: actions/upload-release-asset@v1
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   with:
-      #     upload_url: ${{ job.status.needs.create-release.outputs.upload_url }}
-      #     asset_path: downloads/ffmpeg-linux-7.1.tar.gz
-      #     asset_name: ffmpeg-linux-7.1-${{ steps.get_short_sha.outputs.short_sha }}.tar.gz
-      #     asset_content_type: application/gzip
 
   build-windows:
     runs-on: ubuntu-latest
@@ -137,15 +125,11 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
-      - name: Get Short SHA
-        id: get_short_sha
-        run: echo "::set-output name=short_sha::${GITHUB_SHA::7}"
-
       - name: Cache Docker layers for Windows image
         uses: actions/cache@v3
         with:
           path: ${{ github.workspace }}/.buildx-cache
-          key: ${{ runner.os }}-buildx-windows-${{ steps.get_short_sha.outputs.short_sha }}
+          key: ${{ runner.os }}-buildx-windows-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-buildx-windows-
 
@@ -161,20 +145,9 @@ jobs:
         run: |
           mkdir -p downloads/windows
           docker create --name windows-container nomercyentertainment/ffmpeg-windows:latest
-          docker cp windows-container:/build/ffmpeg-windows-7.1.tar.gz downloads/ffmpeg-windows-7.1.tar.gz
-          docker cp windows-container:/build/windows downloads/
+          docker cp windows-container:/build/ffmpeg-windows-7.1.tar.gz downloads/ffmpeg-windows-7.1.tar.gz || echo "File not found in container."
+          docker cp windows-container:/build/windows downloads/windows || echo "Directory not found in container."
           docker rm windows-container
-
-      # # Upload Windows Release Asset
-      # - name: Upload Windows Release Asset
-      #   uses: actions/upload-release-asset@v1
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   with:
-      #     upload_url: ${{ job.status.needs.create-release.outputs.upload_url }}
-      #     asset_path: downloads/ffmpeg-windows-7.1.tar.gz
-      #     asset_name: ffmpeg-windows-7.1-${{ steps.get_short_sha.outputs.short_sha }}.tar.gz
-      #     asset_content_type: application/gzip
 
   build-aarch64:
     runs-on: ubuntu-latest
@@ -190,22 +163,18 @@ jobs:
           large-packages: true
           docker-images: true
           swap-storage: true
-          
+
       - name: Checkout Code
         uses: actions/checkout@v3
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
-      - name: Get Short SHA
-        id: get_short_sha
-        run: echo "::set-output name=short_sha::${GITHUB_SHA::7}"
-
       - name: Cache Docker layers for Aarch64 image
         uses: actions/cache@v3
         with:
           path: ${{ github.workspace }}/.buildx-cache
-          key: ${{ runner.os }}-buildx-aarch64-${{ steps.get_short_sha.outputs.short_sha }}
+          key: ${{ runner.os }}-buildx-aarch64-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-buildx-aarch64-
 
@@ -221,20 +190,9 @@ jobs:
         run: |
           mkdir -p downloads/aarch64
           docker create --name aarch64-container nomercyentertainment/ffmpeg-aarch64:latest
-          docker cp aarch64-container:/build/ffmpeg-aarch64-7.1.tar.gz downloads/ffmpeg-aarch64-7.1.tar.gz
-          docker cp aarch64-container:/build/aarch64 downloads/
+          docker cp aarch64-container:/build/ffmpeg-aarch64-7.1.tar.gz downloads/ffmpeg-aarch64-7.1.tar.gz || echo "File not found in container."
+          docker cp aarch64-container:/build/aarch64 downloads/aarch64 || echo "Directory not found in container."
           docker rm aarch64-container
-
-      # # Upload macOS Release Asset
-      # - name: Upload Aarch64 Release Asset
-      #   uses: actions/upload-release-asset@v1
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   with:
-      #     upload_url: ${{ job.status.needs.create-release.outputs.upload_url }}
-      #     asset_path: downloads/ffmpeg-aarch64-7.1.tar.gz
-      #     asset_name: ffmpeg-aarch64-7.1-${{ steps.get_short_sha.outputs.short_sha }}.tar.gz
-      #     asset_content_type: application/gzip
 
   create-release:
     runs-on: ubuntu-latest
@@ -254,10 +212,6 @@ jobs:
           draft: false
           prerelease: false
 
-      - name: Get Short SHA
-        id: get_short_sha
-        run: echo "::set-output name=short_sha::${GITHUB_SHA::7}"
-
       - name: Upload Linux Release Asset
         uses: actions/upload-release-asset@v1
         env:
@@ -265,7 +219,7 @@ jobs:
         with:
           upload_url: ${{ steps.create-release.outputs.upload_url }}
           asset_path: downloads/ffmpeg-linux-7.1.tar.gz
-          asset_name: ffmpeg-linux-7.1-${{ steps.get_short_sha.outputs.short_sha }}.tar.gz
+          asset_name: ffmpeg-linux-7.1-${{ github.sha }}.tar.gz
           asset_content_type: application/gzip
 
       - name: Upload Windows Release Asset
@@ -275,7 +229,7 @@ jobs:
         with:
           upload_url: ${{ steps.create-release.outputs.upload_url }}
           asset_path: downloads/ffmpeg-windows-7.1.tar.gz
-          asset_name: ffmpeg-windows-7.1-${{ steps.get_short_sha.outputs.short_sha }}.tar.gz
+          asset_name: ffmpeg-windows-7.1-${{ github.sha }}.tar.gz
           asset_content_type: application/gzip
 
       - name: Upload Aarch64 Release Asset
@@ -285,5 +239,5 @@ jobs:
         with:
           upload_url: ${{ steps.create-release.outputs.upload_url }}
           asset_path: downloads/ffmpeg-aarch64-7.1.tar.gz
-          asset_name: ffmpeg-aarch64-7.1-${{ steps.get_short_sha.outputs.short_sha }}.tar.gz
+          asset_name: ffmpeg-aarch64-7.1-${{ github.sha }}.tar.gz
           asset_content_type: application/gzip
