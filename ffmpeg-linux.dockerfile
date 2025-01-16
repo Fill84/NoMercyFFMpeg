@@ -2,7 +2,7 @@
 FROM nomercyentertainment/ffmpeg-base AS linux
 
 LABEL maintainer="Phillippe Pelzer"
-LABEL version="1.0"
+LABEL version="1.0.0"
 LABEL description="FFmpeg for Linux"
 
 ENV DEBIAN_FRONTEND=noninteractive \

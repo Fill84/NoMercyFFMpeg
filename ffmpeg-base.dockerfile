@@ -1,7 +1,7 @@
 FROM nvidia/cuda:12.6.3-devel-ubuntu24.04 AS ffmpeg-base
 
 LABEL maintainer="Phillippe Pelzer"
-LABEL version="1.0"
+LABEL version="1.0.0"
 LABEL description="Cross-compile FFmpeg for Windows, Linux and Aarch64"
 
 # Set environment variables
