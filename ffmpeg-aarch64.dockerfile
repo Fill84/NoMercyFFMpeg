@@ -377,13 +377,6 @@ RUN cd /build/libbluray \
 
 ENV EXTRA_LIBS=""
 
-# # libcddb
-# RUN cd /build/libcddb \
-#     && ./configure --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
-#     --host=${CROSS_PREFIX%-} \
-#     && make -j$(nproc) && make install \
-#     && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/libcddb.pc
-
 # libcdio
 RUN cd /build/libcdio \
     && touch src/cd-drive.1 src/cd-info.1 src/cd-read.1 src/iso-info.1 src/iso-read.1 \

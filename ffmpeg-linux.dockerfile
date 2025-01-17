@@ -547,7 +547,6 @@ RUN cd /build/libwebp \
     && mkdir build && cd build \
     && cmake -S .. -B . \
     ${CMAKE_COMMON_ARG} \
-    -DBUILD_SHARED_LIBS=OFF \
     -DBUILD_PKGCONFIG_FILES=ON \
     -DBUILD_CODEC=OFF \
     -DWITH_ASTYLE=OFF \
@@ -686,7 +685,7 @@ RUN git clone --branch libXxf86vm-1.1.6 https://gitlab.freedesktop.org/xorg/lib/
     && mkdir -p /build/libsamplerate/build && cd /build/libsamplerate/build \
     && cmake -S .. -B . \
     ${CMAKE_COMMON_ARG} \
-    -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTING=OFF -DLIBSAMPLERATE_EXAMPLES=OFF -DLIBSAMPLERATE_INSTALL=ON \
+    -DBUILD_TESTING=OFF -DLIBSAMPLERATE_EXAMPLES=OFF -DLIBSAMPLERATE_INSTALL=ON \
     && make -j$(nproc) && make install \
     && rm -rf /build/libsamplerate && cd /build \
     \ 

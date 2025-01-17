@@ -143,90 +143,6 @@ RUN cd /build/fontconfig \
     && make -j$(nproc) && make install \
     && rm -rf /build/fontconfig
 
-# # libpciaccess
-# RUN cd /build/libpciaccess \
-#     && meson build --prefix=${PREFIX} --buildtype=release -Ddefault_library=static \
-#     --cross-file=../cross_file.txt . \
-#     && ninja -j$(nproc) -C build && ninja -C build install \
-#     && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/libpciaccess.pc \
-#     && rm -rf /build/libpciaccess \
-#     \
-#     # xcbproto
-#     && cd /build/xcbproto \
-#     && ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared \
-#     --host=${CROSS_PREFIX%-} \
-#     && ./configure --prefix=${PREFIX} --enable-static --disable-shared \
-#     --host=${CROSS_PREFIX%-} \
-#     && make -j$(nproc) && make install \
-#     && mv ${PREFIX}/share/pkgconfig/xcb-proto.pc ${PREFIX}/lib/pkgconfig/xcb-proto.pc \
-#     && rm -rf /build/xcbproto \
-#     \
-#     # xproto
-#     && cd /build/xproto \
-#     && ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared \
-#     --host=${CROSS_PREFIX%-} \
-#     && ./configure --prefix=${PREFIX} --enable-static --disable-shared \
-#     --host=${CROSS_PREFIX%-} \
-#     && make -j$(nproc) && make install \
-#     && mv ${PREFIX}/share/pkgconfig/xproto.pc ${PREFIX}/lib/pkgconfig/xproto.pc \
-#     && rm -rf /build/xproto \
-#     \
-#     # xtrans
-#     && cd /build/libxtrans \
-#     && ./autogen.sh --prefix=${PREFIX} --without-xmlto --without-fop --without-xsltproc \
-#     --host=${CROSS_PREFIX%-} \
-#     && ./configure --prefix=${PREFIX} --without-xmlto --without-fop --without-xsltproc \
-#     --host=${CROSS_PREFIX%-} \
-#     && make -j$(nproc) && make install \
-#     && cp -r ${PREFIX}/share/aclocal/. ${PREFIX}/lib/aclocal \
-#     && rm -rf /build/libxtrans \
-#     \
-#     # libxcb
-#     && cd /build/libxcb \
-#     && ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared --with-pic --disable-devel-docs \
-#     --host=${CROSS_PREFIX%-} \
-#     && ./configure --prefix=${PREFIX} --enable-static --disable-shared --with-pic --disable-devel-docs \
-#     --host=${CROSS_PREFIX%-} \
-#     && make -j$(nproc) && make install \
-#     && rm -rf /build/libxcb \
-#     \
-#     # libx11
-#     && cd /build/libx11 \
-#     && ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
-#     --without-xmlto --without-fop --without-xsltproc --without-lint --disable-specs --enable-ipv6 \
-#     --host=${CROSS_PREFIX%-} \
-#     --disable-malloc0returnsnull \
-#     && ./configure --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
-#     --without-xmlto --without-fop --without-xsltproc --without-lint --disable-specs --enable-ipv6 \
-#     --host=${CROSS_PREFIX%-} \
-#     --disable-malloc0returnsnull \
-#     && make -j$(nproc) && make install \
-#     && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/x11.pc \
-#     && rm -rf /build/libx11 \
-#     \
-#     # libxfixes
-#     && cd /build/libxfixes \
-#     && ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
-#     --host=${CROSS_PREFIX%-} \
-#     && ./configure --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
-#     --host=${CROSS_PREFIX%-} \
-#     && make -j$(nproc) && make install \
-#     && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/xfixes.pc \
-#     && rm -rf /build/libxfixes \
-#     \
-#     # libdrm
-#     && cd /build/libdrm \
-#     && mkdir build && cd build \
-#     && meson --prefix=${PREFIX} --buildtype=release \
-#     -Ddefault_library=static -Dudev=false -Dcairo-tests=disabled \
-#     -Dvalgrind=disabled -Dexynos=disabled -Dfreedreno=disabled \
-#     -Domap=disabled -Detnaviv=disabled -Dintel=enabled \
-#     -Dnouveau=enabled -Dradeon=enabled -Damdgpu=enabled \
-#     --cross-file=../../cross_file.txt .. \
-#     && ninja -j$(nproc) && ninja install install \
-#     && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/libdrm.pc \
-#     && rm -rf /build/libdrm
-
 # harfbuzz
 RUN cd /build/harfbuzz \
     && meson build --prefix=${PREFIX} --buildtype=release -Ddefault_library=static \
@@ -293,18 +209,6 @@ RUN cd /build/libass \
     --host=${CROSS_PREFIX%-} \
     && make -j$(nproc) && make install \
     && rm -rf /build/libass
-
-# # libva
-# RUN cd /build/libva \
-#     && ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared \
-#     --disable-x11 --disable-drm --disable-docs --disable-glx --disable-wayland \
-#     --host=${CROSS_PREFIX%-} \
-#     && ./configure --prefix=${PREFIX} --enable-static --disable-shared \
-#     --disable-x11 --disable-drm --disable-docs --disable-glx --disable-wayland \
-#     --host=${CROSS_PREFIX%-} \
-#     && make -j$(nproc) && make install \
-#     && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/libva.pc \
-#     && rm -rf /build/libva
 
 # libgpg-error
 RUN cd /build/libgpg-error \
@@ -377,14 +281,6 @@ RUN cd /build/libbluray \
     && rm -rf /build/libbluray
 
 ENV EXTRA_LIBS=""
-
-# # libcddb
-# RUN cd /build/libcddb \
-#     && ./configure --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
-#     --host=${CROSS_PREFIX%-} \
-#     && make -j$(nproc) && make install \
-#     && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/libcddb.pc \
-#     && rm -rf /build/libcddb
 
 # libcdio
 RUN cd /build/libcdio \
