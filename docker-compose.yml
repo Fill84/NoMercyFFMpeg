@@ -49,3 +49,15 @@ services:
     volumes:
       - tmp:/tmp
       - ./output:/output
+
+  ffmpeg-darwin:
+    container_name: ffmpeg-darwin
+    privileged: true
+    build:
+      context: .
+      dockerfile: ffmpeg-darwin.dockerfile
+    depends_on:
+      - ffmpeg-base
+    volumes:
+      - tmp:/tmp
+      - ./output:/output

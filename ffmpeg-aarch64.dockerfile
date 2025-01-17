@@ -517,7 +517,7 @@ RUN cp -r /build/x265/build/linux /build/x265/build/aarch64 \
     echo "SAVE"; \
     echo "END"; \
     } | ${AR} -M \
-    && make -j$(nproc) && make install \
+    && make install \
     && echo "Libs.private: -lstdc++" >> "${PREFIX}/lib/pkgconfig/x265.pc" \
     && rm -rf /build/x265
 
