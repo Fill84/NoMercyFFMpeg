@@ -573,7 +573,6 @@ RUN cd /build/libwebp \
     && mkdir build && cd build \
     && cmake -S .. -B . \
     ${CMAKE_COMMON_ARG} \
-    -DBUILD_SHARED_LIBS=OFF \
     -DBUILD_PKGCONFIG_FILES=ON \
     -DBUILD_CODEC=OFF \
     -DWITH_ASTYLE=OFF \
@@ -639,161 +638,35 @@ RUN cd /build/leptonica \
     && cp ${PREFIX}/lib/pkgconfig/tesseract.pc ${PREFIX}/lib/pkgconfig/libtesseract.pc \
     && rm -rf /build/libtesseract
 
-# # xxf86vm
-# RUN git clone --branch libXxf86vm-1.1.6 https://gitlab.freedesktop.org/xorg/lib/libxxf86vm.git /build/libxxf86vm \
-#     && cd /build/libxxf86vm \
-#     && ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
-#     --disable-malloc0returnsnull \
-#     --host=${CROSS_PREFIX%-} \
-#     && ./configure --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
-#     --disable-malloc0returnsnull \
-#     --host=${CROSS_PREFIX%-} \
-#     && make -j$(nproc) && make install \
-#     && rm -rf /build/libxxf86vm && cd /build \
-#     \
-#     # xrender
-#     && git clone --branch libXrender-0.9.12 https://gitlab.freedesktop.org/xorg/lib/libxrender.git /build/libxrender \
-#     && cd /build/libxrender \
-#     && ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
-#     --disable-malloc0returnsnull \
-#     --host=${CROSS_PREFIX%-} \
-#     && ./configure --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
-#     --disable-malloc0returnsnull \
-#     --host=${CROSS_PREFIX%-} \
-#     && make -j$(nproc) && make install \
-#     && rm -rf /build/libxrender && cd /build \
-#     \
-#     # xscrnsaver
-#     && git clone --branch libXScrnSaver-1.2.4 https://gitlab.freedesktop.org/xorg/lib/libxscrnsaver.git /build/libxscrnsaver \
-#     && cd /build/libxscrnsaver \
-#     && ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
-#     --disable-malloc0returnsnull \
-#     --host=${CROSS_PREFIX%-} \
-#     && ./configure --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
-#     --disable-malloc0returnsnull \
-#     --host=${CROSS_PREFIX%-} \
-#     && make -j$(nproc) && make install \
-#     && rm -rf /build/libxscrnsaver && cd /build \
-#     \
-#     # xrandr
-#     && git clone --branch libXrandr-1.5.4 https://gitlab.freedesktop.org/xorg/lib/libxrandr.git /build/libxrandr \
-#     && cd /build/libxrandr \
-#     && ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
-#     --disable-malloc0returnsnull \
-#     --host=${CROSS_PREFIX%-} \
-#     && ./configure --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
-#     --disable-malloc0returnsnull \
-#     --host=${CROSS_PREFIX%-} \
-#     && make -j$(nproc) && make install \
-#     && rm -rf /build/libxrandr && cd /build \
-#     \
-#     # xi
-#     && git clone --branch libXi-1.8.2 https://gitlab.freedesktop.org/xorg/lib/libxi.git /build/libxi \
-#     && cd /build/libxi \
-#     && ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
-#     --disable-malloc0returnsnull \
-#     --host=${CROSS_PREFIX%-} \
-#     && ./configure --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
-#     --disable-malloc0returnsnull \
-#     --host=${CROSS_PREFIX%-} \
-#     && make -j$(nproc) && make install \
-#     && rm -rf /build/libxi && cd /build \
-#     \
-#     # xinerama
-#     && git clone --branch libXinerama-1.1.5 https://gitlab.freedesktop.org/xorg/lib/libxinerama.git /build/libxinerama \
-#     && cd /build/libxinerama \
-#     && ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
-#     --disable-malloc0returnsnull \
-#     --host=${CROSS_PREFIX%-} \
-#     && ./configure --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
-#     --disable-malloc0returnsnull \
-#     --host=${CROSS_PREFIX%-} \
-#     && make -j$(nproc) && make install \
-#     && rm -rf /build/libxinerama && cd /build \
-#     \
-#     # xcursor
-#     && git clone --branch libXcursor-1.2.3 https://gitlab.freedesktop.org/xorg/lib/libxcursor.git /build/libxcursor \
-#     && cd /build/libxcursor \
-#     && ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
-#     --disable-malloc0returnsnull \
-#     --host=${CROSS_PREFIX%-} \
-#     && ./configure --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
-#     --disable-malloc0returnsnull \
-#     --host=${CROSS_PREFIX%-} \
-#     && make -j$(nproc) && make install \
-#     && rm -rf /build/libxcursor && cd /build \
-#     \
-#     # libsamplerate
-#     && git clone --branch 0.2.2 https://github.com/libsndfile/libsamplerate.git /build/libsamplerate \
-#     && mkdir -p /build/libsamplerate/build && cd /build/libsamplerate/build \
-#     && cmake -S .. -B . \
-#     ${CMAKE_COMMON_ARG} \
-#     -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTING=OFF -DLIBSAMPLERATE_EXAMPLES=OFF -DLIBSAMPLERATE_INSTALL=ON \
-#     && make -j$(nproc) && make install \
-#     && rm -rf /build/libsamplerate && cd /build \
-#     \
-#     # libpulse
-#     && git clone --branch stable-16.x https://gitlab.freedesktop.org/pulseaudio/pulseaudio.git /build/pulseaudio \
-#     && cd /build/pulseaudio \
-#     && echo > src/utils/meson.build \
-#     && echo > src/pulsecore/sndfile-util.c \
-#     && echo > src/pulsecore/sndfile-util.h \
-#     && sed -ri -e 's/(sndfile_dep = .*)\)/\1, required : false)/' meson.build \
-#     && sed -ri -e 's/shared_library/library/g' src/meson.build src/pulse/meson.build \
-#     && mkdir -p build && cd build \
-#     && meson --prefix=${PREFIX} \
-#     --buildtype=release \
-#     --default-library=static \
-#     -Ddaemon=false \
-#     -Dclient=true \
-#     -Ddoxygen=false \
-#     -Dgcov=false \
-#     -Dman=false \
-#     -Dtests=false \
-#     -Dipv6=true \
-#     -Dopenssl=enabled \
-#     --cross-file=../../cross_file.txt .. \
-#     && ninja -j$(nproc) && ninja install \
-#     && echo "Libs.private: -ldl -lrt" >> ${PREFIX}/lib/pkgconfig/libpulse.pc \
-#     && echo "Libs.private: -ldl -lrt" >> ${PREFIX}/lib/pkgconfig/libpulse-simple.pc \
-#     && rm -rf /build/pulseaudio && cd /build \
-#     \
-#     # libxext
-#     && git clone --branch libXext-1.3.6 https://gitlab.freedesktop.org/xorg/lib/libxext.git /build/libxext \
-#     && cd /build/libxext \
-#     && autoreconf -i \
-#     && ./configure --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
-#     --with-pic \
-#     --without-xmlto \
-#     --without-fop \
-#     --without-xsltproc \
-#     --without-lint \
-#     --disable-malloc0returnsnull \
-#     --host=${CROSS_PREFIX%-} \
-#     && make -j$(nproc) && make install \
-#     && rm -rf /build/libxext && cd /build \
-#     \
-#     # sdl2
-#     && cd /build/sdl2 \
-#     && mkdir -p build && cd build \
-#     && cmake -S .. -B . \
-#     ${CMAKE_COMMON_ARG} \
-#     -DSDL_SHARED=OFF \
-#     -DSDL_STATIC=ON \
-#     -DSDL_STATIC_PIC=ON \
-#     -DSDL_TEST=OFF \
-#     -DSDL_X11=ON \
-#     -DSDL_X11_SHARED=OFF \
-#     -DHAVE_XGENERICEVENT=TRUE \
-#     -DSDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM=1 \
-#     -DSDL_PULSEAUDIO=ON \
-#     -DSDL_PULSEAUDIO_SHARED=OFF \
-#     && make -j$(nproc) && make install \
-#     && sed -ri -e 's/\-Wl,\-\-no\-undefined.*//' ${PREFIX}/lib/pkgconfig/sdl2.pc \
-#     && echo 'Requires: libpulse-simple xxf86vm xscrnsaver xrandr xfixes xi xinerama xcursor' >> ${PREFIX}/lib/pkgconfig/sdl2.pc \
-#     && sed -ri -e 's/ -lSDL2//g' -e 's/Libs: /Libs: -lSDL2 /' ${PREFIX}/lib/pkgconfig/sdl2.pc \
-#     && echo 'Requires: samplerate' >> ${PREFIX}/lib/pkgconfig/sdl2.pc \
-#     && rm -rf /build/sdl2 && cd /build
+# libsamplerate
+RUN git clone --branch 0.2.2 https://github.com/libsndfile/libsamplerate.git /build/libsamplerate \
+    && mkdir -p /build/libsamplerate/build && cd /build/libsamplerate/build \
+    && cmake -S .. -B . \
+    ${CMAKE_COMMON_ARG} \
+    -DBUILD_TESTING=OFF -DLIBSAMPLERATE_EXAMPLES=OFF -DLIBSAMPLERATE_INSTALL=ON \
+    && make -j$(nproc) && make install \
+    && rm -rf /build/libsamplerate && cd /build \
+    \    
+    # sdl2
+    && cd /build/sdl2 \
+    && mkdir -p build && cd build \
+    && cmake -S .. -B . \
+    ${CMAKE_COMMON_ARG} \
+    -DSDL_SHARED=OFF \
+    -DSDL_STATIC=ON \
+    -DSDL_STATIC_PIC=ON \
+    -DSDL_TEST=OFF \
+    -DSDL_X11=OFF \
+    -DSDL_X11_SHARED=OFF \
+    -DHAVE_XGENERICEVENT=FALSE \
+    -DSDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM=0 \
+    -DSDL_PULSEAUDIO=OFF \
+    -DSDL_PULSEAUDIO_SHARED=OFF \
+    && make -j$(nproc) && make install \
+    && sed -ri -e 's/\-Wl,\-\-no\-undefined.*//' -e 's/ \-l\/.+?\.a//g' ${PREFIX}/lib/pkgconfig/sdl2.pc \
+    && sed -ri -e 's/ -lSDL2//g' -e 's/Libs: /Libs: -lSDL2 /' ${PREFIX}/lib/pkgconfig/sdl2.pc \
+    && echo 'Requires: samplerate' >> ${PREFIX}/lib/pkgconfig/sdl2.pc \
+    && rm -rf /build/sdl2 && cd /build
 
 # ffmpeg
 RUN cd /build/ffmpeg \
@@ -805,7 +678,7 @@ RUN cd /build/ffmpeg \
     --prefix=${PREFIX} \
     --disable-shared \
     --enable-cross-compile \
-    # --enable-ffplay \
+    --enable-ffplay \
     --enable-static \
     --enable-gpl \
     --enable-version3 \
@@ -846,7 +719,7 @@ RUN cd /build/ffmpeg \
     --enable-nvenc \
     --enable-cuda \
     --enable-cuvid \
-    # --enable-sdl2 \
+    --enable-sdl2 \
     --enable-runtime-cpudetect \
     --extra-version="NoMercy-MediaServer" \
     --extra-cflags="-static -static-libgcc -static-libstdc++ -I${PREFIX}/include" \
@@ -856,7 +729,7 @@ RUN cd /build/ffmpeg \
     make -j$(nproc) && make install
 
 RUN mkdir -p /ffmpeg/aarch64 \
-    # && cp ${PREFIX}/bin/ffplay /ffmpeg/aarch64 \
+    && cp ${PREFIX}/bin/ffplay /ffmpeg/aarch64 \
     && cp ${PREFIX}/bin/ffmpeg /ffmpeg/aarch64 \
     && cp ${PREFIX}/bin/ffprobe /ffmpeg/aarch64
 
