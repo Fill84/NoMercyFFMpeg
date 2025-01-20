@@ -39,11 +39,13 @@ jobs:
           # Get the latest version tag
           LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v1.0.0")
           
+          echo "LATEST_TAG=$LATEST_TAG" 
+
           # Extract components
           MAJOR=$(echo "$LATEST_TAG" | cut -d. -f1 | sed 's/v//')
           MINOR=$(echo "$LATEST_TAG" | cut -d. -f2)
           PATCH=$(echo "$LATEST_TAG" | cut -d. -f3)
-          
+
           # Validate components
           echo "MAJOR=$MAJOR, MINOR=$MINOR, PATCH=$PATCH"
 
