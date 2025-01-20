@@ -306,7 +306,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          file: ffmpeg-darwin.dockerfile
+          file: ffmpeg-darwin-x86_64.dockerfile
           push: true
           tags: nomercyentertainment/ffmpeg-darwin-x86_64:latest
           cache-from: type=registry,ref=nomercyentertainment/ffmpeg-darwin-x86_64:buildcache
@@ -344,7 +344,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          file: ffmpeg-darwin.dockerfile
+          file: ffmpeg-darwin-arm64.dockerfile
           push: true
           tags: nomercyentertainment/ffmpeg-darwin-arm64:latest
           cache-from: type=registry,ref=nomercyentertainment/ffmpeg-darwin-arm64:buildcache
