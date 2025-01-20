@@ -50,12 +50,24 @@ services:
       - tmp:/tmp
       - ./output:/output
 
-  ffmpeg-darwin:
-    container_name: ffmpeg-darwin
+  ffmpeg-darwin-x86_64:
+    container_name: ffmpeg-darwin-x86_64
     privileged: true
     build:
       context: .
-      dockerfile: ffmpeg-darwin.dockerfile
+      dockerfile: ffmpeg-darwin-x86_64.dockerfile
+    depends_on:
+      - ffmpeg-base
+    volumes:
+      - tmp:/tmp
+      - ./output:/output
+
+  ffmpeg-darwin-arm64:
+    container_name: ffmpeg-darwin-arm64
+    privileged: true
+    build:
+      context: .
+      dockerfile: ffmpeg-darwin-arm64.dockerfile
     depends_on:
       - ffmpeg-base
     volumes:

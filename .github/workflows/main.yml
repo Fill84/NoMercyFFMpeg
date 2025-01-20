@@ -23,7 +23,8 @@ jobs:
       linux-changed: ${{ steps.check-linux.outputs.changed }}
       windows-changed: ${{ steps.check-windows.outputs.changed }}
       aarch64-changed: ${{ steps.check-aarch64.outputs.changed }}
-      darwin-changed: ${{ steps.check-darwin.outputs.changed }}
+      darwin-x86_64-changed: ${{ steps.check-darwin-x86_64.outputs.changed }}
+      darwin-arm64-changed: ${{ steps.check-darwin-arm64.outputs.changed }}
       version: ${{ steps.bump-version.outputs.version }}
     steps:
       - name: Checkout Code
@@ -97,14 +98,26 @@ jobs:
           fi
           echo "changed=$CHANGED" >> $GITHUB_OUTPUT
 
-      - name: Check Darwin image changes
-        id: check-darwin
+      - name: Check Darwin x86_64 image changes
+        id: check-darwin-x86_64
         run: |
           if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.force_rebuild }}" == "true" ]]; then
             CHANGED=true
           else
             CHANGED=false
-            git diff --name-only HEAD^ HEAD | grep -q "ffmpeg-darwin.dockerfile" && CHANGED=true
+            git diff --name-only HEAD^ HEAD | grep -q "ffmpeg-darwin-x86_64.dockerfile" && CHANGED=true
+            git diff --name-only HEAD^ HEAD | grep -q "^scripts/darwin/" && CHANGED=true
+          fi
+          echo "changed=$CHANGED" >> $GITHUB_OUTPUT
+
+      - name: Check Darwin arm64 image changes
+        id: check-darwin-arm64
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.force_rebuild }}" == "true" ]]; then
+            CHANGED=true
+          else
+            CHANGED=false
+            git diff --name-only HEAD^ HEAD | grep -q "ffmpeg-darwin-arm64.dockerfile" && CHANGED=true
             git diff --name-only HEAD^ HEAD | grep -q "^scripts/darwin/" && CHANGED=true
           fi
           echo "changed=$CHANGED" >> $GITHUB_OUTPUT
@@ -261,9 +274,9 @@ jobs:
           cache-from: type=registry,ref=nomercyentertainment/ffmpeg-aarch64:buildcache
           cache-to: type=registry,ref=nomercyentertainment/ffmpeg-aarch64:buildcache,mode=max
 
-  build-darwin:
+  build-darwin-x86_64:
     needs: [check-changes, build-base]
-    if: needs.check-changes.outputs.darwin-changed == 'true' || needs.check-changes.outputs.base-changed == 'true'
+    if: needs.check-changes.outputs.darwin-x86_64-changed == 'true' || needs.check-changes.outputs.base-changed == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Free Disk Space (Ubuntu)
@@ -295,13 +308,51 @@ jobs:
           context: .
           file: ffmpeg-darwin.dockerfile
           push: true
-          tags: nomercyentertainment/ffmpeg-darwin:latest
-          cache-from: type=registry,ref=nomercyentertainment/ffmpeg-darwin:buildcache
-          cache-to: type=registry,ref=nomercyentertainment/ffmpeg-darwin:buildcache,mode=max
+          tags: nomercyentertainment/ffmpeg-darwin-x86_64:latest
+          cache-from: type=registry,ref=nomercyentertainment/ffmpeg-darwin-x86_64:buildcache
+          cache-to: type=registry,ref=nomercyentertainment/ffmpeg-darwin-x86_64:buildcache,mode=max
+
+  build-darwin-arm64:
+    needs: [check-changes, build-base]
+    if: needs.check-changes.outputs.darwin-arm64-changed == 'true' || needs.check-changes.outputs.base-changed == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: false
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: true
+          swap-storage: true
+
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Log in to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push Darwin image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ffmpeg-darwin.dockerfile
+          push: true
+          tags: nomercyentertainment/ffmpeg-darwin-arm64:latest
+          cache-from: type=registry,ref=nomercyentertainment/ffmpeg-darwin-arm64:buildcache
+          cache-to: type=registry,ref=nomercyentertainment/ffmpeg-darwin-arm64:buildcache,mode=max
 
   create-release:
     runs-on: ubuntu-latest
-    needs: [build-linux, build-windows, build-aarch64, build-darwin, check-changes]
+    needs: [build-linux, build-windows, build-aarch64, build-darwin-x86_64, build-darwin-arm64, check-changes]
     steps:
       - name: Create Release
         id: create-release
@@ -310,7 +361,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ needs.check-changes.outputs.version }}
-          release_name: v${{ needs.check-changes.outputs.version }}
+          release_name: ${{ needs.check-changes.outputs.version }}
           draft: false
           prerelease: false
 
@@ -349,11 +400,20 @@ jobs:
 
       - name: Export Darwin Artifact
         run: |
-          mkdir -p downloads/darwin
-          docker pull nomercyentertainment/ffmpeg-darwin:latest
-          docker create --name darwin-container nomercyentertainment/ffmpeg-darwin:latest
-          docker cp darwin-container:/build/ffmpeg-darwin-7.1.tar.gz downloads/ffmpeg-darwin-7.1.tar.gz || echo "File not found in container."
-          docker cp darwin-container:/build/darwin downloads/darwin || echo "Directory not found in container."
+          mkdir -p downloads/darwin/x86_64
+          docker pull nomercyentertainment/ffmpeg-darwin-x86_64:latest
+          docker create --name darwin-container nomercyentertainment/ffmpeg-darwin-x86_64:latest
+          docker cp darwin-container:/build/ffmpeg-darwin-x86_64-7.1.tar.gz downloads/ffmpeg-darwin-x86_64-7.1.tar.gz || echo "File not found in container."
+          docker cp darwin-container:/build/darwin/x86_64 downloads/darwin/x86_64 || echo "Directory not found in container."
+          docker rm darwin-container
+
+      - name: Export Darwin Artifact
+        run: |
+          mkdir -p downloads/darwin/arm64
+          docker pull nomercyentertainment/ffmpeg-darwin-arm64:latest
+          docker create --name darwin-container nomercyentertainment/ffmpeg-darwin-arm64:latest
+          docker cp darwin-container:/build/ffmpeg-darwin-arm64-7.1.tar.gz downloads/ffmpeg-darwin-arm64-7.1.tar.gz || echo "File not found in container."
+          docker cp darwin-container:/build/darwin/arm64 downloads/darwin/arm64 || echo "Directory not found in container."
           docker rm darwin-container
 
       - name: Upload Linux Release Asset
@@ -363,7 +423,7 @@ jobs:
         with:
           upload_url: ${{ steps.create-release.outputs.upload_url }}
           asset_path: downloads/ffmpeg-linux-7.1.tar.gz
-          asset_name: ffmpeg-linux-7.1-v${{ needs.check-changes.outputs.version }}.tar.gz
+          asset_name: ffmpeg-linux-7.1-${{ needs.check-changes.outputs.version }}.tar.gz
           asset_content_type: application/gzip
 
       - name: Upload Windows Release Asset
@@ -373,7 +433,7 @@ jobs:
         with:
           upload_url: ${{ steps.create-release.outputs.upload_url }}
           asset_path: downloads/ffmpeg-windows-7.1.tar.gz
-          asset_name: ffmpeg-windows-7.1-v${{ needs.check-changes.outputs.version }}.tar.gz
+          asset_name: ffmpeg-windows-7.1-${{ needs.check-changes.outputs.version }}.tar.gz
           asset_content_type: application/gzip
 
       - name: Upload Aarch64 Release Asset
@@ -383,15 +443,25 @@ jobs:
         with:
           upload_url: ${{ steps.create-release.outputs.upload_url }}
           asset_path: downloads/ffmpeg-aarch64-7.1.tar.gz
-          asset_name: ffmpeg-aarch64-7.1-v${{ needs.check-changes.outputs.version }}.tar.gz
+          asset_name: ffmpeg-aarch64-7.1-${{ needs.check-changes.outputs.version }}.tar.gz
           asset_content_type: application/gzip
 
-      - name: Upload Darwin Release Asset
+      - name: Upload Darwin x86_64 Release Asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create-release.outputs.upload_url }}
-          asset_path: downloads/ffmpeg-darwin-7.1.tar.gz
-          asset_name: ffmpeg-darwin-7.1-v${{ needs.check-changes.outputs.version }}.tar.gz
+          asset_path: downloads/ffmpeg-darwin-x86_64-7.1.tar.gz
+          asset_name: ffmpeg-darwin-x86_64-7.1-${{ needs.check-changes.outputs.version }}.tar.gz
+          asset_content_type: application/gzip
+
+      - name: Upload Darwin arm64 Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create-release.outputs.upload_url }}
+          asset_path: downloads/ffmpeg-darwin-arm64-7.1.tar.gz
+          asset_name: ffmpeg-darwin-arm64-7.1-${{ needs.check-changes.outputs.version }}.tar.gz
           asset_content_type: application/gzip

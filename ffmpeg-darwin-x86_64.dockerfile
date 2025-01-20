@@ -3,15 +3,17 @@ FROM nomercyentertainment/ffmpeg-base AS darwin
 
 LABEL maintainer="Phillippe Pelzer"
 LABEL version="1.0.0"
-LABEL description="FFmpeg for macOS"
+LABEL description="FFmpeg for Darwin x86_64"
 
 ENV DEBIAN_FRONTEND=noninteractive \
     NVIDIA_VISIBLE_DEVICES=all \
     NVIDIA_DRIVER_CAPABILITIES=compute,utility,video
 
-ENV OSXCROSS_NO_INCLUDE_PATH_WARNINGS=1
-ENV MACOSX_DEPLOYMENT_TARGET=10.13
+ENV PREFIX=/ffmpeg_build/darwin
+ENV MACOSX_DEPLOYMENT_TARGET=10.13.0
 ENV SDK_VERSION=15.1
+ENV SDK_PATH=${PREFIX}/osxcross/SDK/MacOSX${SDK_VERSION}.sdk
+ENV OSX_FRAMEWORKS=${SDK_PATH}/System/Library/Frameworks
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     clang patch liblzma-dev libxml2-dev xz-utils bzip2 cpio zlib1g-dev libgit2-dev \
@@ -24,13 +26,18 @@ RUN rustup target add x86_64-apple-darwin \
 RUN git clone https://github.com/tpoechtrager/osxcross.git /build/osxcross && cd /build/osxcross \
     && wget -nc https://github.com/joseluisq/macosx-sdks/releases/download/${SDK_VERSION}/MacOSX${SDK_VERSION}.sdk.tar.xz \
     && mv MacOSX${SDK_VERSION}.sdk.tar.xz tarballs/MacOSX${SDK_VERSION}.sdk.tar.xz \
-    && UNATTENDED=1 TARGET_DIR=/ffmpeg_build/darwin/osxcross ./build.sh
+    && git clone https://github.com/llvm/llvm-project.git /build/llvm-project \
+    && mkdir -p ${SDK_PATH}/usr/include/c++/v1 \
+    && cp -r /build/llvm-project/libcxx/include/* ${SDK_PATH}/usr/include/c++/v1/ \
+    && cp -r /build/llvm-project/libcxxabi/include/* ${SDK_PATH}/usr/include/c++/v1/ \
+    && UNATTENDED=1 SDK_VERSION=${SDK_VERSION} MACOSX_DEPLOYMENT_TARGET=${MACOSX_DEPLOYMENT_TARGET} TARGET_DIR=${PREFIX}/osxcross ./build.sh -Wno-dev
+
+RUN echo "MACOSX_DEPLOYMENT_TARGET=${MACOSX_DEPLOYMENT_TARGET}" > ${PREFIX}/osxcross/bin/cc_target \
+    && cp ${PREFIX}/osxcross/bin/cc_target ${SDK_PATH}/usr/bin/cc_target
 
 RUN cd /build
 
 # Set environment variables for building ffmpeg
-ENV PREFIX=/ffmpeg_build/darwin
-ENV SDK_PATH=${PREFIX}/osxcross/SDK/MacOSX${SDK_VERSION}.sdk
 ENV ARCH=x86_64
 ENV CROSS_PREFIX=${ARCH}-apple-darwin24.1-
 ENV CC=${CROSS_PREFIX}clang
@@ -44,15 +51,19 @@ ENV NM=${CROSS_PREFIX}nm
 # ENV DLLTOOL=${CROSS_PREFIX}dlltool
 ENV PKG_CONFIG=pkg-config
 ENV PKG_CONFIG_PATH=${PREFIX}/lib/pkgconfig
-ENV PATH="${PREFIX}/bin:${PATH}"
-ENV CFLAGS="-mmacosx-version-min=${MACOSX_DEPLOYMENT_TARGET} -march=native -I${PREFIX}/include -O2 -pipe -D_FORTIFY_SOURCE=2 -fstack-protector-strong -Wno-int-conversion"
-ENV CXXFLAGS="-mmacosx-version-min=${MACOSX_DEPLOYMENT_TARGET} -march=native -I${PREFIX}/include -O2 -pipe -D_FORTIFY_SOURCE=2 -fstack-protector-strong -Wno-int-conversion"
-ENV LDFLAGS="-mmacosx-version-min=${MACOSX_DEPLOYMENT_TARGET} -march=native -L${PREFIX}/lib -O2 -pipe -fstack-protector-strong"
+ENV PATH="${PREFIX}/bin:${SDK_PATH}/usr/bin:${PREFIX}/osxcross/bin:${PATH}"
+ENV CFLAGS="-arch ${ARCH} -mmacosx-version-min=${MACOSX_DEPLOYMENT_TARGET} -isysroot ${SDK_PATH} -F${OSX_FRAMEWORKS} -stdlib=libc++ -I${PREFIX}/include -O2 -pipe -fPIC -DPIC -pthread"
+ENV CXXFLAGS="-arch ${ARCH} -mmacosx-version-min=${MACOSX_DEPLOYMENT_TARGET} -isysroot ${SDK_PATH} -F${OSX_FRAMEWORKS} -stdlib=libc++ -I${PREFIX}/include -O2 -pipe -fPIC -DPIC -pthread"
+ENV LDFLAGS="-arch ${ARCH} -mmacosx-version-min=${MACOSX_DEPLOYMENT_TARGET} -isysroot ${SDK_PATH} -F${OSX_FRAMEWORKS} -stdlib=libc++ -L${PREFIX}/lib -Wl,-dead_strip_dylibs -pthread"
 
-ENV PATH="${PATH}:${PREFIX}/osxcross/bin:${SDK_PATH}/usr/bin"
+ENV CARGO_TARGET_X86_64_APPLE_DARWIN_LINKER=${CC}
 
 # Create Meson cross file for darwin
-RUN echo "[binaries]" > /build/cross_file.txt && \
+RUN echo "[constants]" > /build/cross_file.txt && \
+    echo "osx_sdk_version = '${MACOSX_DEPLOYMENT_TARGET}'" >> /build/cross_file.txt && \
+    echo "osx_arch = '${ARCH}'" >> /build/cross_file.txt && \
+    echo "" >> /build/cross_file.txt && \
+    echo "[binaries]" >> /build/cross_file.txt && \
     echo "c = '${CC}'" >> /build/cross_file.txt && \
     echo "cpp = '${CXX}'" >> /build/cross_file.txt && \
     echo "ld = '${LD}'" >> /build/cross_file.txt && \
@@ -65,19 +76,38 @@ RUN echo "[binaries]" > /build/cross_file.txt && \
     echo "system = 'darwin'" >> /build/cross_file.txt && \
     echo "cpu_family = '${ARCH}'" >> /build/cross_file.txt && \
     echo "cpu = '${ARCH}'" >> /build/cross_file.txt && \
-    echo "endian = 'little'" >> /build/cross_file.txt
+    echo "endian = 'little'" >> /build/cross_file.txt && \
+    echo "" >> /build/cross_file.txt && \
+    echo "[properties]" >> /build/cross_file.txt && \
+    echo "c_args = ['-arch', '${ARCH}', '-mmacosx-version-min=${MACOSX_DEPLOYMENT_TARGET}', '-isysroot', '${SDK_PATH}', '-F${OSX_FRAMEWORKS}', '-stdlib=libc++', '-I${PREFIX}/include', '-O2', '-pipe', '-fPIC', '-DPIC', '-pthread']" >> /build/cross_file.txt && \
+    echo "cpp_args = ['-arch', '${ARCH}', '-mmacosx-version-min=${MACOSX_DEPLOYMENT_TARGET}', '-isysroot', '${SDK_PATH}', '-F${OSX_FRAMEWORKS}', '-stdlib=libc++', '-I${PREFIX}/include', '-O2', '-pipe', '-fPIC', '-DPIC', '-pthread']" >> /build/cross_file.txt && \
+    echo "c_link_args = ['-arch', '${ARCH}', '-mmacosx-version-min=${MACOSX_DEPLOYMENT_TARGET}', '-isysroot', '${SDK_PATH}', '-F${OSX_FRAMEWORKS}', '-stdlib=libc++', '-L${PREFIX}/lib', '-Wl,-dead_strip_dylibs', '-pthread']" >> /build/cross_file.txt && \
+    echo "cpp_link_args = ['-arch', '${ARCH}', '-mmacosx-version-min=${MACOSX_DEPLOYMENT_TARGET}', '-isysroot', '${SDK_PATH}', '-F${OSX_FRAMEWORKS}', '-stdlib=libc++', '-L${PREFIX}/lib', '-Wl,-dead_strip_dylibs', '-pthread']" >> /build/cross_file.txt
 
 # CMake common arguments for static build
-ENV CMAKE_COMMON_ARG="-DCMAKE_INSTALL_PREFIX=${PREFIX} -DCMAKE_SYSTEM_NAME=Darwin -DCMAKE_SYSTEM_PROCESSOR=${ARCH} -DCMAKE_C_COMPILER=${CC} -DCMAKE_CXX_COMPILER=${CXX} -DENABLE_SHARED=OFF -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=Release"
+ENV CMAKE_COMMON_ARG="-DCMAKE_INSTALL_PREFIX=${PREFIX} -DCMAKE_SYSTEM_NAME=Darwin -DCMAKE_OSX_ARCHITECTURES=${ARCH} -DCMAKE_OSX_DEPLOYMENT_TARGET=${MACOSX_DEPLOYMENT_TARGET} -DCMAKE_OSX_SYSROOT=${SDK_PATH} -DCMAKE_C_COMPILER=${CC} -DCMAKE_CXX_COMPILER=${CXX} -DENABLE_SHARED=OFF -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=Release"
 
-# Add a dummy install_name_tool to bypass the check
-RUN echo '#!/bin/sh\necho "Warning: install_name_tool is a placeholder."' > /usr/bin/install_name_tool \
-    && chmod +x /usr/bin/install_name_tool
+RUN ln -s ${PREFIX}/osxcross/bin/${CROSS_PREFIX}install_name_tool ${SDK_PATH}/usr/bin/${CROSS_PREFIX}install_name_tool \
+    && chmod +x ${SDK_PATH}/usr/bin/${CROSS_PREFIX}install_name_tool \
+    && ln -s ${PREFIX}/osxcross/bin/${CROSS_PREFIX}otool ${SDK_PATH}/usr/bin/${CROSS_PREFIX}otool \
+    && chmod +x ${SDK_PATH}/usr/bin/${CROSS_PREFIX}otool \
+    && ln -s /build/osxcross/build/apple-libtapi/build/tools/llvm-objdump ${SDK_PATH}/usr/bin/${CROSS_PREFIX}objdump \
+    && chmod +x ${SDK_PATH}/usr/bin/${CROSS_PREFIX}objdump \
+    && ln -s /build/osxcross/build/apple-libtapi/build/tools/llvm-objcopy ${SDK_PATH}/usr/bin/${CROSS_PREFIX}objcopy \
+    && chmod +x ${SDK_PATH}/usr/bin/${CROSS_PREFIX}objcopy \
+    && ln -s ${CROSS_PREFIX}libtool /usr/bin/libtool \
+    && mkdir -p /System/Library/Frameworks \
+    && ln -s ${OSX_FRAMEWORKS}/System/Library/Frameworks /System/Library/Frameworks
+
+ENV INSTALL_NAME_TOOL=${SDK_PATH}/usr/bin/${CROSS_PREFIX}install_name_tool
+ENV OBJDUMP=${SDK_PATH}/usr/bin/${CROSS_PREFIX}objdump
+ENV OBJCOPY=${SDK_PATH}/usr/bin/${CROSS_PREFIX}objcopy
+ENV OTOOL=${SDK_PATH}/usr/bin/${CROSS_PREFIX}otool
 
 # iconv
 RUN cd /build/iconv \
     && ./configure --prefix=${PREFIX} --enable-extra-encodings --enable-static --disable-shared --with-pic \
-    --host=${CROSS_PREFIX%-} || (cat ./config.log ; false) \
+    --host=${CROSS_PREFIX%-} \
     && make -j$(nproc) && make install \
     && rm -rf /build/iconv \
     \
@@ -137,7 +167,7 @@ ENV CXXFLAGS="${CXXFLAGS} -fno-strict-aliasing"
 
 # openssl
 RUN cd /build/openssl \
-    && ./Configure threads zlib no-shared enable-camellia enable-ec enable-srp --prefix=${PREFIX} darwin64-x86_64 --libdir=${PREFIX}/lib \
+    && ./Configure threads zlib no-shared enable-camellia enable-ec enable-srp --prefix=${PREFIX} darwin64-${ARCH}-cc --libdir=${PREFIX}/lib \
     --cross-compile-prefix='' \
     && sed -i -e "/^CFLAGS=/s|=.*|=${CFLAGS}|" -e "/^LDFLAGS=/s|=[[:space:]]*$|=${LDFLAGS}|" Makefile \
     && make -j$(nproc) build_sw && make install_sw
@@ -182,9 +212,6 @@ RUN cd /build/libvorbis \
     && make -j$(nproc) && make install \
     && rm -rf /build/libvorbis
 
-RUN ln -s ${PREFIX}/osxcross/bin/x86_64-apple-darwin24.1-otool ${PREFIX}/osxcross/bin/otool \
-    && chmod +x ${PREFIX}/osxcross/bin/otool
-
 # libvmaf
 RUN cd /build/libvmaf \
     && mkdir build && cd build \
@@ -226,10 +253,9 @@ RUN cd /build/libass \
     && make -j$(nproc) && make install \
     && rm -rf /build/libass
 
-RUN ln -s /build/libgpg-error/src/syscfg/lock-obj-pub.x86_64-apple-darwin.h /build/libgpg-error/src/syscfg/lock-obj-pub.${CROSS_PREFIX%-}.h
-
 # libgpg-error
 RUN cd /build/libgpg-error \
+    && cp src/syscfg/lock-obj-pub.${ARCH}-apple-darwin.h src/syscfg/lock-obj-pub.${CROSS_PREFIX%-}.h \
     && ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared --with-pic --disable-doc  \
     --host=${CROSS_PREFIX%-} \
     && ./configure --prefix=${PREFIX} --enable-static --disable-shared --with-pic --disable-doc  \
@@ -400,7 +426,7 @@ RUN cd /build/libvpx \
     DIST_DIR=${PREFIX} \
     ./configure --prefix=${PREFIX} --enable-vp9-highbitdepth --enable-static --enable-pic \
     --disable-shared --disable-examples --disable-tools --disable-docs --disable-unit-tests \
-    --target=x86_64-darwin10-gcc \
+    --target=${ARCH}-darwin14-gcc \
     && make -j$(nproc) && make install \
     && rm -rf /build/libvpx
 
@@ -408,18 +434,18 @@ RUN cd /build/libvpx \
 RUN cd /build/x264 \
     && ./configure \
     --prefix=${PREFIX} --disable-cli --enable-static --disable-shared --disable-lavf --disable-swscale \
-    --cross-prefix=${CROSS_PREFIX} --host=${CROSS_PREFIX%-} --target=${ARCH}-apple-darwin \
+    --cross-prefix=${CROSS_PREFIX} --host=${CROSS_PREFIX%-} \
     && make -j$(nproc) && make install \
     && rm -rf /build/x264
 
-ENV CMAKE_X265_ARG="-DCMAKE_INSTALL_PREFIX=${PREFIX} -DCMAKE_BUILD_TYPE=Release -DENABLE_SHARED=OFF -DENABLE_CLI=OFF -DCMAKE_ASM_NASM_FLAGS=-w-macro-params-legacy"
+ENV CMAKE_X265_ARG="-DCMAKE_INSTALL_PREFIX=${PREFIX} -DCMAKE_SYSTEM_NAME=Darwin -DCMAKE_OSX_SYSROOT=${SDK_PATH} -DCMAKE_OSX_DEPLOYMENT_TARGET=${MACOSX_DEPLOYMENT_TARGET} -DCMAKE_C_COMPILER=${CC} -DCMAKE_CXX_COMPILER=${CXX} -DCMAKE_BUILD_TYPE=Release -DENABLE_SHARED=OFF -DENABLE_CLI=OFF -DCMAKE_ASM_NASM_FLAGS=-w-macro-params-legacy"
 # x265
 # build x265 12bit
-RUN cp -r /build/x265/build/linux /build/x265/build/darwin \
+RUN cp -r /build/x265/build/linux /build/x265/build/windows \
     && cd /build/x265 \
-    && rm -rf build/darwin/12bit build/darwin/10bit build/darwin/8bit \
-    && mkdir -p build/darwin/12bit build/darwin/10bit build/darwin/8bit \
-    && cd build/darwin/12bit \
+    && rm -rf build/windows/12bit build/windows/10bit build/windows/8bit \
+    && mkdir -p build/windows/12bit build/windows/10bit build/windows/8bit \
+    && cd build/windows/12bit \
     && cmake ${CMAKE_X265_ARG} -DHIGH_BIT_DEPTH=ON -DENABLE_HDR10_PLUS=ON -DEXPORT_C_API=OFF -DMAIN12=ON -S ../../../source -B . \
     && make -j$(nproc) \
     # build x265 10bit
@@ -432,20 +458,10 @@ RUN cp -r /build/x265/build/linux /build/x265/build/darwin \
     && cmake ${CMAKE_X265_ARG} -DEXTRA_LIB="x265_main10.a;x265_main12.a" -DEXTRA_LINK_FLAGS=-L. -DLINKED_10BIT=ON -DLINKED_12BIT=ON -S ../../../source -B . \
     && make -j$(nproc) \
     # install x265
-    && mv libx265.a libx265_main.a
-
-RUN cd /build/x265/build/darwin/8bit \
-    && ${AR} cr libx265.a libx265_main.a libx265_main10.a libx265_main12.a \
-    # && { \
-    # echo "CREATE libx265.a"; \
-    # echo "ADDLIB libx265_main.a"; \
-    # echo "ADDLIB libx265_main10.a"; \
-    # echo "ADDLIB libx265_main12.a"; \
-    # echo "SAVE"; \
-    # echo "END"; \
-    # } | ${AR} -M \
+    && mv libx265.a libx265_main.a \
+    && ${CROSS_PREFIX}libtool -static -o libx265.a libx265_main.a libx265_main10.a libx265_main12.a \
+    && ${RANLIB} libx265.a \
     && make install \
-    && sed -i.backup 's/-lgcc_s/-lgcc_eh/g' "${PREFIX}/lib/pkgconfig/x265.pc" \
     && echo "Libs.private: -lstdc++" >> "${PREFIX}/lib/pkgconfig/x265.pc" \
     && rm -rf /build/x265
 
@@ -453,9 +469,10 @@ RUN cd /build/x265/build/darwin/8bit \
 RUN cp -r /build/libxavs2/build/linux /build/libxavs2/build/darwin \
     && cd /build/libxavs2/build/darwin \
     && ./configure --prefix=${PREFIX} \
-    --disable-cli --enable-static --enable-pic --disable-asm --disable-avs --disable-swscale --disable-lavf --disable-ffms --disable-gpac --disable-lsmash --extra-asflags="-w-macro-params-legacy" \
-    --host=${CROSS_PREFIX%-} --cross-prefix=${CROSS_PREFIX} \
-    && make fprofiled \
+    --disable-cli --enable-static --enable-pic --disable-avs --disable-swscale --disable-lavf --disable-ffms --disable-gpac --disable-lsmash --extra-asflags="-w-macro-params-legacy" \
+    --extra-cflags="-Wno-dev -Wno-typedef-redefinition -Wno-unused-but-set-variable -Wno-tautological-compare -Wno-format -Wno-incompatible-function-pointer-types" \
+    --host=${CROSS_PREFIX%-} \
+    && make -j$(nproc) && make install \
     && rm -rf /build/libxavs2
 
 ENV OLD_CFLAGS=${CFLAGS}
@@ -507,16 +524,17 @@ RUN cd /build/libwebp \
     && ./configure --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
     --host=${CROSS_PREFIX%-} \
     && make -j$(nproc) && make install \
-    && rm -rf /build/zimg \
-    \
-    # ffnvcodec
-    && cd /build/ffnvcodec \
-    && make PREFIX=${PREFIX} install \
-    && rm -rf /build/ffnvcodec \
-    \
-    # cuda
-    && cp -R /usr/local/cuda/include/* ${PREFIX}/include \
-    && cp -R /usr/local/cuda/lib64/* ${PREFIX}/lib
+    && rm -rf /build/zimg 
+#     && rm -rf /build/zimg \
+#     \
+#     # ffnvcodec
+#     && cd /build/ffnvcodec \
+#     && make PREFIX=${PREFIX} install \
+#     && rm -rf /build/ffnvcodec \
+#     \
+#     # cuda
+#     && cp -R /usr/local/cuda/include/* ${PREFIX}/include \
+#     && cp -R /usr/local/cuda/lib64/* ${PREFIX}/lib
 
 # # leptonica
 # RUN cd /build/leptonica \
@@ -558,28 +576,35 @@ RUN cd /build/libwebp \
 #     && cp ${PREFIX}/lib/pkgconfig/tesseract.pc ${PREFIX}/lib/pkgconfig/libtesseract.pc \
 #     && rm -rf /build/libtesseract
 
-# libsamplerate
-RUN git clone --branch 0.2.2 https://github.com/libsndfile/libsamplerate.git /build/libsamplerate \
-    && mkdir -p /build/libsamplerate/build && cd /build/libsamplerate/build \
-    && cmake -S .. -B . \
-    ${CMAKE_COMMON_ARG} \
-    -DBUILD_TESTING=OFF -DLIBSAMPLERATE_EXAMPLES=OFF -DLIBSAMPLERATE_INSTALL=ON \
-    && make -j$(nproc) && make install \
-    && rm -rf /build/libsamplerate && cd /build \
-    \    
-    # sdl2
-    && cd /build/sdl2 \
-    && mkdir -p build && cd build \
-    && cmake -S .. -B . \
-    ${CMAKE_COMMON_ARG} \
-    -DSDL_SHARED=OFF \
-    -DSDL_STATIC=ON \
-    -DSDL_STATIC_PIC=ON \
-    && make -j$(nproc) && make install \
-    && sed -ri -e 's/\-Wl,\-\-no\-undefined.*//' ${PREFIX}/lib/pkgconfig/sdl2.pc \
-    && sed -ri -e 's/ -lSDL2//g' -e 's/Libs: /Libs: -lSDL2 /' ${PREFIX}/lib/pkgconfig/sdl2.pc \
-    && echo 'Requires: samplerate' >> ${PREFIX}/lib/pkgconfig/sdl2.pc \
-    && rm -rf /build/sdl2 && cd /build
+# # libsamplerate
+# RUN git clone --branch 0.2.2 https://github.com/libsndfile/libsamplerate.git /build/libsamplerate \
+#     && mkdir -p /build/libsamplerate/build && cd /build/libsamplerate/build \
+#     && cmake -S .. -B . \
+#     ${CMAKE_COMMON_ARG} \
+#     -DBUILD_TESTING=OFF -DLIBSAMPLERATE_EXAMPLES=OFF -DLIBSAMPLERATE_INSTALL=ON \
+#     && make -j$(nproc) && make install \
+#     && rm -rf /build/libsamplerate && cd /build \
+#     \    
+#     # sdl2
+#     && cd /build/sdl2 \
+#     && mkdir -p build && cd build \
+#     && cmake -S .. -B . \
+#     ${CMAKE_COMMON_ARG} \
+#     -DSDL_SHARED=OFF \
+#     -DSDL_STATIC=ON \
+#     -DSDL_STATIC_PIC=ON \
+#     -DSDL_TEST=OFF \
+#     -DSDL_X11=OFF \
+#     -DSDL_X11_SHARED=OFF \
+#     -DHAVE_XGENERICEVENT=FALSE \
+#     -DSDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM=0 \
+#     -DSDL_PULSEAUDIO=OFF \
+#     -DSDL_PULSEAUDIO_SHARED=OFF \
+#     && make -j$(nproc) && make install \
+#     && sed -ri -e 's/\-Wl,\-\-no\-undefined.*//' -e 's/ \-l\/.+?\.a//g' ${PREFIX}/lib/pkgconfig/sdl2.pc \
+#     && sed -ri -e 's/ -lSDL2//g' -e 's/Libs: /Libs: -lSDL2 /' ${PREFIX}/lib/pkgconfig/sdl2.pc \
+#     && echo 'Requires: samplerate' >> ${PREFIX}/lib/pkgconfig/sdl2.pc \
+#     && rm -rf /build/sdl2 && cd /build
 
 # ffmpeg
 RUN cd /build/ffmpeg \
@@ -590,6 +615,7 @@ RUN cd /build/ffmpeg \
     --pkg-config=pkg-config \
     --prefix=${PREFIX} \
     --disable-shared \
+    --disable-videotoolbox \
     --enable-cross-compile \
     # --enable-ffplay \
     --enable-static \
@@ -602,13 +628,13 @@ RUN cd /build/ffmpeg \
     --enable-libfribidi \
     --enable-fontconfig \
     # --enable-libtesseract \
-    # --enable-libdrm \
+    # --enable-libdrm \ 
     --enable-libvorbis \
-    --enable-libvmaf \
+    --enable-libvmaf \ 
     --enable-avisynth \
-    --enable-chromaprint \
+    --enable-chromaprint \ 
     --enable-libass \
-    # --enable-vaapi \
+    # --enable-vaapi \ 
     --enable-libbluray \
     --enable-libcdio \
     --enable-libdav1d \
@@ -617,46 +643,44 @@ RUN cd /build/ffmpeg \
     --enable-libsrt \
     --enable-libtwolame \
     --enable-libmp3lame \
-    --enable-libvpx \
+    --enable-libvpx \ 
     --enable-libx264 \
-    # --enable-libx265 \
-    # --enable-libxavs2 \
+    --enable-libx265 \ 
+    --enable-libxavs2 \
     --enable-libxvid \
     --enable-libfdk-aac \
     --enable-libopus \
     --enable-libwebp \
     --enable-libopenjpeg \
     --enable-libzimg \
-    # --enable-ffnvcodec \
-    # --enable-nvdec \
-    # --enable-nvenc \
-    # --enable-cuda \
-    # --enable-cuvid \
+    # --enable-ffnvcodec \ 
+    # --enable-nvdec \ 
+    # --enable-nvenc \ 
+    # --enable-cuda \ 
+    # --enable-cuvid \ 
     # --enable-sdl2 \
-    --disable-videotoolbox \
-    --cc=${CC} \
     --enable-runtime-cpudetect \
-    --extra-version="NoMercy-MediaServer" \
-    --extra-cflags="-mmacosx-version-min=${MACOSX_DEPLOYMENT_TARGET} -march=native -I${PREFIX}/include" \
-    --extra-ldflags="-mmacosx-version-min=${MACOSX_DEPLOYMENT_TARGET} -march=native -L${PREFIX}/lib" \
-    --extra-libs="-mmacosx-version-min=${MACOSX_DEPLOYMENT_TARGET} -march=native -lpthread -lm -lsharpyuv" \
     --cc=${CC} \
     --cxx=${CXX} \
+    --extra-version="NoMercy-MediaServer" \
+    --extra-cflags="-arch ${ARCH} -mmacosx-version-min=${MACOSX_DEPLOYMENT_TARGET} -isysroot ${SDK_PATH} -F${OSX_FRAMEWORKS} -stdlib=libc++ -isysroot ${SDK_PATH} -mmacosx-version-min=${MACOSX_DEPLOYMENT_TARGET} -I${PREFIX}/include" \
+    --extra-ldflags="-arch ${ARCH} -mmacosx-version-min=${MACOSX_DEPLOYMENT_TARGET} -isysroot ${SDK_PATH} -F${OSX_FRAMEWORKS} -stdlib=libc++ -isysroot ${SDK_PATH} -mmacosx-version-min=${MACOSX_DEPLOYMENT_TARGET} -L${PREFIX}/lib" \
+    --extra-libs="-lpthread -lm -lsharpyuv" \
     || (cat ffbuild/config.log ; false) && \
     make -j$(nproc) && make install
 
-RUN mkdir -p /ffmpeg/darwin \
-    # && cp ${PREFIX}/bin/ffplay /ffmpeg/darwin \
-    && cp ${PREFIX}/bin/ffmpeg /ffmpeg/darwin \
-    && cp ${PREFIX}/bin/ffprobe /ffmpeg/darwin
+RUN mkdir -p /ffmpeg/darwin/${ARCH} \
+    # && cp ${PREFIX}/bin/ffplay /ffmpeg/darwin/${ARCH} \
+    && cp ${PREFIX}/bin/ffmpeg /ffmpeg/darwin/${ARCH} \
+    && cp ${PREFIX}/bin/ffprobe /ffmpeg/darwin/${ARCH}
 
 # cleanup
 RUN rm -rf ${PREFIX} /build
 
-RUN mkdir -p /build/darwin /output \
-    && tar -czf /build/ffmpeg-darwin-7.1.tar.gz \
-    -C /ffmpeg/darwin . \
-    && cp /build/ffmpeg-darwin-7.1.tar.gz /output
+RUN mkdir -p /build/darwin/${ARCH} /output \
+    && tar -czf /build/ffmpeg-darwin-${ARCH}-7.1.tar.gz \
+    -C /ffmpeg/darwin/${ARCH} . \
+    && cp /build/ffmpeg-darwin-${ARCH}-7.1.tar.gz /output
 
 RUN apt-get autoremove -y && apt-get autoclean -y && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
@@ -667,4 +691,4 @@ FROM debian AS final
 
 COPY --from=darwin /build /build
 
-CMD ["cp", "/build/ffmpeg-darwin-7.1.tar.gz", "/output"]
+CMD ["cp", "/build/ffmpeg-darwin-x86_64-7.1.tar.gz", "/output"]
