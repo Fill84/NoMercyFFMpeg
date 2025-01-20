@@ -398,7 +398,7 @@ jobs:
           docker cp aarch64-container:/build/aarch64 downloads/aarch64 || echo "Directory not found in container."
           docker rm aarch64-container
 
-      - name: Export Darwin Artifact
+      - name: Export Darwin x86_64 Artifact
         run: |
           mkdir -p downloads/darwin/x86_64
           docker pull nomercyentertainment/ffmpeg-darwin-x86_64:latest
@@ -407,7 +407,7 @@ jobs:
           docker cp darwin-container:/build/darwin/x86_64 downloads/darwin/x86_64 || echo "Directory not found in container."
           docker rm darwin-container
 
-      - name: Export Darwin Artifact
+      - name: Export Darwin arm64 Artifact
         run: |
           mkdir -p downloads/darwin/arm64
           docker pull nomercyentertainment/ffmpeg-darwin-arm64:latest
