@@ -37,7 +37,7 @@ jobs:
       - name: Bump version
         id: bump-version
         run: |
-          git config --global --add safe.directory /home/runner/work/NoMercyFFMpeg/NoMercyFFMpeg
+          git config --global --add safe.directory ${{ github.workspace }}
           # Get the latest version tag
           LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v1.0.0")
           
@@ -61,7 +61,7 @@ jobs:
       - name: Check workflow changes
         id: check-workflow
         run: |
-          git config --global --add safe.directory /home/runner/work/NoMercyFFMpeg/NoMercyFFMpeg
+          git config --global --add safe.directory ${{ github.workspace }}
           if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.force_rebuild }}" == "true" ]]; then
             CHANGED=true
           else
@@ -73,7 +73,7 @@ jobs:
       - name: Check base image changes
         id: check-base
         run: |
-          git config --global --add safe.directory /home/runner/work/NoMercyFFMpeg/NoMercyFFMpeg
+          git config --global --add safe.directory ${{ github.workspace }}
           if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.force_rebuild }}" == "true" ]]; then
             CHANGED=true
           else
@@ -85,7 +85,7 @@ jobs:
       - name: Check Linux image changes
         id: check-linux
         run: |
-          git config --global --add safe.directory /home/runner/work/NoMercyFFMpeg/NoMercyFFMpeg
+          git config --global --add safe.directory ${{ github.workspace }}
           if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.force_rebuild }}" == "true" ]]; then
             CHANGED=true
           else
@@ -97,7 +97,7 @@ jobs:
       - name: Check Windows image changes
         id: check-windows
         run: |
-          git config --global --add safe.directory /home/runner/work/NoMercyFFMpeg/NoMercyFFMpeg
+          git config --global --add safe.directory ${{ github.workspace }}
           if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.force_rebuild }}" == "true" ]]; then
             CHANGED=true
           else
@@ -109,7 +109,7 @@ jobs:
       - name: Check Aarch64 image changes
         id: check-aarch64
         run: |
-          git config --global --add safe.directory /home/runner/work/NoMercyFFMpeg/NoMercyFFMpeg
+          git config --global --add safe.directory ${{ github.workspace }}
           if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.force_rebuild }}" == "true" ]]; then
             CHANGED=true
           else
@@ -121,7 +121,7 @@ jobs:
       - name: Check Darwin x86_64 image changes
         id: check-darwin-x86_64
         run: |
-          git config --global --add safe.directory /home/runner/work/NoMercyFFMpeg/NoMercyFFMpeg
+          git config --global --add safe.directory ${{ github.workspace }}
           if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.force_rebuild }}" == "true" ]]; then
             CHANGED=true
           else
@@ -133,7 +133,7 @@ jobs:
       - name: Check Darwin arm64 image changes
         id: check-darwin-arm64
         run: |
-          git config --global --add safe.directory /home/runner/work/NoMercyFFMpeg/NoMercyFFMpeg
+          git config --global --add safe.directory ${{ github.workspace }}
           if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.force_rebuild }}" == "true" ]]; then
             CHANGED=true
           else
