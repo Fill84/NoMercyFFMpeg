@@ -28,8 +28,17 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
-        with:
-          fetch-depth: 2
+
+      - name: Check base image changes
+        id: check-workflow
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.force_rebuild }}" == "true" ]]; then
+            CHANGED=true
+          else
+            CHANGED=false
+            git diff --name-only HEAD^ HEAD | grep -q ".github/workflows/main.yml" && CHANGED=true
+          fi
+          echo "changed=$CHANGED" >> $GITHUB_OUTPUT
 
       - name: Check base image changes
         id: check-base
