@@ -348,6 +348,7 @@ jobs:
       - name: Bump version
         id: bump-version
         run: |
+          git config --global --add safe.directory /home/runner/work/NoMercyFFMpeg/NoMercyFFMpeg
           # Get the latest version tag
           LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v1.0.0")
           
