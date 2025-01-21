@@ -32,13 +32,15 @@ jobs:
       - name: Check base image changes
         id: check-workflow
         run: |
+          git config --add safe.directory ./
           if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.force_rebuild }}" == "true" ]]; then
             CHANGED=true
           else
             CHANGED=false
-            git diff --name-only HEAD^ HEAD | grep -q ".github/workflows/main.yml" && CHANGED=true
+            git diff --name-only HEAD^ HEAD ./ | grep -q ".github/workflows/main.yml" && CHANGED=true
           fi
           echo "changed=$CHANGED" >> $GITHUB_OUTPUT
+        shell: bash
 
       - name: Check base image changes
         id: check-base
@@ -47,9 +49,10 @@ jobs:
             CHANGED=true
           else
             CHANGED=false
-            git diff --name-only HEAD^ HEAD | grep -q "ffmpeg-base.dockerfile" && CHANGED=true
+            git diff --name-only HEAD^ HEAD ./ | grep -q "ffmpeg-base.dockerfile" && CHANGED=true
           fi
           echo "changed=$CHANGED" >> $GITHUB_OUTPUT
+        shell: bash
 
       - name: Check Linux image changes
         id: check-linux
@@ -58,9 +61,10 @@ jobs:
             CHANGED=true
           else
             CHANGED=false
-            git diff --name-only HEAD^ HEAD | grep -q "ffmpeg-linux.dockerfile" && CHANGED=true
+            git diff --name-only HEAD^ HEAD ./ | grep -q "ffmpeg-linux.dockerfile" && CHANGED=true
           fi
           echo "changed=$CHANGED" >> $GITHUB_OUTPUT
+        shell: bash
 
       - name: Check Windows image changes
         id: check-windows
@@ -69,9 +73,10 @@ jobs:
             CHANGED=true
           else
             CHANGED=false
-            git diff --name-only HEAD^ HEAD | grep -q "ffmpeg-windows.dockerfile" && CHANGED=true
+            git diff --name-only HEAD^ HEAD ./ | grep -q "ffmpeg-windows.dockerfile" && CHANGED=true
           fi
           echo "changed=$CHANGED" >> $GITHUB_OUTPUT
+        shell: bash
 
       - name: Check Aarch64 image changes
         id: check-aarch64
@@ -80,9 +85,10 @@ jobs:
             CHANGED=true
           else
             CHANGED=false
-            git diff --name-only HEAD^ HEAD | grep -q "ffmpeg-aarch64.dockerfile" && CHANGED=true
+            git diff --name-only HEAD^ HEAD ./ | grep -q "ffmpeg-aarch64.dockerfile" && CHANGED=true
           fi
           echo "changed=$CHANGED" >> $GITHUB_OUTPUT
+        shell: bash
 
       - name: Check Darwin x86_64 image changes
         id: check-darwin-x86_64
@@ -91,9 +97,10 @@ jobs:
             CHANGED=true
           else
             CHANGED=false
-            git diff --name-only HEAD^ HEAD | grep -q "ffmpeg-darwin-x86_64.dockerfile" && CHANGED=true
+            git diff --name-only HEAD^ HEAD ./ | grep -q "ffmpeg-darwin-x86_64.dockerfile" && CHANGED=true
           fi
           echo "changed=$CHANGED" >> $GITHUB_OUTPUT
+        shell: bash
 
       - name: Check Darwin arm64 image changes
         id: check-darwin-arm64
@@ -102,9 +109,10 @@ jobs:
             CHANGED=true
           else
             CHANGED=false
-            git diff --name-only HEAD^ HEAD | grep -q "ffmpeg-darwin-arm64.dockerfile" && CHANGED=true
+            git diff --name-only HEAD^ HEAD ./ | grep -q "ffmpeg-darwin-arm64.dockerfile" && CHANGED=true
           fi
           echo "changed=$CHANGED" >> $GITHUB_OUTPUT
+        shell: bash
 
   build-base:
     needs: check-changes
@@ -344,7 +352,6 @@ jobs:
       - name: Bump version
         id: bump-version
         run: |
-          git config --add safe.directory .
           # Get the latest version tag
           LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v1.0.0")
           
@@ -364,6 +371,7 @@ jobs:
           
           echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
           echo "New version will be: $NEW_VERSION"
+        shell: bash
 
       - name: Create Release
         id: create-release
