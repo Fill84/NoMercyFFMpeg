@@ -32,9 +32,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Check base image changes
+      - name: Check workflow changes
         id: check-workflow
         run: |
+          git config --global --add safe.directory /home/runner/work/NoMercyFFMpeg/NoMercyFFMpeg
           if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.force_rebuild }}" == "true" ]]; then
             CHANGED=true
           else
