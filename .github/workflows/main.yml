@@ -27,17 +27,18 @@ jobs:
       darwin-arm64-changed: ${{ steps.check-darwin-arm64.outputs.changed }}
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Check base image changes
         id: check-workflow
         run: |
-          git config --add safe.directory ./
           if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.force_rebuild }}" == "true" ]]; then
             CHANGED=true
           else
             CHANGED=false
-            git diff --name-only HEAD^ HEAD ./ | grep -q ".github/workflows/main.yml" && CHANGED=true
+            git diff --name-only HEAD^ HEAD | grep -q ".github/workflows/main.yml" && CHANGED=true
           fi
           echo "changed=$CHANGED" >> $GITHUB_OUTPUT
         shell: bash
@@ -49,7 +50,7 @@ jobs:
             CHANGED=true
           else
             CHANGED=false
-            git diff --name-only HEAD^ HEAD ./ | grep -q "ffmpeg-base.dockerfile" && CHANGED=true
+            git diff --name-only HEAD^ HEAD | grep -q "ffmpeg-base.dockerfile" && CHANGED=true
           fi
           echo "changed=$CHANGED" >> $GITHUB_OUTPUT
         shell: bash
@@ -61,7 +62,7 @@ jobs:
             CHANGED=true
           else
             CHANGED=false
-            git diff --name-only HEAD^ HEAD ./ | grep -q "ffmpeg-linux.dockerfile" && CHANGED=true
+            git diff --name-only HEAD^ HEAD | grep -q "ffmpeg-linux.dockerfile" && CHANGED=true
           fi
           echo "changed=$CHANGED" >> $GITHUB_OUTPUT
         shell: bash
@@ -73,7 +74,7 @@ jobs:
             CHANGED=true
           else
             CHANGED=false
-            git diff --name-only HEAD^ HEAD ./ | grep -q "ffmpeg-windows.dockerfile" && CHANGED=true
+            git diff --name-only HEAD^ HEAD | grep -q "ffmpeg-windows.dockerfile" && CHANGED=true
           fi
           echo "changed=$CHANGED" >> $GITHUB_OUTPUT
         shell: bash
@@ -85,7 +86,7 @@ jobs:
             CHANGED=true
           else
             CHANGED=false
-            git diff --name-only HEAD^ HEAD ./ | grep -q "ffmpeg-aarch64.dockerfile" && CHANGED=true
+            git diff --name-only HEAD^ HEAD | grep -q "ffmpeg-aarch64.dockerfile" && CHANGED=true
           fi
           echo "changed=$CHANGED" >> $GITHUB_OUTPUT
         shell: bash
@@ -97,7 +98,7 @@ jobs:
             CHANGED=true
           else
             CHANGED=false
-            git diff --name-only HEAD^ HEAD ./ | grep -q "ffmpeg-darwin-x86_64.dockerfile" && CHANGED=true
+            git diff --name-only HEAD^ HEAD | grep -q "ffmpeg-darwin-x86_64.dockerfile" && CHANGED=true
           fi
           echo "changed=$CHANGED" >> $GITHUB_OUTPUT
         shell: bash
@@ -109,7 +110,7 @@ jobs:
             CHANGED=true
           else
             CHANGED=false
-            git diff --name-only HEAD^ HEAD ./ | grep -q "ffmpeg-darwin-arm64.dockerfile" && CHANGED=true
+            git diff --name-only HEAD^ HEAD | grep -q "ffmpeg-darwin-arm64.dockerfile" && CHANGED=true
           fi
           echo "changed=$CHANGED" >> $GITHUB_OUTPUT
         shell: bash
