@@ -44,13 +44,6 @@ To customize the FFmpeg build:
 - **Add Dependencies**: Install additional packages by modifying the `RUN` commands in the Dockerfile to include necessary dependencies.
 - **Apply Patches**: If you need to apply patches to the FFmpeg source, add the patch files to the repository and update the Dockerfile to apply them during the build process.
 
-## Contributing
-
-Contributions are welcome! If you have improvements or additional Dockerfiles for other platforms, feel free to submit a pull request.
-
-## License
-
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
 ## Acknowledgments
 
@@ -59,3 +52,16 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 ---
 
 *Note: This project is not affiliated with or endorsed by the FFmpeg project.*
+
+## Contributing
+
+Contributions are welcome! If you have improvements or additional Dockerfiles for other platforms, feel free to submit a pull request.
+
+## License
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+## Contact
+
+For further information or support, visit NoMercy.tv or contact our support team.
+
+Made with ❤️ by [NoMercy Entertainment](https://nomercy.tv)
