@@ -296,7 +296,7 @@ jobs:
 
   aarch64-ffmpeg-test:
     needs: check-release
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     outputs:
       test_feature: ${{ steps.test-aarch64.outputs.test_feature }}
       ffmpeg_path: ${{ steps.test-aarch64.outputs.ffmpeg_path }}
@@ -421,8 +421,44 @@ jobs:
       #     echo "Failed tests: $((${{ steps.test-aarch64.outputs.total_tests }} - ${{ steps.test-aarch64.outputs.passed_tests }}))"
       #     echo "----------------------------------------"
 
-  # test-darwin-x86_64:
-  #   runs-on: macos-latest
+  test-darwin-x86_64:
+    needs: check-release
+    runs-on: macos-13
+    outputs:
+      test_feature: ${{ steps.test-darwin-x86_64.outputs.test_feature }}
+      ffmpeg_path: ${{ steps.test-darwin-x86_64.outputs.ffmpeg_path }}
+      total_tests: ${{ steps.test-darwin-x86_64.outputs.total_tests }}
+      passed_tests: ${{ steps.test-darwin-x86_64.outputs.passed_tests }}
+      red: '\033[0;31m'
+      green: '\033[0;32m'
+      nc: '\033[0m'
 
-  # test-darwin-arm64:
-  #   runs-on: macos-latest
+    steps:      
+      - name: Download aarch64 release
+        id: test-darwin-x86_64
+        run: |
+            wget https://github.com/NoMercy-Entertainment/NoMercyFFMpeg/releases/download/${{ needs.check-release.outputs.version }}/ffmpeg-darwin-x86_64-7.1-${{ needs.check-release.outputs.version }}.tar.gz
+            tar -xvf ffmpeg-darwin-x86_64-7.1-${{ needs.check-release.outputs.version }}.tar.gz
+            chmod +x ./ffmpeg
+            ./ffmpeg -version
+
+  test-darwin-arm64:
+    needs: check-release
+    runs-on: macos-latest
+    outputs:
+      test_feature: ${{ steps.test-darwin-arm64.outputs.test_feature }}
+      ffmpeg_path: ${{ steps.test-darwin-arm64.outputs.ffmpeg_path }}
+      total_tests: ${{ steps.test-darwin-arm64.outputs.total_tests }}
+      passed_tests: ${{ steps.test-darwin-arm64.outputs.passed_tests }}
+      red: '\033[0;31m'
+      green: '\033[0;32m'
+      nc: '\033[0m'
+
+    steps:      
+      - name: Download aarch64 release
+        id: test-darwin-arm64
+        run: |
+            wget https://github.com/NoMercy-Entertainment/NoMercyFFMpeg/releases/download/${{ needs.check-release.outputs.version }}/ffmpeg-darwin-arm64-7.1-${{ needs.check-release.outputs.version }}.tar.gz
+            tar -xvf ffmpeg-darwin-arm64-7.1-${{ needs.check-release.outputs.version }}.tar.gz
+            chmod +x ./ffmpeg
+            ./ffmpeg -version
