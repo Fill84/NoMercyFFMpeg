@@ -10,7 +10,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
     NVIDIA_DRIVER_CAPABILITIES=compute,utility,video
 
 ENV PREFIX=/ffmpeg_build/darwin
-ENV MACOSX_DEPLOYMENT_TARGET=10.13.0
+ENV MACOSX_DEPLOYMENT_TARGET=10.15.0
 ENV SDK_VERSION=15.1
 ENV SDK_PATH=${PREFIX}/osxcross/SDK/MacOSX${SDK_VERSION}.sdk
 ENV OSX_FRAMEWORKS=${SDK_PATH}/System/Library/Frameworks
@@ -515,8 +515,6 @@ RUN cd /build/libwebp \
     && cmake -S .. -B . \
     ${CMAKE_COMMON_ARG} \
     -DBUILD_PKGCONFIG_FILES=ON \
-    -DBUILD_CODEC=OFF \
-    -DWITH_ASTYLE=OFF \
     -DBUILD_TESTING=OFF \
     && make -j$(nproc) && make install \
     && rm -rf /build/openjpeg \
