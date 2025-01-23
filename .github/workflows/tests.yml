@@ -42,8 +42,8 @@ jobs:
     outputs:
       test_feature: ${{ steps.test-linux.outputs.test_feature }}
       ffmpeg_path: ${{ steps.test-linux.outputs.ffmpeg_path }}
-      total_tests: ${{ steps.test-linux.outputs.total_tests }} || 0
-      passed_tests: ${{ steps.test-linux.outputs.passed_tests }} || 0
+      total_tests: ${{ steps.test-linux.outputs.total_tests }}
+      passed_tests: ${{ steps.test-linux.outputs.passed_tests }}
       red: '\033[0;31m'
       green: '\033[0;32m'
       nc: '\033[0m'
@@ -168,8 +168,8 @@ jobs:
     outputs:
       test_feature: ${{ steps.test-windows.outputs.test_feature }}
       ffmpeg_path: ${{ steps.test-windows.outputs.ffmpeg_path }}
-      total_tests: ${{ steps.test-windows.outputs.total_tests }} || 0
-      passed_tests: ${{ steps.test-windows.outputs.passed_tests }} || 0
+      total_tests: ${{ steps.test-windows.outputs.total_tests }}
+      passed_tests: ${{ steps.test-windows.outputs.passed_tests }}
 
     steps:
       - name: Download windows release
@@ -289,8 +289,8 @@ jobs:
     outputs:
       test_feature: ${{ steps.test-aarch64.outputs.test_feature }}
       ffmpeg_path: ${{ steps.test-aarch64.outputs.ffmpeg_path }}
-      total_tests: ${{ steps.test-aarch64.outputs.total_tests }} || 0
-      passed_tests: ${{ steps.test-aarch64.outputs.passed_tests }} || 0
+      total_tests: ${{ steps.test-aarch64.outputs.total_tests }}
+      passed_tests: ${{ steps.test-aarch64.outputs.passed_tests }}
       red: '\033[0;31m'
       green: '\033[0;32m'
       nc: '\033[0m'
