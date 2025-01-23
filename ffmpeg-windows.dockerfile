@@ -477,8 +477,9 @@ RUN cd /build/libwebp \
     && mkdir build && cd build \
     && cmake -S .. -B . \
     ${CMAKE_COMMON_ARG} \
-    -DBUILD_SHARED_LIBS=OFF \
     -DBUILD_PKGCONFIG_FILES=ON \
+    -DBUILD_CODEC=OFF \
+    -DWITH_ASTYLE=OFF \
     -DBUILD_TESTING=OFF \
     && make -j$(nproc) && make install \
     && rm -rf /build/openjpeg \
