@@ -33,7 +33,8 @@ jobs:
           git config --global --add safe.directory ${{ github.workspace }}
           # Get the latest version tag
           LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v1.0.0")
-
+          
+          echo "${green}Latest tag: $LATEST_TAG${nc}"
           echo "version=$LATEST_TAG" >> $GITHUB_OUTPUT
 
   linux-ffmpeg-test:
@@ -61,23 +62,24 @@ jobs:
 
             mkdir -p test_files
 
-            echo "test_feature=test_feature() {
+            test_feature() {
                 local name=$1
                 local command=$2
                 local expected_output=$3
                 
-                total_tests=$((${{ steps.test-linux.outputs.total_tests }} + 1))
-                echo "total_tests=$total_tests" >> $GITHUB_OUTPUT
+                total_tests=$((${total_tests} + 1))
+                echo "total_tests=${total_tests}" >> $GITHUB_OUTPUT
                 echo -n "Testing $name... "
                 
                 if eval "$command" 2>&1 | grep -q "$expected_output"; then
                     echo -e "${{ needs.check-release.outputs.green }}PASSED${{ needs.check-release.outputs.nc }}"
-                    passed_tests=$((${{ steps.test-linux.outputs.passed_tests }} + 1))
-                    echo "passed_tests=$passed_tests" >> $GITHUB_OUTPUT
+                    passed_tests=$((${passed_tests} + 1))
+                    echo "passed_tests=${passed_tests}" >> $GITHUB_OUTPUT
                 else
                     echo -e "${{ needs.check-release.outputs.red }}FAILED${{ needs.check-release.outputs.nc }}"
                 fi
-            }" >> $GITHUB_OUTPUT
+            }
+            echo "test_feature=test_feature" >> $GITHUB_OUTPUT
 
       - name: Test libx264
         run: ${{ steps.test-linux.outputs.test_features }} "libx264" "${{ steps.test-linux.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx264 test_files/test_h264.mp4" "encoder.*libx264"
@@ -183,22 +185,31 @@ jobs:
           echo "ffmpeg_path=./ffmpeg.exe" >> $GITHUB_OUTPUT
 
           mkdir -p test_files
+         
+          function Test_Feature {
+              param (
+                  [string]$Name,
+                  [string]$Command,
+                  [string]$ExpectedOutput
+              )
 
-          echo "test_feature=test_feature() {
-              local name=$1
-              local command=$2
-              local expected_output=$3
+              $global:TotalTests++
+              Write-Output "total_tests=$($global:TotalTests)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
+              Write-Host -NoNewline "Testing $Name... "
               
-              total_tests=$((${{ steps.test-windows.outputs.total_tests }} + 1))
-              echo -n "Testing $name... "
-              
-              if eval "$command" 2>&1 | grep -q "$expected_output"; then
-                  echo -e "${{ needs.check-release.outputs.green }}PASSED${{ needs.check-release.outputs.nc }}"
-                  passed_tests=$((${{ steps.test-windows.outputs.passed_tests }} + 1))
-              else
-                    echo -e "${{ needs.check-release.outputs.red }}FAILED${{ needs.check-release.outputs.nc }}"
-              fi
-          }" >> $GITHUB_OUTPUT
+              $output = Invoke-Expression $Command 2>&1
+
+              if ($output -match [regex]::Escape($ExpectedOutput)) {
+                  Write-Host "PASSED" -ForegroundColor Green
+                  $global:PassedTests++
+                  Write-Output "passed_tests=$($global:PassedTests)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+              }
+              else {
+                  Write-Host "FAILED" -ForegroundColor Red
+              }
+          }
+          echo "test_feature=Test_Feature" >> $GITHUB_OUTPUT
         
       - name: Test libx264
         run: ${{ steps.test-windows.outputs.test_features }} "libx264" "${{ steps.test-windows.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx264 test_files/test_h264.mp4" "encoder.*libx264"
@@ -308,23 +319,24 @@ jobs:
 
             mkdir -p test_files
 
-            echo "test_feature=test_feature() {
+            test_feature() {
                 local name=$1
                 local command=$2
                 local expected_output=$3
                 
-                total_tests=$((${{ steps.test-aarch64.outputs.total_tests }} + 1))
-                echo "total_tests=$total_tests" >> $GITHUB_OUTPUT
+                total_tests=$((${total_tests} + 1))
+                echo "total_tests=${total_tests}" >> $GITHUB_OUTPUT
                 echo -n "Testing $name... "
                 
                 if eval "$command" 2>&1 | grep -q "$expected_output"; then
                     echo -e "${{ needs.check-release.outputs.green }}PASSED${{ needs.check-release.outputs.nc }}"
-                    passed_tests=$((${{ steps.test-aarch64.outputs.passed_tests }} + 1))
-                    echo "passed_tests=$passed_tests" >> $GITHUB_OUTPUT
+                    passed_tests=$((${passed_tests} + 1))
+                    echo "passed_tests=${passed_tests}" >> $GITHUB_OUTPUT
                 else
                     echo -e "${{ needs.check-release.outputs.red }}FAILED${{ needs.check-release.outputs.nc }}"
                 fi
-            }" >> $GITHUB_OUTPUT
+            }
+            echo "test_feature=test_feature" >> $GITHUB_OUTPUT
 
       - name: Test libx264
         run: ${{ steps.test-aarch64.outputs.test_features }} "libx264" "${{ steps.test-aarch64.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx264 test_files/test_h264.mp4" "encoder.*libx264"
