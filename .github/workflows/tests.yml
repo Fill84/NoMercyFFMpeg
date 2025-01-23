@@ -58,43 +58,43 @@ jobs:
         shell: bash
 
       - name: Test libx264
-        run: ${{ steps.test-linux.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx264 test_files/test_h264.mp4
+        run: ${{ steps.test-linux.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx264 ./test_files/test_h264.mp4
         shell: bash
 
       - name: Test libx265
-        run: ${{ steps.test-linux.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx265 test_files/test_h265.mp4
+        run: ${{ steps.test-linux.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx265 ./test_files/test_h265.mp4
         shell: bash
 
       - name: Test libvpx
-        run: ${{ steps.test-linux.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libvpx-vp9 test_files/test_vp9.webm
+        run: ${{ steps.test-linux.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libvpx-vp9 ./test_files/test_vp9.webm
         shell: bash
 
       - name: Test libopus
-        run: ${{ steps.test-linux.outputs.ffmpeg_path }} -y -f lavfi -i anullsrc=duration=1 -c:a libopus test_files/test_opus.opus
+        run: ${{ steps.test-linux.outputs.ffmpeg_path }} -y -f lavfi -i anullsrc=duration=1 -c:a libopus ./test_files/test_opus.opus
         shell: bash
 
       - name: Test libmp3lame
-        run: ${{ steps.test-linux.outputs.ffmpeg_path }} -y -f lavfi -i anullsrc=duration=1 -c:a libmp3lame test_files/test_mp3.mp3
+        run: ${{ steps.test-linux.outputs.ffmpeg_path }} -y -f lavfi -i anullsrc=duration=1 -c:a libmp3lame ./test_files/test_mp3.mp3
         shell: bash
 
       - name: Test libfdk_aac
-        run: ${{ steps.test-linux.outputs.ffmpeg_path }} -y -f lavfi -i anullsrc=duration=1 -c:a libfdk_aac test_files/test_aac.m4a
+        run: ${{ steps.test-linux.outputs.ffmpeg_path }} -y -f lavfi -i anullsrc=duration=1 -c:a libfdk_aac ./test_files/test_aac.m4a
         shell: bash
 
       - name: Test libvorbis
-        run: ${{ steps.test-linux.outputs.ffmpeg_path }} -y -f lavfi -i anullsrc=duration=1 -c:a libvorbis test_files/test_vorbis.ogg
+        run: ${{ steps.test-linux.outputs.ffmpeg_path }} -y -f lavfi -i anullsrc=duration=1 -c:a libvorbis ./test_files/test_vorbis.ogg
         shell: bash
       
       - name: Test libwebp
-        run: ${{ steps.test-linux.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libwebp test_files/test.webp
+        run: ${{ steps.test-linux.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libwebp ./test_files/test.webp
         shell: bash
 
       - name: Test libopenjpeg
-        run: ${{ steps.test-linux.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libopenjpeg test_files/test.jp2
+        run: ${{ steps.test-linux.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libopenjpeg ./test_files/test.jp2
         shell: bash
 
       - name: Test libass
-        run: ${{ steps.test-linux.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -vf ass=test_files/test.ass test_files/test_ass.mp4
+        run: ${{ steps.test-linux.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -vf ass=test_files/test.ass ./test_files/test_ass.mp4
         shell: bash
 
       - name: Test libfribidi
@@ -153,43 +153,43 @@ jobs:
         shell: bash
 
       - name: Test libx264
-        run: ${{ steps.test-windows.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx264 test_files/test_h264.mp4
+        run: ${{ steps.test-windows.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx264 ./test_files/test_h264.mp4
         shell: bash
 
       - name: Test libx265
-        run: ${{ steps.test-windows.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx265 test_files/test_h265.mp4
+        run: ${{ steps.test-windows.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx265 ./test_files/test_h265.mp4
         shell: bash
 
       - name: Test libvpx
-        run: ${{ steps.test-windows.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libvpx-vp9 test_files/test_vp9.webm
+        run: ${{ steps.test-windows.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libvpx-vp9 ./test_files/test_vp9.webm
         shell: bash
 
       - name: Test libopus
-        run: ${{ steps.test-windows.outputs.ffmpeg_path }} -y -f lavfi -i anullsrc=duration=1 -c:a libopus test_files/test_opus.opus
+        run: ${{ steps.test-windows.outputs.ffmpeg_path }} -y -f lavfi -i anullsrc=duration=1 -c:a libopus ./test_files/test_opus.opus
         shell: bash
 
       - name: Test libmp3lame
-        run: ${{ steps.test-windows.outputs.ffmpeg_path }} -y -f lavfi -i anullsrc=duration=1 -c:a libmp3lame test_files/test_mp3.mp3
+        run: ${{ steps.test-windows.outputs.ffmpeg_path }} -y -f lavfi -i anullsrc=duration=1 -c:a libmp3lame ./test_files/test_mp3.mp3
         shell: bash
 
       - name: Test libfdk_aac
-        run: ${{ steps.test-windows.outputs.ffmpeg_path }} -y -f lavfi -i anullsrc=duration=1 -c:a libfdk_aac test_files/test_aac.m4a
+        run: ${{ steps.test-windows.outputs.ffmpeg_path }} -y -f lavfi -i anullsrc=duration=1 -c:a libfdk_aac ./test_files/test_aac.m4a
         shell: bash
 
       - name: Test libvorbis
-        run: ${{ steps.test-windows.outputs.ffmpeg_path }} -y -f lavfi -i anullsrc=duration=1 -c:a libvorbis test_files/test_vorbis.ogg
+        run: ${{ steps.test-windows.outputs.ffmpeg_path }} -y -f lavfi -i anullsrc=duration=1 -c:a libvorbis ./test_files/test_vorbis.ogg
         shell: bash
       
       - name: Test libwebp
-        run: ${{ steps.test-windows.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libwebp test_files/test.webp
+        run: ${{ steps.test-windows.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libwebp ./test_files/test.webp
         shell: bash
 
       - name: Test libopenjpeg
-        run: ${{ steps.test-windows.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libopenjpeg test_files/test.jp2
+        run: ${{ steps.test-windows.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libopenjpeg ./test_files/test.jp2
         shell: bash
 
       - name: Test libass
-        run: ${{ steps.test-windows.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -vf ass=test_files/test.ass test_files/test_ass.mp4
+        run: ${{ steps.test-windows.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -vf ass=test_files/test.ass ./test_files/test_ass.mp4
         shell: bash
 
       - name: Test libfribidi
@@ -237,53 +237,54 @@ jobs:
       - name: Download aarch64 release
         id: test-aarch64
         run: |
-            wget https://github.com/NoMercy-Entertainment/NoMercyFFMpeg/releases/download/${{ needs.check-release.outputs.version }}/ffmpeg-aarch64-7.1-${{ needs.check-release.outputs.version }}.tar.gz
-            tar -xvf ffmpeg-aarch64-7.1-${{ needs.check-release.outputs.version }}.tar.gz
-            chmod +x ./ffmpeg
-            echo "ffmpeg_path=./ffmpeg" >> $GITHUB_OUTPUT
+          wget https://github.com/NoMercy-Entertainment/NoMercyFFMpeg/releases/download/${{ needs.check-release.outputs.version }}/ffmpeg-aarch64-7.1-${{ needs.check-release.outputs.version }}.tar.gz
+          tar -xvf ffmpeg-aarch64-7.1-${{ needs.check-release.outputs.version }}.tar.gz
+          chmod +x ./ffmpeg
+          echo "ffmpeg_path=./ffmpeg" >> $GITHUB_OUTPUT
+          mkdir -p test_files
 
       - name: Test version
         run: ${{ steps.test-aarch64.outputs.ffmpeg_path }} -version
         shell: bash
 
       - name: Test libx264
-        run: ${{ steps.test-aarch64.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx264 test_files/test_h264.mp4
+        run: ${{ steps.test-aarch64.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx264 ./test_files/test_h264.mp4
         shell: bash
 
       - name: Test libx265
-        run: ${{ steps.test-aarch64.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx265 test_files/test_h265.mp4
+        run: ${{ steps.test-aarch64.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx265 ./test_files/test_h265.mp4
         shell: bash
 
       - name: Test libvpx
-        run: ${{ steps.test-aarch64.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libvpx-vp9 test_files/test_vp9.webm
+        run: ${{ steps.test-aarch64.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libvpx-vp9 ./test_files/test_vp9.webm
         shell: bash
 
       - name: Test libopus
-        run: ${{ steps.test-aarch64.outputs.ffmpeg_path }} -y -f lavfi -i anullsrc=duration=1 -c:a libopus test_files/test_opus.opus
+        run: ${{ steps.test-aarch64.outputs.ffmpeg_path }} -y -f lavfi -i anullsrc=duration=1 -c:a libopus ./test_files/test_opus.opus
         shell: bash
 
       - name: Test libmp3lame
-        run: ${{ steps.test-aarch64.outputs.ffmpeg_path }} -y -f lavfi -i anullsrc=duration=1 -c:a libmp3lame test_files/test_mp3.mp3
+        run: ${{ steps.test-aarch64.outputs.ffmpeg_path }} -y -f lavfi -i anullsrc=duration=1 -c:a libmp3lame ./test_files/test_mp3.mp3
         shell: bash
 
       - name: Test libfdk_aac
-        run: ${{ steps.test-aarch64.outputs.ffmpeg_path }} -y -f lavfi -i anullsrc=duration=1 -c:a libfdk_aac test_files/test_aac.m4a
+        run: ${{ steps.test-aarch64.outputs.ffmpeg_path }} -y -f lavfi -i anullsrc=duration=1 -c:a libfdk_aac ./test_files/test_aac.m4a
         shell: bash
 
       - name: Test libvorbis
-        run: ${{ steps.test-aarch64.outputs.ffmpeg_path }} -y -f lavfi -i anullsrc=duration=1 -c:a libvorbis test_files/test_vorbis.ogg
+        run: ${{ steps.test-aarch64.outputs.ffmpeg_path }} -y -f lavfi -i anullsrc=duration=1 -c:a libvorbis ./test_files/test_vorbis.ogg
         shell: bash
       
       - name: Test libwebp
-        run: ${{ steps.test-aarch64.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libwebp test_files/test.webp
+        run: ${{ steps.test-aarch64.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libwebp ./test_files/test.webp
         shell: bash
 
       - name: Test libopenjpeg
-        run: ${{ steps.test-aarch64.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libopenjpeg test_files/test.jp2
+        run: ${{ steps.test-aarch64.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libopenjpeg ./test_files/test.jp2
         shell: bash
 
       - name: Test libass
-        run: ${{ steps.test-aarch64.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -vf ass=test_files/test.ass test_files/test_ass.mp4
+        run: ${{ steps.test-aarch64.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -vf ass=test_files/test.ass ./test_files/test_ass.mp4
         shell: bash
 
       - name: Test libfribidi
@@ -331,53 +332,54 @@ jobs:
       - name: Download aarch64 release
         id: test-darwin-x86_64
         run: |
-            wget https://github.com/NoMercy-Entertainment/NoMercyFFMpeg/releases/download/${{ needs.check-release.outputs.version }}/ffmpeg-darwin-x86_64-7.1-${{ needs.check-release.outputs.version }}.tar.gz
-            tar -xvf ffmpeg-darwin-x86_64-7.1-${{ needs.check-release.outputs.version }}.tar.gz
-            chmod +x ./ffmpeg
-            echo "ffmpeg_path=./ffmpeg" >> $GITHUB_OUTPUT
+          wget https://github.com/NoMercy-Entertainment/NoMercyFFMpeg/releases/download/${{ needs.check-release.outputs.version }}/ffmpeg-darwin-x86_64-7.1-${{ needs.check-release.outputs.version }}.tar.gz
+          tar -xvf ffmpeg-darwin-x86_64-7.1-${{ needs.check-release.outputs.version }}.tar.gz
+          chmod +x ./ffmpeg
+          echo "ffmpeg_path=./ffmpeg" >> $GITHUB_OUTPUT
+          mkdir -p test_files
 
       - name: Test version
         run: ${{ steps.test-darwin-x86_64.outputs.ffmpeg_path }} -version
         shell: bash
 
       - name: Test libx264
-        run: ${{ steps.test-darwin-x86_64.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx264 test_files/test_h264.mp4
+        run: ${{ steps.test-darwin-x86_64.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx264 ./test_files/test_h264.mp4
         shell: bash
 
       - name: Test libx265
-        run: ${{ steps.test-darwin-x86_64.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx265 test_files/test_h265.mp4
+        run: ${{ steps.test-darwin-x86_64.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx265 ./test_files/test_h265.mp4
         shell: bash
 
       - name: Test libvpx
-        run: ${{ steps.test-darwin-x86_64.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libvpx-vp9 test_files/test_vp9.webm
+        run: ${{ steps.test-darwin-x86_64.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libvpx-vp9 ./test_files/test_vp9.webm
         shell: bash
 
       - name: Test libopus
-        run: ${{ steps.test-darwin-x86_64.outputs.ffmpeg_path }} -y -f lavfi -i anullsrc=duration=1 -c:a libopus test_files/test_opus.opus
+        run: ${{ steps.test-darwin-x86_64.outputs.ffmpeg_path }} -y -f lavfi -i anullsrc=duration=1 -c:a libopus ./test_files/test_opus.opus
         shell: bash
 
       - name: Test libmp3lame
-        run: ${{ steps.test-darwin-x86_64.outputs.ffmpeg_path }} -y -f lavfi -i anullsrc=duration=1 -c:a libmp3lame test_files/test_mp3.mp3
+        run: ${{ steps.test-darwin-x86_64.outputs.ffmpeg_path }} -y -f lavfi -i anullsrc=duration=1 -c:a libmp3lame ./test_files/test_mp3.mp3
         shell: bash
 
       - name: Test libfdk_aac
-        run: ${{ steps.test-darwin-x86_64.outputs.ffmpeg_path }} -y -f lavfi -i anullsrc=duration=1 -c:a libfdk_aac test_files/test_aac.m4a
+        run: ${{ steps.test-darwin-x86_64.outputs.ffmpeg_path }} -y -f lavfi -i anullsrc=duration=1 -c:a libfdk_aac ./test_files/test_aac.m4a
         shell: bash
 
       - name: Test libvorbis
-        run: ${{ steps.test-darwin-x86_64.outputs.ffmpeg_path }} -y -f lavfi -i anullsrc=duration=1 -c:a libvorbis test_files/test_vorbis.ogg
+        run: ${{ steps.test-darwin-x86_64.outputs.ffmpeg_path }} -y -f lavfi -i anullsrc=duration=1 -c:a libvorbis ./test_files/test_vorbis.ogg
         shell: bash
       
       - name: Test libwebp
-        run: ${{ steps.test-darwin-x86_64.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libwebp test_files/test.webp
+        run: ${{ steps.test-darwin-x86_64.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libwebp ./test_files/test.webp
         shell: bash
 
       - name: Test libopenjpeg
-        run: ${{ steps.test-darwin-x86_64.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libopenjpeg test_files/test.jp2
+        run: ${{ steps.test-darwin-x86_64.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libopenjpeg ./test_files/test.jp2
         shell: bash
 
       - name: Test libass
-        run: ${{ steps.test-darwin-x86_64.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -vf ass=test_files/test.ass test_files/test_ass.mp4
+        run: ${{ steps.test-darwin-x86_64.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -vf ass=test_files/test.ass ./test_files/test_ass.mp4
         shell: bash
 
       - name: Test libfribidi
@@ -425,10 +427,11 @@ jobs:
       - name: Download aarch64 release
         id: test-darwin-arm64
         run: |
-            wget https://github.com/NoMercy-Entertainment/NoMercyFFMpeg/releases/download/${{ needs.check-release.outputs.version }}/ffmpeg-darwin-arm64-7.1-${{ needs.check-release.outputs.version }}.tar.gz
-            tar -xvf ffmpeg-darwin-arm64-7.1-${{ needs.check-release.outputs.version }}.tar.gz
-            chmod +x ./ffmpeg
-            echo "ffmpeg_path=./ffmpeg" >> $GITHUB_OUTPUT
+          wget https://github.com/NoMercy-Entertainment/NoMercyFFMpeg/releases/download/${{ needs.check-release.outputs.version }}/ffmpeg-darwin-arm64-7.1-${{ needs.check-release.outputs.version }}.tar.gz
+          tar -xvf ffmpeg-darwin-arm64-7.1-${{ needs.check-release.outputs.version }}.tar.gz
+          chmod +x ./ffmpeg
+          echo "ffmpeg_path=./ffmpeg" >> $GITHUB_OUTPUT
+          mkdir -p test_files
 
       - name: Test version
         run: ${{ steps.test-darwin-arm64.outputs.ffmpeg_path }} -version
@@ -436,43 +439,43 @@ jobs:
 
       - name: Test libx264
         run: |
-          ${{ steps.test-darwin-arm64.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx264 test_files/test_h264.mp4 || false
+          ${{ steps.test-darwin-arm64.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx264 ./test_files/test_h264.mp4 || false
         shell: bash
 
       - name: Test libx265
-        run: ${{ steps.test-darwin-arm64.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx265 test_files/test_h265.mp4 || false
+        run: ${{ steps.test-darwin-arm64.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx265 ./test_files/test_h265.mp4 || false
         shell: bash
 
       - name: Test libvpx
-        run: ${{ steps.test-darwin-arm64.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libvpx-vp9 test_files/test_vp9.webm
+        run: ${{ steps.test-darwin-arm64.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libvpx-vp9 ./test_files/test_vp9.webm
         shell: bash
 
       - name: Test libopus
-        run: ${{ steps.test-darwin-arm64.outputs.ffmpeg_path }} -y -f lavfi -i anullsrc=duration=1 -c:a libopus test_files/test_opus.opus
+        run: ${{ steps.test-darwin-arm64.outputs.ffmpeg_path }} -y -f lavfi -i anullsrc=duration=1 -c:a libopus ./test_files/test_opus.opus
         shell: bash
 
       - name: Test libmp3lame
-        run: ${{ steps.test-darwin-arm64.outputs.ffmpeg_path }} -y -f lavfi -i anullsrc=duration=1 -c:a libmp3lame test_files/test_mp3.mp3
+        run: ${{ steps.test-darwin-arm64.outputs.ffmpeg_path }} -y -f lavfi -i anullsrc=duration=1 -c:a libmp3lame ./test_files/test_mp3.mp3
         shell: bash
 
       - name: Test libfdk_aac
-        run: ${{ steps.test-darwin-arm64.outputs.ffmpeg_path }} -y -f lavfi -i anullsrc=duration=1 -c:a libfdk_aac test_files/test_aac.m4a
+        run: ${{ steps.test-darwin-arm64.outputs.ffmpeg_path }} -y -f lavfi -i anullsrc=duration=1 -c:a libfdk_aac ./test_files/test_aac.m4a
         shell: bash
 
       - name: Test libvorbis
-        run: ${{ steps.test-darwin-arm64.outputs.ffmpeg_path }} -y -f lavfi -i anullsrc=duration=1 -c:a libvorbis test_files/test_vorbis.ogg
+        run: ${{ steps.test-darwin-arm64.outputs.ffmpeg_path }} -y -f lavfi -i anullsrc=duration=1 -c:a libvorbis ./test_files/test_vorbis.ogg
         shell: bash
       
       - name: Test libwebp
-        run: ${{ steps.test-darwin-arm64.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libwebp test_files/test.webp
+        run: ${{ steps.test-darwin-arm64.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libwebp ./test_files/test.webp
         shell: bash
 
       - name: Test libopenjpeg
-        run: ${{ steps.test-darwin-arm64.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libopenjpeg test_files/test.jp2
+        run: ${{ steps.test-darwin-arm64.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libopenjpeg ./test_files/test.jp2
         shell: bash
 
       - name: Test libass
-        run: ${{ steps.test-darwin-arm64.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -vf ass=test_files/test.ass test_files/test_ass.mp4
+        run: ${{ steps.test-darwin-arm64.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -vf ass=test_files/test.ass ./test_files/test_ass.mp4
         shell: bash
 
       - name: Test libfribidi
