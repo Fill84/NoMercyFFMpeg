@@ -56,7 +56,7 @@ jobs:
         shell: bash
 
       - name: Test libx265
-        run: ./ffmpeg -y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx265 ./test_files/test_h265.mp4
+        run: ./ffmpeg -y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx265 -pix_fmt yuv420p ./test_files/test_h265.mp4
         shell: bash
 
       - name: Test libvpx
@@ -145,7 +145,7 @@ jobs:
         shell: bash
 
       - name: Test libx265
-        run: ./ffmpeg.exe -y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx265 ./test_files/test_h265.mp4
+        run: ./ffmpeg.exe -y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx265 -pix_fmt yuv420p ./test_files/test_h265.mp4
         shell: bash
 
       - name: Test libvpx
@@ -234,7 +234,7 @@ jobs:
         shell: bash
 
       - name: Test libx265
-        run: ./ffmpeg -y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx265 ./test_files/test_h265.mp4
+        run: ./ffmpeg -y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx265 -pix_fmt yuv420p ./test_files/test_h265.mp4
         shell: bash
 
       - name: Test libvpx
@@ -323,7 +323,7 @@ jobs:
         shell: bash
 
       - name: Test libx265
-        run: ./ffmpeg -y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx265 ./test_files/test_h265.mp4
+        run: ./ffmpeg -y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx265 -pix_fmt yuv420p ./test_files/test_h265.mp4
         shell: bash
 
       - name: Test libvpx
@@ -412,7 +412,7 @@ jobs:
         shell: bash
 
       - name: Test libx265
-        run: ./ffmpeg -y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx265 ./test_files/test_h265.mp4 || false
+        run: ./ffmpeg -y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx265 -pix_fmt yuv420p ./test_files/test_h265.mp4 || false
         shell: bash
 
       - name: Test libvpx
