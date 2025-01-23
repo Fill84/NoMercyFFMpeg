@@ -17,9 +17,6 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.version-check.outputs.version }}      
-      red: '\033[0;31m'
-      green: '\033[0;32m'
-      nc: '\033[0m'
 
     steps:
       - name: Checkout Code
@@ -34,7 +31,7 @@ jobs:
           # Get the latest version tag
           LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v1.0.0")
           
-          echo "${green}Latest tag: $LATEST_TAG${nc}"
+          echo "Latest tag: $LATEST_TAG$"
           echo "version=$LATEST_TAG" >> $GITHUB_OUTPUT
 
   linux-ffmpeg-test:
@@ -45,9 +42,6 @@ jobs:
       ffmpeg_path: ${{ steps.test-linux.outputs.ffmpeg_path }}
       total_tests: ${{ steps.test-linux.outputs.total_tests }}
       passed_tests: ${{ steps.test-linux.outputs.passed_tests }}
-      red: '\033[0;31m'
-      green: '\033[0;32m'
-      nc: '\033[0m'
 
     steps:      
       - name: Download linux release
@@ -58,111 +52,110 @@ jobs:
             chmod +x ./ffmpeg
             ./ffmpeg -version
 
-      #       echo "ffmpeg_path=./ffmpeg" >> $GITHUB_OUTPUT
+            echo "ffmpeg_path=./ffmpeg" >> $GITHUB_OUTPUT
 
-      #       mkdir -p test_files
+            mkdir -p test_files
 
-      #       test_feature() {
-      #           local name=$1
-      #           local command=$2
-      #           local expected_output=$3
+            test_feature() {
+                local name=$1
+                local command=$2
+                local expected_output=$3
                 
-      #           total_tests=$((${total_tests} + 1))
-      #           echo "total_tests=${total_tests}" >> $GITHUB_OUTPUT
-      #           echo -n "Testing $name... "
+                total_tests=$((${total_tests} + 1))
+                echo "total_tests=${total_tests}" >> $GITHUB_OUTPUT
+                echo -n "Testing $name... "
                 
-      #           if eval "$command" 2>&1 | grep -q "$expected_output"; then
-      #               echo -e "${{ needs.check-release.outputs.green }}PASSED${{ needs.check-release.outputs.nc }}"
-      #               passed_tests=$((${passed_tests} + 1))
-      #               echo "passed_tests=${passed_tests}" >> $GITHUB_OUTPUT
-      #           else
-      #               echo -e "${{ needs.check-release.outputs.red }}FAILED${{ needs.check-release.outputs.nc }}"
-      #           fi
-      #       }
-      #       echo "test_feature=test_feature" >> $GITHUB_OUTPUT
+                if eval "$command" 2>&1 | grep -q "$expected_output"; then
+                    echo -e "PASSED"
+                    passed_tests=$((${passed_tests} + 1))
+                    echo "passed_tests=${passed_tests}" >> $GITHUB_OUTPUT
+                else
+                    echo -e "FAILED"
+                fi
+            }
 
-      # - name: Test libx264
-      #   run: ${{ steps.test-linux.outputs.test_features }} "libx264" "${{ steps.test-linux.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx264 test_files/test_h264.mp4" "encoder.*libx264"
-      #   shell: bash
+      - name: Test libx264
+        run: test_feature "libx264" "${{ steps.test-linux.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx264 test_files/test_h264.mp4" "encoder.*libx264"
+        shell: bash
 
       # - name: Test libx265
-      #   run: ${{ steps.test-linux.outputs.test_features }} "libx265" "${{ steps.test-linux.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx265 test_files/test_h265.mp4" "encoder.*libx265"
+      #   run: test_feature "libx265" "${{ steps.test-linux.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx265 test_files/test_h265.mp4" "encoder.*libx265"
       #   shell: bash
 
       # - name: Test libvpx
-      #   run: ${{ steps.test-linux.outputs.test_features }} "libvpx" "${{ steps.test-linux.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libvpx-vp9 test_files/test_vp9.webm" "encoder.*libvpx"
+      #   run: test_feature "libvpx" "${{ steps.test-linux.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libvpx-vp9 test_files/test_vp9.webm" "encoder.*libvpx"
       #   shell: bash
 
       # - name: Test libopus
-      #   run: ${{ steps.test-linux.outputs.test_features }} "libopus" "${{ steps.test-linux.outputs.ffmpeg_path }} -y -f lavfi -i anullsrc=duration=1 -c:a libopus test_files/test_opus.opus" "encoder.*libopus"
+      #   run: test_feature "libopus" "${{ steps.test-linux.outputs.ffmpeg_path }} -y -f lavfi -i anullsrc=duration=1 -c:a libopus test_files/test_opus.opus" "encoder.*libopus"
       #   shell: bash
 
       # - name: Test libmp3lame
-      #   run: ${{ steps.test-linux.outputs.test_features }} "libmp3lame" "${{ steps.test-linux.outputs.ffmpeg_path }} -y -f lavfi -i anullsrc=duration=1 -c:a libmp3lame test_files/test_mp3.mp3" "encoder.*libmp3lame"
+      #   run: test_feature "libmp3lame" "${{ steps.test-linux.outputs.ffmpeg_path }} -y -f lavfi -i anullsrc=duration=1 -c:a libmp3lame test_files/test_mp3.mp3" "encoder.*libmp3lame"
       #   shell: bash
 
       # - name: Test libfdk_aac
-      #   run: ${{ steps.test-linux.outputs.test_features }} "libfdk_aac" "${{ steps.test-linux.outputs.ffmpeg_path }} -y -f lavfi -i anullsrc=duration=1 -c:a libfdk_aac test_files/test_aac.m4a" "encoder.*libfdk_aac"
+      #   run: test_feature "libfdk_aac" "${{ steps.test-linux.outputs.ffmpeg_path }} -y -f lavfi -i anullsrc=duration=1 -c:a libfdk_aac test_files/test_aac.m4a" "encoder.*libfdk_aac"
       #   shell: bash
 
       # - name: Test libvorbis
-      #   run: ${{ steps.test-linux.outputs.test_features }} "libvorbis" "${{ steps.test-linux.outputs.ffmpeg_path }} -y -f lavfi -i anullsrc=duration=1 -c:a libvorbis test_files/test_vorbis.ogg" "encoder.*libvorbis"
+      #   run: test_feature "libvorbis" "${{ steps.test-linux.outputs.ffmpeg_path }} -y -f lavfi -i anullsrc=duration=1 -c:a libvorbis test_files/test_vorbis.ogg" "encoder.*libvorbis"
       #   shell: bash
       
       # - name: Test libwebp
-      #   run: ${{ steps.test-linux.outputs.test_features }} "libwebp" "${{ steps.test-linux.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libwebp test_files/test.webp" "encoder.*libwebp"
+      #   run: test_feature "libwebp" "${{ steps.test-linux.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libwebp test_files/test.webp" "encoder.*libwebp"
       #   shell: bash
 
       # - name: Test libopenjpeg
-      #   run: ${{ steps.test-linux.outputs.test_features }} "libopenjpeg" "${{ steps.test-linux.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libopenjpeg test_files/test.jp2" "encoder.*openjpeg"
+      #   run: test_feature "libopenjpeg" "${{ steps.test-linux.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libopenjpeg test_files/test.jp2" "encoder.*openjpeg"
       #   shell: bash
 
       # - name: Test libass
-      #   run: ${{ steps.test-linux.outputs.test_features }} "libass" "${{ steps.test-linux.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -vf ass=test_files/test.ass test_files/test_ass.mp4" "ass"
+      #   run: test_feature "libass" "${{ steps.test-linux.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -vf ass=test_files/test.ass test_files/test_ass.mp4" "ass"
       #   shell: bash
 
       # - name: Test libfribidi
-      #   run: ${{ steps.test-linux.outputs.test_features }} "libfribidi" "${{ steps.test-linux.outputs.ffmpeg_path }} -filters 2>&1 | grep fribidi" "fribidi"
+      #   run: test_feature "libfribidi" "${{ steps.test-linux.outputs.ffmpeg_path }} -filters 2>&1 | grep fribidi" "fribidi"
       #   shell: bash
 
       # - name: Test libvmaf
-      #   run: ${{ steps.test-linux.outputs.test_features }} "libvmaf" "${{ steps.test-linux.outputs.ffmpeg_path }} -h 2>&1 | grep vmaf" "libvmaf"
+      #   run: test_feature "libvmaf" "${{ steps.test-linux.outputs.ffmpeg_path }} -h 2>&1 | grep vmaf" "libvmaf"
       #   shell: bash
         
       # - name: Test libbluray
-      #   run: ${{ steps.test-linux.outputs.test_features }} "libbluray" "${{ steps.test-linux.outputs.ffmpeg_path }} -h 2>&1 | grep bluray" "bluray"
+      #   run: test_feature "libbluray" "${{ steps.test-linux.outputs.ffmpeg_path }} -h 2>&1 | grep bluray" "bluray"
       #   shell: bash
         
       # - name: Test libcdio
-      #   run: ${{ steps.test-linux.outputs.test_features }} "libcdio" "${{ steps.test-linux.outputs.ffmpeg_path }} -h 2>&1 | grep cdio" "cdio"
+      #   run: test_feature "libcdio" "${{ steps.test-linux.outputs.ffmpeg_path }} -h 2>&1 | grep cdio" "cdio"
       #   shell: bash
         
       # - name: Test libsrt 
-      #   run: ${{ steps.test-linux.outputs.test_features }} "libsrt" "${{ steps.test-linux.outputs.ffmpeg_path }} -h 2>&1 | grep srt" "srt"
+      #   run: test_feature "libsrt" "${{ steps.test-linux.outputs.ffmpeg_path }} -h 2>&1 | grep srt" "srt"
       #   shell: bash
 
       # - name: Test libxml2
-      #   run: ${{ steps.test-linux.outputs.test_features }} "libxml2" "${{ steps.test-linux.outputs.ffmpeg_path }} -h 2>&1 | grep xml" "xml"
+      #   run: test_feature "libxml2" "${{ steps.test-linux.outputs.ffmpeg_path }} -h 2>&1 | grep xml" "xml"
       #   shell: bash
 
       # - name: Test libdav1d
-      #   run: ${{ steps.test-linux.outputs.test_features }} "libdav1d" "${{ steps.test-linux.outputs.ffmpeg_path }} -h decoder 2>&1 | grep dav1d" "dav1d"
+      #   run: test_feature "libdav1d" "${{ steps.test-linux.outputs.ffmpeg_path }} -h decoder 2>&1 | grep dav1d" "dav1d"
       #   shell: bash
 
       # - name: Test rav1e
-      #   run: ${{ steps.test-linux.outputs.test_features }} "librav1e" "${{ steps.test-linux.outputs.ffmpeg_path }} -h encoder 2>&1 | grep rav1e" "rav1e"
+      #   run: test_feature "librav1e" "${{ steps.test-linux.outputs.ffmpeg_path }} -h encoder 2>&1 | grep rav1e" "rav1e"
       #   shell: bash
 
-      # - name: Test results
-      #   run: |
-      #     rm -rf test_files
-      #     # Print summary
-      #     echo "----------------------------------------"
-      #     echo "Test Summary:"
-      #     echo "Total tests: ${{ steps.test-linux.outputs.total_tests }}"
-      #     echo "Passed tests: ${{ steps.test-linux.outputs.passed_tests }}"
-      #     echo "Failed tests: $((${{ steps.test-linux.outputs.total_tests }} - ${{ steps.test-linux.outputs.passed_tests }}))"
-      #     echo "----------------------------------------"
+      - name: Test results
+        run: |
+          rm -rf test_files
+          # Print summary
+          echo "----------------------------------------"
+          echo "Test Summary:"
+          echo "Total tests: ${{ steps.test-linux.outputs.total_tests }}"
+          echo "Passed tests: ${{ steps.test-linux.outputs.passed_tests }}"
+          echo "Failed tests: $((${{ steps.test-linux.outputs.total_tests }} - ${{ steps.test-linux.outputs.passed_tests }}))"
+          echo "----------------------------------------"
 
   windows-ffmpeg-test:
     needs: check-release
@@ -421,7 +414,7 @@ jobs:
       #     echo "Failed tests: $((${{ steps.test-aarch64.outputs.total_tests }} - ${{ steps.test-aarch64.outputs.passed_tests }}))"
       #     echo "----------------------------------------"
 
-  test-darwin-x86_64:
+  darwin-x86_64:
     needs: check-release
     runs-on: macos-13
     outputs:
@@ -442,7 +435,7 @@ jobs:
             chmod +x ./ffmpeg
             ./ffmpeg -version
 
-  test-darwin-arm64:
+  darwin-arm64:
     needs: check-release
     runs-on: macos-latest
     outputs:
