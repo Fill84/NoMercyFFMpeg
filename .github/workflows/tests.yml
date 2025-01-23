@@ -50,13 +50,12 @@ jobs:
             wget https://github.com/NoMercy-Entertainment/NoMercyFFMpeg/releases/download/${{ needs.check-release.outputs.version }}/ffmpeg-linux-7.1-${{ needs.check-release.outputs.version }}.tar.gz
             tar -xvf ffmpeg-linux-7.1-${{ needs.check-release.outputs.version }}.tar.gz
             chmod +x ./ffmpeg
-            ./ffmpeg -version
 
             echo "ffmpeg_path=./ffmpeg" >> $GITHUB_OUTPUT
 
             mkdir -p test_files
 
-            test_feature() {
+            test_func() {
                 local name=$1
                 local command=$2
                 local expected_output=$3
@@ -73,9 +72,14 @@ jobs:
                     echo -e "FAILED"
                 fi
             }
+            echo "test_feature=test_func" >> $GITHUB_OUTPUT
+
+      - name: Test version
+        run: ${{ steps.test-linux.outputs.passed_tests }} "version" "${{ steps.test-linux.outputs.ffmpeg_path }} -version" "ffmpeg version"
+        shell: bash
 
       - name: Test libx264
-        run: test_feature "libx264" "${{ steps.test-linux.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx264 test_files/test_h264.mp4" "encoder.*libx264"
+        run: ${{ steps.test-linux.outputs.passed_tests }} "libx264" "${{ steps.test-linux.outputs.ffmpeg_path }} -y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx264 test_files/test_h264.mp4" "encoder.*libx264"
         shell: bash
 
       # - name: Test libx265
