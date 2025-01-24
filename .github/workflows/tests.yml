@@ -39,6 +39,7 @@ jobs:
           
           echo "Latest tag: $LATEST_TAG$"
           echo "version=$LATEST_TAG" >> $GITHUB_OUTPUT
+        shell: bash
 
   # Linux x86_64 tests
   linux-x86_64-ffmpeg-download:
@@ -64,6 +65,8 @@ jobs:
 
           mkdir -p test_files
           dd if=/dev/urandom of=test_files/test.raw bs=1M count=1
+          
+          . "$env:${{ github.workspace}}\scripts\test-runner.sh"
         shell: bash
 
   linux-x86_64-ffmpeg-test:
@@ -215,7 +218,7 @@ jobs:
           [System.IO.File]::WriteAllBytes("test_files/test.raw", $randomBytes)
 
           # Load test runner
-          . ${{ github.workspace}}\scripts\test-runner.ps1
+          . "$env:${{ github.workspace}}\scripts\test-runner.ps1"
         shell: pwsh
   
   windows-x86_64-ffmpeg-test:
@@ -362,7 +365,7 @@ jobs:
           mkdir -p test_files
           dd if=/dev/urandom of=test_files/test.raw bs=1M count=1
 
-          . ${{ github.workspace}}/scripts/test-runner.sh
+          . "$env:${{ github.workspace}}\scripts\test-runner.sh"
         shell: bash
   
   linux-aarch64-ffmpeg-test:
@@ -372,6 +375,7 @@ jobs:
     steps:
       # Basic tests
       - name: Version check
+      # run_test is de functie wat in ut test-runner.sh script steit
         run: run_test "ffmpeg version" "-version" "7.1"
         shell: bash
 
@@ -507,7 +511,8 @@ jobs:
           mkdir -p test_files
           dd if=/dev/urandom of=test_files/test.raw bs=1M count=1
 
-          . ${{ github.workspace}}/scripts/test-runner.sh
+          # Load test runner
+          . "$env:${{ github.workspace}}\scripts\test-runner.sh"
         shell: bash
 
   darwin-x86_64-ffmpeg-test:
@@ -652,7 +657,7 @@ jobs:
           mkdir -p test_files
           dd if=/dev/urandom of=test_files/test.raw bs=1M count=1          
 
-          . ${{ github.workspace}}/scripts/test-runner.sh
+          . "$env:${{ github.workspace}}\scripts\test-runner.sh"
         shell: bash
 
   darwin-arm64-ffmpeg-test:
