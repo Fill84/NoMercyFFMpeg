@@ -158,9 +158,9 @@ jobs:
 
       - name: Test ffmpeg windows
         run: |
-          TOTAL_TESTS=0
-          PASSED_TESTS=0
-          FAILED_TESTS=0
+          TOTAL_TESTS = 0
+          PASSED_TESTS = 0
+          FAILED_TESTS = 0
 
           mkdir -p test_files
 
