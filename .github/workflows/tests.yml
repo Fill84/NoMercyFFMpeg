@@ -58,13 +58,13 @@ jobs:
       - name: Download Release
         run: |
           if [ "${{ matrix.os }}" == "ubuntu-latest" ]; then
-            FILE_NAME="downloads/ffmpeg-linux-${{ matrix.arch }}-7.1.tar.gz"
+            FILE_NAME="downloads/ffmpeg-linux-${{ matrix.arch }}-7.1-${{ needs.check-release.outputs.version }}.tar.gz"
           elif [ "${{ matrix.os }}" == "windows-latest" ]; then
-            FILE_NAME="downloads/ffmpeg-windows-${{ matrix.arch }}-7.1.tar.gz"
+            FILE_NAME="downloads/ffmpeg-windows-${{ matrix.arch }}-7.1-${{ needs.check-release.outputs.version }}.tar.gz"
           elif [ "${{ matrix.os }}" == "macos-latest" ] && [ "${{ matrix.arch }}" == "x86_64" ]; then
-            FILE_NAME="downloads/ffmpeg-darwin-x86_64-7.1.tar.gz"
+            FILE_NAME="downloads/ffmpeg-darwin-x86_64-7.1-${{ needs.check-release.outputs.version }}.tar.gz"
           elif [ "${{ matrix.os }}" == "macos-latest" ] && [ "${{ matrix.arch }}" == "arm64" ]; then
-            FILE_NAME="downloads/ffmpeg-darwin-arm64-7.1.tar.gz"
+            FILE_NAME="downloads/ffmpeg-darwin-arm64-7.1-${{ needs.check-release.outputs.version }}.tar.gz"
           fi
 
           echo "Using file: $FILE_NAME"
