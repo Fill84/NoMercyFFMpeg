@@ -262,18 +262,18 @@ jobs:
           run_test "librav1e" "-h encoder 2>&1 | grep rav1e" "rav1e"
           
           # Cleanup
-          rm -rf test_files
+          Remove-Item -Path test_files -Recurse -Force
           
           # Print summary
-          echo "----------------------------------------"
-          echo "Test Summary:"
-          echo "Total tests: $TOTAL_TESTS"
-          echo "Passed tests: $PASSED_TESTS"
-          echo "Failed tests: $FAILED_TESTS"
-          echo "----------------------------------------"
+          Write-Host "----------------------------------------"
+          Write-Host "Test Summary:"
+          Write-Host "Total tests: $script:TOTAL_TESTS"
+          Write-Host "Passed tests: $script:PASSED_TESTS"
+          Write-Host "Failed tests: $script:FAILED_TESTS"
+          Write-Host "----------------------------------------"
 
-          echo "passed=$PASSED_TESTS" >> $GITHUB_OUTPUT
-          echo "failed=$FAILED_TESTS" >> $GITHUB_OUTPUT
+          echo "passed=$script$PASSED_TESTS" >> $GITHUB_OUTPUT
+          echo "failed=$script$FAILED_TESTS" >> $GITHUB_OUTPUT
           echo "----------------------------------------"
 
           # Exit with failure if any tests failed
