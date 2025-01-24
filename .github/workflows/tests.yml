@@ -34,7 +34,8 @@ jobs:
           echo "Latest tag: $LATEST_TAG$"
           echo "version=$LATEST_TAG" >> $GITHUB_OUTPUT
 
-  linux-x86_64-ffmpeg-test:
+  # Linux x86_64 tests
+  linux-x86_64-ffmpeg-download:
     needs: check-release
     runs-on: ubuntu-latest
 
@@ -51,8 +52,6 @@ jobs:
           tar -xvf ffmpeg-linux-7.1-${{ needs.check-release.outputs.version }}.tar.gz
           chmod +x ./ffmpeg
 
-      - name: Test ffmpeg linux
-        run: |
           TOTAL_TESTS=0
           PASSED_TESTS=0
           FAILED_TESTS=0
@@ -77,45 +76,111 @@ jobs:
             fi
           }
 
-          # Basic tests
-          run_test "ffmpeg version" "-version" "7.1"
+  linux-x86_64-ffmpeg-test:
+    needs: linux-x86_64-ffmpeg-download
+    runs-on: ubuntu-latest
 
-          # Video codecs
-          run_test "libx264" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx264 test_files/test_h264.mp4" "encoder.*libx264"
-          run_test "libx265" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx265 test_files/test_h265.mp4" "encoder.*libx265"
-          run_test "libvpx" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libvpx-vp9 test_files/test_vp9.webm" "encoder.*libvpx-vp9"
-          # run_test "libaom" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libaom-av1 test_files/test_av1.mkv" "encoder.*libaom-av1"
+    steps:
+      # Basic tests
+      - name: Version check
+        run: run_test "ffmpeg version" "-version" "7.1"
+        shell: bash
 
-          # Audio codecs
-          run_test "libfdk_aac" "-y -f lavfi -i anullsrc=duration=1 -c:a libfdk_aac test_files/test_aac.m4a" "encoder.*libfdk_aac"
-          run_test "libopus" "-y -f lavfi -i anullsrc=duration=1 -c:a libopus test_files/test_opus.opus" "encoder.*libopus"
-          run_test "libmp3lame" "-y -f lavfi -i anullsrc=duration=1 -c:a libmp3lame test_files/test_mp3.mp3" "encoder.*libmp3lame"
+      # Video codecs
+      - name: Video codec libx264
+        run: run_test "libx264" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx264 test_files/test_h264.mp4" "encoder.*libx264"
+        shell: bash
 
-          # Image codecs
-          run_test "libwebp" "-y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libwebp test_files/test.webp" "encoder.*libwebp"
-          run_test "libopenjpeg" "-y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libopenjpeg test_files/test.jp2" "encoder.*openjpeg"
+      - name: Video codec libx265
+        run: run_test "libx265" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx265 test_files/test_h265.mp4" "encoder.*libx265"
+        shell: bash
 
-          # Subtitle codecs
-          run_test "libass" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -vf ass=test_files/test.ass test_files/test_ass.mp4" "ass"
-          run_test "libfribidi" "-filters 2>&1 | grep fribidi" "fribidi"
+      - name: Video codec libvpx
+        run: run_test "libvpx" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libvpx-vp9 test_files/test_vp9.webm" "encoder.*libvpx-vp9"
+        shell: bash
 
-          # Hardware acceleration
-          run_test "NVENC" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v h264_nvenc test_files/test_nvenc.mp4" "encoder.*h264_nvenc"
-          run_test "VAAPI" "-y -vaapi_device /dev/dri/renderD128 -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -vf 'format=nv12,hwupload' -c:v h264_vaapi test_files/test_vaapi.mp4 2>&1" "vaapi"
-                    
-          # Additional format tests
-          run_test "libbluray" "-h 2>&1 | grep bluray" "bluray"
-          run_test "libcdio" "-h 2>&1 | grep cdio" "cdio"
-          run_test "libsrt" "-h 2>&1 | grep srt" "srt"
-          run_test "libxml2" "-h 2>&1 | grep xml" "xml"
+      # - name: Video coded libaom
+      #   run: run_test "libaom" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libaom-av1 test_files/test_av1.mkv" "encoder.*libaom-av1"
+      #   shell: bash
 
-          # AV1 codec tests
-          run_test "libdav1d" "-h decoder 2>&1 | grep dav1d" "dav1d"
-          run_test "librav1e" "-h encoder 2>&1 | grep rav1e" "rav1e"
-          
-          # Cleanup
-          rm -rf test_files
+      # Audio codecs
+      - name: Audio codec libfdk_aac
+        run: run_test "libfdk_aac" "-y -f lavfi -i anullsrc=duration=1 -c:a libfdk_aac test_files/test_aac.m4a" "encoder.*libfdk_aac"
+        shell: bash
 
+      - name: Audio codec libopus
+        run: run_test "libopus" "-y -f lavfi -i anullsrc=duration=1 -c:a libopus test_files/test_opus.opus" "encoder.*libopus"
+        shell: bash
+
+      - name: Audio codec libmp3lame
+        run: run_test "libmp3lame" "-y -f lavfi -i anullsrc=duration=1 -c:a libmp3lame test_files/test_mp3.mp3" "encoder.*libmp3lame"
+        shell: bash
+
+      # Image codecs
+      - name: Image codec libwebp
+        run: run_test "libwebp" "-y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libwebp test_files/test.webp" "encoder.*libwebp"
+        shell: bash
+
+      - name: Image codec libopenjpeg
+        run: run_test "libopenjpeg" "-y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libopenjpeg test_files/test.jp2" "encoder.*openjpeg"
+        shell: bash
+
+      # Subtitle codecs
+      - name: Subtitle codec libass
+        run: run_test "libass" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate
+        shell: bash
+
+      - name: Subtitle codec libfribidi
+        run: run_test "libfribidi" "-filters 2>&1 | grep fribidi" "fribidi"
+        shell: bash
+
+      # Hardware acceleration
+      - name: Hardware acceleration NVENC
+        run: run_test "NVENC" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v h264_nvenc test_files/test_nvenc.mp4" "encoder.*h264_nvenc"
+        shell: bash
+
+      - name: Hardware acceleration VAAPI
+        run: run_test "VAAPI" "-y -vaapi_device /dev/dri/renderD128 -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -vf 'format=nv12,hwupload' -c:v h264_vaapi test_files/test_vaapi.mp4 2>&1" "vaapi"
+        shell: bash
+
+      # Additional format tests
+      - name: Additional format libbluray
+        run: run_test "libbluray" "-h 2>&1 | grep bluray" "bluray"
+        shell: bash
+
+      - name: Additional format libcdio
+        run: run_test "libcdio" "-h 2>&1 | grep cdio" "cdio"
+        shell: bash
+
+      - name: Additional format libsrt
+        run: run_test "libsrt" "-h 2>&1 | grep srt" "srt"
+        shell: bash
+
+      - name: Additional format libxml2
+        run: run_test "libxml2" "-h 2>&1 | grep xml" "xml"
+        shell: bash
+
+      # AV1 codec tests
+      - name: AV1 codec libdav1d
+        run: run_test "libdav1d" "-h decoder 2>&1 | grep dav1d" "dav1d"
+        shell: bash
+
+      - name: AV1 codec librav1e
+        run: run_test "librav1e" "-h encoder 2>&1 | grep rav1e" "rav1e"
+        shell: bash
+
+      # Cleanup
+      - name: Cleanup
+        run: rm -rf test_files
+        shell: bash
+
+  linux-x86_64-ffmpeg-report:
+    needs: linux-x86_64-ffmpeg-test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Print summary
+        run: |
           # Print summary
           echo "----------------------------------------"
           echo "Test Summary:"
@@ -128,7 +193,8 @@ jobs:
           exit $FAILED_TESTS
         shell: bash
 
-  windows-x86_64-ffmpeg-test:
+  # Windows x86_64 tests
+  windows-x86_64-ffmpeg-download:
     needs: check-release
     runs-on: windows-latest
 
@@ -144,9 +210,6 @@ jobs:
           $client = new-object System.Net.WebClient
           $client.DownloadFile("https://github.com/NoMercy-Entertainment/NoMercyFFMpeg/releases/download/${{ needs.check-release.outputs.version }}/ffmpeg-windows-7.1-${{ needs.check-release.outputs.version }}.tar.gz", "ffmpeg-windows-7.1-${{ needs.check-release.outputs.version }}.tar.gz")        
           tar -xvf ffmpeg-windows-7.1-${{ needs.check-release.outputs.version }}.tar.gz
-
-      - name: Test ffmpeg windows
-        run: |
           $script:TOTAL_TESTS = 0
           $script:PASSED_TESTS = 0
           $script:FAILED_TESTS = 0
@@ -185,46 +248,113 @@ jobs:
               $script:FAILED_TESTS++
             }
           }
+        shell: pwsh
+  
+  windows-x86_64-ffmpeg-test:
+    needs: windows-x86_64-ffmpeg-download
+    runs-on: windows-latest
 
-          # Basic tests
-          run_test "ffmpeg version" "-version" "7.1"
+    steps:
+      # Basic tests
+      - name: Version check
+        run: run_test "ffmpeg version" "-version" "7.1"
+        shell: pwsh
+      
+      # Video codecs
+      - name: Video codec libx264
+        run: run_test "libx264" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx264 test_files/test_h264.mp4" "encoder.*libx264"
+        shell: pwsh
+      
+      - name: Video codec libx265
+        run: run_test "libx265" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx265 test_files/test_h265.mp4" "encoder.*libx265"
+        shell: pwsh
 
-          # Video codecs
-          run_test "libx264" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx264 test_files/test_h264.mp4" "encoder.*libx264"
-          run_test "libx265" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx265 test_files/test_h265.mp4" "encoder.*libx265"
-          run_test "libvpx" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libvpx-vp9 test_files/test_vp9.webm" "encoder.*libvpx-vp9"
-          # run_test "libaom" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libaom-av1 test_files/test_av1.mkv" "encoder.*libaom-av1"
+      - name: Video codec libvpx
+        run: run_test "libvpx" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libvpx-vp9 test_files/test_vp9.webm" "encoder.*libvpx-vp9"
+        shell: pwsh
+      
+      # - name: Video coded libaom
+      #   run: run_test "libaom" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libaom-av1 test_files/test_av1.mkv" "encoder.*libaom-av1"
+      #   shell: pwsh
+      
+      # Audio codecs
+      - name: Audio codec libfdk_aac
+        run: run_test "libfdk_aac" "-y -f lavfi -i anullsrc=duration=1 -c:a libfdk_aac test_files/test_aac.m4a" "encoder.*libfdk_aac"
+        shell: pwsh
 
-          # Audio codecs
-          run_test "libfdk_aac" "-y -f lavfi -i anullsrc=duration=1 -c:a libfdk_aac test_files/test_aac.m4a" "encoder.*libfdk_aac"
-          run_test "libopus" "-y -f lavfi -i anullsrc=duration=1 -c:a libopus test_files/test_opus.opus" "encoder.*libopus"
-          run_test "libmp3lame" "-y -f lavfi -i anullsrc=duration=1 -c:a libmp3lame test_files/test_mp3.mp3" "encoder.*libmp3lame"
+      - name: Audio codec libopus
+        run: run_test "libopus" "-y -f lavfi -i anullsrc=duration=1 -c:a libopus test_files/test_opus.opus" "encoder.*libopus"
+        shell: pwsh
 
-          # Image codecs
-          run_test "libwebp" "-y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libwebp test_files/test.webp" "encoder.*libwebp"
-          run_test "libopenjpeg" "-y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libopenjpeg test_files/test.jp2" "encoder.*openjpeg"
+      - name: Audio codec libmp3lame
+        run: run_test "libmp3lame" "-y -f lavfi -i anullsrc=duration=1 -c:a libmp3lame test_files/test_mp3.mp3" "encoder.*libmp3lame"
+        shell: pwsh
 
-          # Subtitle codecs
-          run_test "libass" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -vf ass=test_files/test.ass test_files/test_ass.mp4" "ass"
-          run_test "libfribidi" "-filters 2>&1 | findstr fribidi" "fribidi"
+      # Image codecs
+      - name: Image codec libwebp
+        run: run_test "libwebp" "-y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libwebp test_files/test.webp" "encoder.*libwebp"
+        shell: pwsh
 
-          # Hardware acceleration
-          run_test "NVENC" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v h264_nvenc test_files/test_nvenc.mp4" "encoder.*h264_nvenc"
-          run_test "VAAPI" "-y -vaapi_device /dev/dri/renderD128 -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -vf 'format=nv12,hwupload' -c:v h264_vaapi test_files/test_vaapi.mp4 2>&1" "vaapi"
-                    
-          # Additional format tests
-          run_test "libbluray" "-h 2>&1 | findstr bluray" "bluray"
-          run_test "libcdio" "-h 2>&1 | findstr cdio" "cdio"
-          run_test "libsrt" "-h 2>&1 | findstr srt" "srt"
-          run_test "libxml2" "-h 2>&1 | findstr xml" "xml"
+      - name: Image codec libopenjpeg
+        run: run_test "libopenjpeg" "-y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libopenjpeg test_files/test.jp2" "encoder.*openjpeg"
+        shell: pwsh
 
-          # AV1 codec tests
-          run_test "libdav1d" "-h decoder 2>&1 | findstr dav1d" "dav1d"
-          run_test "librav1e" "-h encoder 2>&1 | findstr rav1e" "rav1e"
-          
-          # Cleanup
-          Remove-Item -Path test_files -Recurse -Force
+      # Subtitle codecs
+      - name: Subtitle codec libass
+        run: run_test "libass" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate
+        shell: pwsh
 
+      - name: Subtitle codec libfribidi
+        run: run_test "libfribidi" "-filters 2>&1 | findstr fribidi" "fribidi"
+        shell: pwsh
+      
+      # Hardware acceleration
+      - name: Hardware acceleration NVENC
+        run: run_test "NVENC" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v h264_nvenc test_files/test_nvenc.mp4" "encoder.*h264_nvenc"
+        shell: pwsh
+
+      - name: Hardware acceleration VAAPI
+        run: run_test "VAAPI" "-y -vaapi_device /dev/dri/renderD128 -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -vf 'format=nv12,hwupload' -c:v h264_vaapi test_files/test_vaapi.mp4 2>&1" "vaapi"
+        shell: pwsh
+      
+      # Additional format tests
+      - name: Additional format libbluray
+        run: run_test "libbluray" "-h 2>&1 | findstr bluray" "bluray"
+        shell: pwsh
+
+      - name: Additional format libcdio
+        run: run_test "libcdio" "-h 2>&1 | findstr cdio" "cdio"
+        shell: pwsh
+
+      - name: Additional format libsrt
+        run: run_test "libsrt" "-h 2>&1 | findstr srt" "srt"
+        shell: pwsh
+
+      - name: Additional format libxml2
+        run: run_test "libxml2" "-h 2>&1 | findstr xml" "xml"
+        shell: pwsh
+
+      # AV1 codec tests
+      - name: AV1 codec libdav1d
+        run: run_test "libdav1d" "-h decoder 2>&1 | findstr dav1d" "dav1d"
+        shell: pwsh
+
+      - name: AV1 codec librav1e
+        run: run_test "librav1e" "-h encoder 2>&1 | findstr rav1e" "rav1e"
+        shell: pwsh
+
+      # Cleanup
+      - name: Cleanup
+        run: Remove-Item -Path test_files -Recurse -Force
+        shell: pwsh
+  
+  windows-x86_64-ffmpeg-report:
+    needs: windows-x86_64-ffmpeg-test
+    runs-on: windows-latest
+
+    steps:
+      - name: Print summary
+        run: |
           # Print summary
           Write-Host "----------------------------------------"
           Write-Host "Test Summary:"
@@ -237,7 +367,8 @@ jobs:
           exit $script:FAILED_TESTS
         shell: pwsh
 
-  linux-aarch64-ffmpeg-test:
+  # Linux aarch64 tests
+  linux-aarch64-ffmpeg-download:
     needs: check-release
     runs-on: ubuntu-24.04-arm
 
@@ -255,9 +386,7 @@ jobs:
           chmod +x ./ffmpeg
 
           echo "ffmpeg_path=./ffmpeg" >> $GITHUB_OUTPUT
-
-      - name: Test ffmpeg aarch64
-        run: |
+          
           TOTAL_TESTS=0
           PASSED_TESTS=0
           FAILED_TESTS=0
@@ -281,46 +410,112 @@ jobs:
               echo "❌ FAILED"
             fi
           }
+  
+  linux-aarch64-ffmpeg-test:
+    needs: linux-aarch64-ffmpeg-download
+    runs-on: ubuntu-24.04-arm
 
-          # Basic tests
-          run_test "ffmpeg version" "-version" "7.1"
+    steps:
+      # Basic tests
+      - name: Version check
+        run: run_test "ffmpeg version" "-version" "7.1"
+        shell: bash
 
-          # Video codecs
-          run_test "libx264" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx264 test_files/test_h264.mp4" "encoder.*libx264"
-          run_test "libx265" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx265 test_files/test_h265.mp4" "encoder.*libx265"
-          run_test "libvpx" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libvpx-vp9 test_files/test_vp9.webm" "encoder.*libvpx-vp9"
-          # run_test "libaom" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libaom-av1 test_files/test_av1.mkv" "encoder.*libaom-av1"
+      # Video codecs
+      - name: Video codec libx264
+        run: run_test "libx264" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx264 test_files/test_h264.mp4" "encoder.*libx264"
+        shell: bash
 
-          # Audio codecs
-          run_test "libfdk_aac" "-y -f lavfi -i anullsrc=duration=1 -c:a libfdk_aac test_files/test_aac.m4a" "encoder.*libfdk_aac"
-          run_test "libopus" "-y -f lavfi -i anullsrc=duration=1 -c:a libopus test_files/test_opus.opus" "encoder.*libopus"
-          run_test "libmp3lame" "-y -f lavfi -i anullsrc=duration=1 -c:a libmp3lame test_files/test_mp3.mp3" "encoder.*libmp3lame"
+      - name: Video codec libx265
+        run: run_test "libx265" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx265 test_files/test_h265.mp4" "encoder.*libx265"
+        shell: bash
 
-          # Image codecs
-          run_test "libwebp" "-y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libwebp test_files/test.webp" "encoder.*libwebp"
-          run_test "libopenjpeg" "-y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libopenjpeg test_files/test.jp2" "encoder.*openjpeg"
+      - name: Video codec libvpx
+        run: run_test "libvpx" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libvpx-vp9 test_files/test_vp9.webm" "encoder.*libvpx-vp9"
+        shell: bash
 
-          # Subtitle codecs
-          run_test "libass" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -vf ass=test_files/test.ass test_files/test_ass.mp4" "ass"
-          run_test "libfribidi" "-filters 2>&1 | grep fribidi" "fribidi"
+      # - name: Video coded libaom
+      #   run: run_test "libaom" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libaom-av1 test_files/test_av1.mkv" "encoder.*libaom-av1"
+      #   shell: bash
 
-          # Hardware acceleration
-          run_test "NVENC" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v h264_nvenc test_files/test_nvenc.mp4" "encoder.*h264_nvenc"
-          run_test "VAAPI" "-y -vaapi_device /dev/dri/renderD128 -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -vf 'format=nv12,hwupload' -c:v h264_vaapi test_files/test_vaapi.mp4 2>&1" "vaapi"
-                    
-          # Additional format tests
-          run_test "libbluray" "-h 2>&1 | grep bluray" "bluray"
-          run_test "libcdio" "-h 2>&1 | grep cdio" "cdio"
-          run_test "libsrt" "-h 2>&1 | grep srt" "srt"
-          run_test "libxml2" "-h 2>&1 | grep xml" "xml"
+      # Audio codecs
+      - name: Audio codec libfdk_aac
+        run: run_test "libfdk_aac" "-y -f lavfi -i anullsrc=duration=1 -c:a libfdk_aac test_files/test_aac.m4a" "encoder.*libfdk_aac"
+        shell: bash
 
-          # AV1 codec tests
-          run_test "libdav1d" "-h decoder 2>&1 | grep dav1d" "dav1d"
-          run_test "librav1e" "-h encoder 2>&1 | grep rav1e" "rav1e"
-          
-          # Cleanup
-          rm -rf test_files
+      - name: Audio codec libopus
+        run: run_test "libopus" "-y -f lavfi -i anullsrc=duration=1 -c:a libopus test_files/test_opus.opus" "encoder.*libopus"
+        shell: bash
 
+      - name: Audio codec libmp3lame
+        run: run_test "libmp3lame" "-y -f lavfi -i anullsrc=duration=1 -c:a libmp3lame test_files/test_mp3.mp3" "encoder.*libmp3lame"
+        shell: bash
+
+      # Image codecs
+      - name: Image codec libwebp
+        run: run_test "libwebp" "-y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libwebp test_files/test.webp" "encoder.*libwebp"
+        shell: bash
+
+      - name: Image codec libopenjpeg
+        run: run_test "libopenjpeg" "-y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libopenjpeg test_files/test.jp2" "encoder.*openjpeg"
+        shell: bash
+
+      # Subtitle codecs
+      - name: Subtitle codec libass
+        run: run_test "libass" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate
+        shell: bash
+
+      - name: Subtitle codec libfribidi
+        run: run_test "libfribidi" "-filters 2>&1 | grep fribidi" "fribidi"
+        shell: bash
+
+      # Hardware acceleration
+      - name: Hardware acceleration NVENC
+        run: run_test "NVENC" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v h264_nvenc test_files/test_nvenc.mp4" "encoder.*h264_nvenc"
+        shell: bash
+
+      - name: Hardware acceleration VAAPI
+        run: run_test "VAAPI" "-y -vaapi_device /dev/dri/renderD128 -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -vf 'format=nv12,hwupload' -c:v h264_vaapi test_files/test_vaapi.mp4 2>&1" "vaapi"
+        shell: bash
+
+      # Additional format tests
+      - name: Additional format libbluray
+        run: run_test "libbluray" "-h 2>&1 | grep bluray" "bluray"
+        shell: bash
+
+      - name: Additional format libcdio
+        run: run_test "libcdio" "-h 2>&1 | grep cdio" "cdio"
+        shell: bash
+
+      - name: Additional format libsrt
+        run: run_test "libsrt" "-h 2>&1 | grep srt" "srt"
+        shell: bash
+
+      - name: Additional format libxml2
+        run: run_test "libxml2" "-h 2>&1 | grep xml" "xml"
+        shell: bash
+
+      # AV1 codec tests
+      - name: AV1 codec libdav1d
+        run: run_test "libdav1d" "-h decoder 2>&1 | grep dav1d" "dav1d"
+        shell: bash
+
+      - name: AV1 codec librav1e
+        run: run_test "librav1e" "-h encoder 2>&1 | grep rav1e" "rav1e"
+        shell: bash
+
+      # Cleanup
+      - name: Cleanup
+        run: rm -rf test_files
+        shell: bash
+
+  linux-aarch64-ffmpeg-report:
+    needs: linux-aarch64-ffmpeg-test
+    runs-on: ubuntu-24.04-arm
+
+    steps:
+      - name: Print summary
+        run: |
           # Print summary
           echo "----------------------------------------"
           echo "Test Summary:"
@@ -333,7 +528,8 @@ jobs:
           exit $FAILED_TESTS
         shell: bash
 
-  darwin-x86_64-ffmpeg-test:
+  # Darwin x86_64 tests
+  darwin-x86_64-ffmpeg-download:
     needs: check-release
     runs-on: macos-13
 
@@ -352,8 +548,6 @@ jobs:
           
           echo "ffmpeg_path=./ffmpeg" >> $GITHUB_OUTPUT
 
-      - name: Test ffmpeg darwin x86_64
-        run: |
           TOTAL_TESTS=0
           PASSED_TESTS=0
           FAILED_TESTS=0
@@ -378,45 +572,111 @@ jobs:
             fi
           }
 
-          # Basic tests
-          run_test "ffmpeg version" "-version" "7.1"
+  darwin-x86_64-ffmpeg-test:
+    needs: darwin-x86_64-ffmpeg-download
+    runs-on: macos-13
 
-          # Video codecs
-          run_test "libx264" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx264 test_files/test_h264.mp4" "encoder.*libx264"
-          run_test "libx265" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx265 test_files/test_h265.mp4" "encoder.*libx265"
-          run_test "libvpx" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libvpx-vp9 test_files/test_vp9.webm" "encoder.*libvpx-vp9"
-          # run_test "libaom" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libaom-av1 test_files/test_av1.mkv" "encoder.*libaom-av1"
+    steps:
+      # Basic tests
+      - name: Version check
+        run: run_test "ffmpeg version" "-version" "7.1"
+        shell: bash
 
-          # Audio codecs
-          run_test "libfdk_aac" "-y -f lavfi -i anullsrc=duration=1 -c:a libfdk_aac test_files/test_aac.m4a" "encoder.*libfdk_aac"
-          run_test "libopus" "-y -f lavfi -i anullsrc=duration=1 -c:a libopus test_files/test_opus.opus" "encoder.*libopus"
-          run_test "libmp3lame" "-y -f lavfi -i anullsrc=duration=1 -c:a libmp3lame test_files/test_mp3.mp3" "encoder.*libmp3lame"
+      # Video codecs
+      - name: Video codec libx264
+        run: run_test "libx264" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx264 test_files/test_h264.mp4" "encoder.*libx264"
+        shell: bash
 
-          # Image codecs
-          run_test "libwebp" "-y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libwebp test_files/test.webp" "encoder.*libwebp"
-          run_test "libopenjpeg" "-y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libopenjpeg test_files/test.jp2" "encoder.*openjpeg"
+      - name: Video codec libx265
+        run: run_test "libx265" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx265 test_files/test_h265.mp4" "encoder.*libx265"
+        shell: bash
 
-          # Subtitle codecs
-          run_test "libass" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -vf ass=test_files/test.ass test_files/test_ass.mp4" "ass"
-          run_test "libfribidi" "-filters 2>&1 | grep fribidi" "fribidi"
+      - name: Video codec libvpx
+        run: run_test "libvpx" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libvpx-vp9 test_files/test_vp9.webm" "encoder.*libvpx-vp9"
+        shell: bash
 
-          # Hardware acceleration
-          run_test "NVENC" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v h264_nvenc test_files/test_nvenc.mp4" "encoder.*h264_nvenc"
-          run_test "VAAPI" "-y -vaapi_device /dev/dri/renderD128 -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -vf 'format=nv12,hwupload' -c:v h264_vaapi test_files/test_vaapi.mp4 2>&1" "vaapi"
-                    
-          # Additional format tests
-          run_test "libbluray" "-h 2>&1 | grep bluray" "bluray"
-          run_test "libcdio" "-h 2>&1 | grep cdio" "cdio"
-          run_test "libsrt" "-h 2>&1 | grep srt" "srt"
-          run_test "libxml2" "-h 2>&1 | grep xml" "xml"
+      # - name: Video coded libaom
+      #   run: run_test "libaom" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libaom-av1 test_files/test_av1.mkv" "encoder.*libaom-av1"
+      #   shell: bash
 
-          # AV1 codec tests
-          run_test "libdav1d" "-h decoder 2>&1 | grep dav1d" "dav1d"
-          run_test "librav1e" "-h encoder 2>&1 | grep rav1e" "rav1e"
-          
-          # Cleanup
-          rm -rf test_files
+      # Audio codecs
+      - name: Audio codec libfdk_aac
+        run: run_test "libfdk_aac" "-y -f lavfi -i anullsrc=duration=1 -c:a libfdk_aac test_files/test_aac.m4a" "encoder.*libfdk_aac"
+        shell: bash
 
+      - name: Audio codec libopus
+        run: run_test "libopus" "-y -f lavfi -i anullsrc=duration=1 -c:a libopus test_files/test_opus.opus" "encoder.*libopus"
+        shell: bash
+
+      - name: Audio codec libmp3lame
+        run: run_test "libmp3lame" "-y -f lavfi -i anullsrc=duration=1 -c:a libmp3lame test_files/test_mp3.mp3" "encoder.*libmp3lame"
+        shell: bash
+
+      # Image codecs
+      - name: Image codec libwebp
+        run: run_test "libwebp" "-y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libwebp test_files/test.webp" "encoder.*libwebp"
+        shell: bash
+
+      - name: Image codec libopenjpeg
+        run: run_test "libopenjpeg" "-y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libopenjpeg test_files/test.jp2" "encoder.*openjpeg"
+        shell: bash
+
+      # Subtitle codecs
+      - name: Subtitle codec libass
+        run: run_test "libass" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate
+        shell: bash
+
+      - name: Subtitle codec libfribidi
+        run: run_test "libfribidi" "-filters 2>&1 | grep fribidi" "fribidi"
+        shell: bash
+
+      # Hardware acceleration
+      - name: Hardware acceleration NVENC
+        run: run_test "NVENC" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v h264_nvenc test_files/test_nvenc.mp4" "encoder.*h264_nvenc"
+        shell: bash
+
+      - name: Hardware acceleration VAAPI
+        run: run_test "VAAPI" "-y -vaapi_device /dev/dri/renderD128 -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -vf 'format=nv12,hwupload' -c:v h264_vaapi test_files/test_vaapi.mp4 2>&1" "vaapi"
+        shell: bash
+
+      # Additional format tests
+      - name: Additional format libbluray
+        run: run_test "libbluray" "-h 2>&1 | grep bluray" "bluray"
+        shell: bash
+
+      - name: Additional format libcdio
+        run: run_test "libcdio" "-h 2>&1 | grep cdio" "cdio"
+        shell: bash
+
+      - name: Additional format libsrt
+        run: run_test "libsrt" "-h 2>&1 | grep srt" "srt"
+        shell: bash
+
+      - name: Additional format libxml2
+        run: run_test "libxml2" "-h 2>&1 | grep xml" "xml"
+        shell: bash
+
+      # AV1 codec tests
+      - name: AV1 codec libdav1d
+        run: run_test "libdav1d" "-h decoder 2>&1 | grep dav1d" "dav1d"
+        shell: bash
+
+      - name: AV1 codec librav1e
+        run: run_test "librav1e" "-h encoder 2>&1 | grep rav1e" "rav1e"
+        shell: bash
+
+      # Cleanup
+      - name: Cleanup
+        run: rm -rf test_files
+        shell: bash
+
+  darwin-x86_64-ffmpeg-report:
+    needs: darwin-x86_64-ffmpeg-test
+    runs-on: macos-13
+    
+    steps:
+      - name: Print summary
+        run: |
           # Print summary
           echo "----------------------------------------"
           echo "Test Summary:"
@@ -429,7 +689,8 @@ jobs:
           exit $FAILED_TESTS
         shell: bash          
 
-  darwin-arm64-ffmpeg-test:
+  # Darwin arm64 tests
+  darwin-arm64-ffmpeg-download:
     needs: check-release
     runs-on: macos-latest
 
@@ -447,9 +708,7 @@ jobs:
           chmod +x ./ffmpeg
 
           echo "ffmpeg_path=./ffmpeg" >> $GITHUB_OUTPUT
-
-      - name: Test ffmpeg darwin arm64
-        run: |
+          
           TOTAL_TESTS=0
           PASSED_TESTS=0
           FAILED_TESTS=0
@@ -474,45 +733,111 @@ jobs:
             fi
           }
 
-          # Basic tests
-          run_test "ffmpeg version" "-version" "7.1"
+  darwin-arm64-ffmpeg-test:
+    needs: darwin-arm64-ffmpeg-download
+    runs-on: macos-latest
 
-          # Video codecs
-          run_test "libx264" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx264 test_files/test_h264.mp4" "encoder.*libx264"
-          run_test "libx265" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx265 test_files/test_h265.mp4" "encoder.*libx265"
-          run_test "libvpx" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libvpx-vp9 test_files/test_vp9.webm" "encoder.*libvpx-vp9"
-          # run_test "libaom" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libaom-av1 test_files/test_av1.mkv" "encoder.*libaom-av1"
+    steps:
+      # Basic tests
+      - name: Version check
+        run: run_test "ffmpeg version" "-version" "7.1"
+        shell: bash
 
-          # Audio codecs
-          run_test "libfdk_aac" "-y -f lavfi -i anullsrc=duration=1 -c:a libfdk_aac test_files/test_aac.m4a" "encoder.*libfdk_aac"
-          run_test "libopus" "-y -f lavfi -i anullsrc=duration=1 -c:a libopus test_files/test_opus.opus" "encoder.*libopus"
-          run_test "libmp3lame" "-y -f lavfi -i anullsrc=duration=1 -c:a libmp3lame test_files/test_mp3.mp3" "encoder.*libmp3lame"
+      # Video codecs
+      - name: Video codec libx264
+        run: run_test "libx264" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx264 test_files/test_h264.mp4" "encoder.*libx264"
+        shell: bash
 
-          # Image codecs
-          run_test "libwebp" "-y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libwebp test_files/test.webp" "encoder.*libwebp"
-          run_test "libopenjpeg" "-y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libopenjpeg test_files/test.jp2" "encoder.*openjpeg"
+      - name: Video codec libx265
+        run: run_test "libx265" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx265 test_files/test_h265.mp4" "encoder.*libx265"
+        shell: bash
 
-          # Subtitle codecs
-          run_test "libass" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -vf ass=test_files/test.ass test_files/test_ass.mp4" "ass"
-          run_test "libfribidi" "-filters 2>&1 | grep fribidi" "fribidi"
+      - name: Video codec libvpx
+        run: run_test "libvpx" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libvpx-vp9 test_files/test_vp9.webm" "encoder.*libvpx-vp9"
+        shell: bash
 
-          # Hardware acceleration
-          run_test "NVENC" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v h264_nvenc test_files/test_nvenc.mp4" "encoder.*h264_nvenc"
-          run_test "VAAPI" "-y -vaapi_device /dev/dri/renderD128 -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -vf 'format=nv12,hwupload' -c:v h264_vaapi test_files/test_vaapi.mp4 2>&1" "vaapi"
-                    
-          # Additional format tests
-          run_test "libbluray" "-h 2>&1 | grep bluray" "bluray"
-          run_test "libcdio" "-h 2>&1 | grep cdio" "cdio"
-          run_test "libsrt" "-h 2>&1 | grep srt" "srt"
-          run_test "libxml2" "-h 2>&1 | grep xml" "xml"
+      # - name: Video coded libaom
+      #   run: run_test "libaom" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libaom-av1 test_files/test_av1.mkv" "encoder.*libaom-av1"
+      #   shell: bash
 
-          # AV1 codec tests
-          run_test "libdav1d" "-h decoder 2>&1 | grep dav1d" "dav1d"
-          run_test "librav1e" "-h encoder 2>&1 | grep rav1e" "rav1e"
-          
-          # Cleanup
-          rm -rf test_files
+      # Audio codecs
+      - name: Audio codec libfdk_aac
+        run: run_test "libfdk_aac" "-y -f lavfi -i anullsrc=duration=1 -c:a libfdk_aac test_files/test_aac.m4a" "encoder.*libfdk_aac"
+        shell: bash
 
+      - name: Audio codec libopus
+        run: run_test "libopus" "-y -f lavfi -i anullsrc=duration=1 -c:a libopus test_files/test_opus.opus" "encoder.*libopus"
+        shell: bash
+
+      - name: Audio codec libmp3lame
+        run: run_test "libmp3lame" "-y -f lavfi -i anullsrc=duration=1 -c:a libmp3lame test_files/test_mp3.mp3" "encoder.*libmp3lame"
+        shell: bash
+
+      # Image codecs
+      - name: Image codec libwebp
+        run: run_test "libwebp" "-y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libwebp test_files/test.webp" "encoder.*libwebp"
+        shell: bash
+
+      - name: Image codec libopenjpeg
+        run: run_test "libopenjpeg" "-y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libopenjpeg test_files/test.jp2" "encoder.*openjpeg"
+        shell: bash
+
+      # Subtitle codecs
+      - name: Subtitle codec libass
+        run: run_test "libass" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate
+        shell: bash
+
+      - name: Subtitle codec libfribidi
+        run: run_test "libfribidi" "-filters 2>&1 | grep fribidi" "fribidi"
+        shell: bash
+
+      # Hardware acceleration
+      - name: Hardware acceleration NVENC
+        run: run_test "NVENC" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v h264_nvenc test_files/test_nvenc.mp4" "encoder.*h264_nvenc"
+        shell: bash
+
+      - name: Hardware acceleration VAAPI
+        run: run_test "VAAPI" "-y -vaapi_device /dev/dri/renderD128 -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -vf 'format=nv12,hwupload' -c:v h264_vaapi test_files/test_vaapi.mp4 2>&1" "vaapi"
+        shell: bash
+
+      # Additional format tests
+      - name: Additional format libbluray
+        run: run_test "libbluray" "-h 2>&1 | grep bluray" "bluray"
+        shell: bash
+
+      - name: Additional format libcdio
+        run: run_test "libcdio" "-h 2>&1 | grep cdio" "cdio"
+        shell: bash
+
+      - name: Additional format libsrt
+        run: run_test "libsrt" "-h 2>&1 | grep srt" "srt"
+        shell: bash
+
+      - name: Additional format libxml2
+        run: run_test "libxml2" "-h 2>&1 | grep xml" "xml"
+        shell: bash
+
+      # AV1 codec tests
+      - name: AV1 codec libdav1d
+        run: run_test "libdav1d" "-h decoder 2>&1 | grep dav1d" "dav1d"
+        shell: bash
+
+      - name: AV1 codec librav1e
+        run: run_test "librav1e" "-h encoder 2>&1 | grep rav1e" "rav1e"
+        shell: bash
+
+      # Cleanup
+      - name: Cleanup
+        run: rm -rf test_files
+        shell: bash
+
+  darwin-arm64-ffmpeg-report:
+    needs: darwin-arm64-ffmpeg-test
+    runs-on: macos-latest
+
+    steps:
+      - name: Print summary
+        run: |
           # Print summary
           echo "----------------------------------------"
           echo "Test Summary:"
