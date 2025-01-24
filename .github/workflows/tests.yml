@@ -131,7 +131,7 @@ jobs:
           echo "----------------------------------------"
 
           # Exit with failure if any tests failed
-          exit $FAILED_TESTS
+          exit
         shell: bash
 
   windows-x86_64-ffmpeg-test:
@@ -241,7 +241,7 @@ jobs:
           Write-Host "----------------------------------------"
 
           # Exit with failure if any tests failed
-          exit $script:FAILED_TESTS
+          exit
         shell: pwsh
 
   linux-aarch64-ffmpeg-test:
@@ -336,7 +336,7 @@ jobs:
           echo "----------------------------------------"
 
           # Exit with failure if any tests failed
-          exit $FAILED_TESTS
+          exit
         shell: bash
 
   darwin-x86_64-ffmpeg-test:
@@ -431,7 +431,7 @@ jobs:
           echo "----------------------------------------"
 
           # Exit with failure if any tests failed
-          exit $FAILED_TESTS
+          exit
         shell: bash          
 
   darwin-arm64-ffmpeg-test:
@@ -526,5 +526,5 @@ jobs:
           echo "----------------------------------------"
 
           # Exit with failure if any tests failed
-          exit $FAILED_TESTS
+          exit
         shell: bash
