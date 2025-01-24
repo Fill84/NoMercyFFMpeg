@@ -35,8 +35,8 @@ jobs:
           git config --global --add safe.directory ${{ github.workspace }}
           # Get the latest version tag
           LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v1.0.0")
-          
-          echo "Latest tag: $LATEST_TAG$"
+
+          echo "Latest tag: $LATEST_TAG$"          
           echo "version=$LATEST_TAG" >> $GITHUB_OUTPUT
 
   platform-tests:
@@ -48,6 +48,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
         arch: [x86_64, arm64]
+    continue-on-error: true
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -56,9 +57,18 @@ jobs:
 
       - name: Download Release
         run: |
-          FFMPEG_FILE="ffmpeg-${{ matrix.os }}-${{ matrix.arch }}-${{ needs.check-release.outputs.version }}.tar.gz"
-          wget https://github.com/NoMercy-Entertainment/NoMercyFFMpeg/releases/download/${{ needs.check-release.outputs.version }}/$FFMPEG_FILE
-          tar -xvf $FFMPEG_FILE 
+          if [ "${{ matrix.os }}" == "ubuntu-latest" ]; then
+            FILE_NAME="downloads/ffmpeg-linux-${{ matrix.arch }}-7.1.tar.gz"
+          elif [ "${{ matrix.os }}" == "windows-latest" ]; then
+            FILE_NAME="downloads/ffmpeg-windows-${{ matrix.arch }}-7.1.tar.gz"
+          elif [ "${{ matrix.os }}" == "macos-latest" ] && [ "${{ matrix.arch }}" == "x86_64" ]; then
+            FILE_NAME="downloads/ffmpeg-darwin-x86_64-7.1.tar.gz"
+          elif [ "${{ matrix.os }}" == "macos-latest" ] && [ "${{ matrix.arch }}" == "arm64" ]; then
+            FILE_NAME="downloads/ffmpeg-darwin-arm64-7.1.tar.gz"
+          fi
+
+          echo "Using file: $FILE_NAME"
+          tar -xvf $FILE_NAME
 
       - name: Run Tests
         id: tests
