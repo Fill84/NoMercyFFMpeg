@@ -179,21 +179,21 @@ jobs:
               [string]$expected_output
             )
 
-            $env:TOTAL_TESTS=$(($env:TOTAL_TESTS + 1))
+            $env:TOTAL_TESTS=$((TOTAL_TESTS + 1))
             Write-Host -NoNewline "Testing $name... "
 
             try {
-              $output = Invoke-Expression "${{ steps.windows-test.outputs.ffmpeg_path }}  $command 2>&1" | Out-String
+              $output = Invoke-Expression "${{ steps.windows-test.outputs.ffmpeg_path }} $command 2>&1" | Out-String
               if ($output -cmatch $expected_output) {
                 Write-Host -ForegroundColor Green "✅ PASSED"
-                $env:PASSED_TESTS=$(($env:PASSED_TESTS + 1))
+                $env:PASSED_TESTS=$((PASSED_TESTS + 1))
               } else {
                 Write-Host -ForegroundColor Red "❌ FAILED"
-                $env:FAILED_TESTS=$(($env:FAILED_TESTS + 1))
+                $env:FAILED_TESTS=$((FAILED_TESTS + 1))
               }
             } catch {
               Write-Host -ForegroundColor Red "❌ FAILED (Error)"
-              $env:FAILED_TESTS=$(($env:FAILED_TESTS + 1))
+              $env:FAILED_TESTS=$((FAILED_TESTS + 1))
             }
           }
 
