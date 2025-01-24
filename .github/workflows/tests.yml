@@ -154,7 +154,7 @@ jobs:
           $client.DownloadFile("https://github.com/NoMercy-Entertainment/NoMercyFFMpeg/releases/download/${{ needs.check-release.outputs.version }}/ffmpeg-windows-7.1-${{ needs.check-release.outputs.version }}.tar.gz", "ffmpeg-windows-7.1-${{ needs.check-release.outputs.version }}.tar.gz")        
           tar -xvf ffmpeg-windows-7.1-${{ needs.check-release.outputs.version }}.tar.gz
 
-          echo "ffmpeg_path=./ffmpeg.exe" >> $GITHUB_OUTPUT
+          Write-Host "ffmpeg_path=./ffmpeg.exe" >> $GITHUB_OUTPUT
 
       - name: Test ffmpeg windows
         run: |
