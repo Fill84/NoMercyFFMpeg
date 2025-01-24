@@ -157,11 +157,11 @@ jobs:
           echo "ffmpeg_path=./ffmpeg.exe" >> $GITHUB_OUTPUT
 
       - name: Test ffmpeg windows
+        env:
+          TOTAL_TESTS: 0
+          PASSED_TESTS: 0
+          FAILED_TESTS: 0
         run: |
-          TOTAL_TESTS = 0
-          PASSED_TESTS = 0
-          FAILED_TESTS = 0
-
           mkdir -p test_files
 
           # Create test files
@@ -179,14 +179,14 @@ jobs:
               [string]$expected_output
             )
 
-            $script:TOTAL_TESTS++
+            $env:TOTAL_TESTS++
             Write-Host -NoNewline "Testing $name... "
 
             try {
               $output = Invoke-Expression "${{ steps.windows-test.outputs.ffmpeg_path }}  $command 2>&1" | Out-String
               if ($output -cmatch $expected_output) {
                 Write-Host -ForegroundColor Green "✅ PASSED"
-                $script:PASSED_TESTS++
+                $env:PASSED_TESTS++
               } else {
                 Write-Host -ForegroundColor Red "❌ FAILED"
               }
@@ -237,13 +237,13 @@ jobs:
           # Print summary
           Write-Host "----------------------------------------"
           Write-Host "Test Summary:"
-          Write-Host "Total tests: $TOTAL_TESTS"
-          Write-Host "Passed tests: $PASSED_TESTS"
-          Write-Host "Failed tests: $FAILED_TESTS"
+          Write-Host "Total tests: $env:TOTAL_TESTS"
+          Write-Host "Passed tests: $env:PASSED_TESTS"
+          Write-Host "Failed tests: $env:FAILED_TESTS"
           Write-Host "----------------------------------------"
 
           # Exit with failure if any tests failed
-          exit $FAILED_TESTS
+          exit $env:FAILED_TESTS
         shell: pwsh
 
   aarch64-ffmpeg-test:
