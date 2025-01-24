@@ -1,6 +1,11 @@
 name: Parallel FFmpeg Test
 
 on:
+  workflow_run:
+    workflows:
+      - Parallel Docker Builds with Caching
+    types:
+      - completed
   release:
     types:
       - published
@@ -52,29 +57,14 @@ jobs:
           tar -xvf ffmpeg-linux-7.1-${{ needs.check-release.outputs.version }}.tar.gz
           chmod +x ./ffmpeg
 
-          TOTAL_TESTS=0
-          PASSED_TESTS=0
-          FAILED_TESTS=0
+          export TOTAL_TESTS=0
+          export PASSED_TESTS=0
+          export FAILED_TESTS=0
 
           mkdir -p test_files
           dd if=/dev/urandom of=test_files/test.raw bs=1M count=1
 
-          run_test() {
-            local name=$1
-            local command=$2
-            local expected_output=$3
-            
-            TOTAL_TESTS=$((TOTAL_TESTS + 1))
-            echo "Testing $name... "
-
-            if eval "${{ github.workspace }}/ffmpeg $command" 2>&1 | grep -q "$expected_output"; then
-              PASSED_TESTS=$((PASSED_TESTS + 1))
-              echo "✅ PASSED"
-            else
-              FAILED_TESTS=$((FAILED_TESTS + 1))
-              echo "❌ FAILED"
-            fi
-          }
+          source scripts/test-runner.sh
         shell: bash
 
   linux-x86_64-ffmpeg-test:
@@ -211,9 +201,9 @@ jobs:
           $client = new-object System.Net.WebClient
           $client.DownloadFile("https://github.com/NoMercy-Entertainment/NoMercyFFMpeg/releases/download/${{ needs.check-release.outputs.version }}/ffmpeg-windows-7.1-${{ needs.check-release.outputs.version }}.tar.gz", "ffmpeg-windows-7.1-${{ needs.check-release.outputs.version }}.tar.gz")        
           tar -xvf ffmpeg-windows-7.1-${{ needs.check-release.outputs.version }}.tar.gz
-          $script:TOTAL_TESTS = 0
-          $script:PASSED_TESTS = 0
-          $script:FAILED_TESTS = 0
+          $global:TOTAL_TESTS = 0
+          $global:PASSED_TESTS = 0
+          $global:FAILED_TESTS = 0
 
           mkdir -p test_files
 
@@ -225,30 +215,7 @@ jobs:
           (New-Object Random).NextBytes($randomBytes)
           [System.IO.File]::WriteAllBytes("test_files/test.raw", $randomBytes)
 
-          function run_test {
-            param (
-              [string]$Name,
-              [string]$Command,
-              [string]$ExpectedOutput
-            )
-
-            $script:TOTAL_TESTS++
-            Write-Host -NoNewline "Testing $Name... "
-
-            try {
-              $script:output = Invoke-Expression "${{ github.workspace }}/ffmpeg.exe $Command 2>&1" | Out-String
-              if ($script:output -cmatch $ExpectedOutput) {
-                Write-Host "✅ PASSED"
-                $script:PASSED_TESTS++
-              } else {
-                Write-Host "❌ FAILED"
-                $script:FAILED_TESTS++
-              }
-            } catch {
-              Write-Host "❌ FAILED (Error)"
-              $script:FAILED_TESTS++
-            }
-          }
+          ./scripts/test-runner.ps1
         shell: pwsh
   
   windows-x86_64-ffmpeg-test:
@@ -359,13 +326,13 @@ jobs:
           # Print summary
           Write-Host "----------------------------------------"
           Write-Host "Test Summary:"
-          Write-Host "Total tests: $script:TOTAL_TESTS"
-          Write-Host "Passed tests: $script:PASSED_TESTS"
-          Write-Host "Failed tests: $script:FAILED_TESTS"
+          Write-Host "Total tests: $global:TOTAL_TESTS"
+          Write-Host "Passed tests: $global:PASSED_TESTS"
+          Write-Host "Failed tests: $global:FAILED_TESTS"
           Write-Host "----------------------------------------"
 
           # Exit with failure if any tests failed
-          exit $script:FAILED_TESTS
+          exit $global:FAILED_TESTS
         shell: pwsh
 
   # Linux aarch64 tests
@@ -387,32 +354,15 @@ jobs:
           wget https://github.com/NoMercy-Entertainment/NoMercyFFMpeg/releases/download/${{ needs.check-release.outputs.version }}/ffmpeg-aarch64-7.1-${{ needs.check-release.outputs.version }}.tar.gz
           tar -xvf ffmpeg-aarch64-7.1-${{ needs.check-release.outputs.version }}.tar.gz
           chmod +x ./ffmpeg
-
-          echo "ffmpeg_path=./ffmpeg" >> $GITHUB_OUTPUT
           
-          TOTAL_TESTS=0
-          PASSED_TESTS=0
-          FAILED_TESTS=0
+          export TOTAL_TESTS=0
+          export PASSED_TESTS=0
+          export FAILED_TESTS=0
 
           mkdir -p test_files
           dd if=/dev/urandom of=test_files/test.raw bs=1M count=1
 
-          run_test() {
-            local name=$1
-            local command=$2
-            local expected_output=$3
-            
-            TOTAL_TESTS=$((TOTAL_TESTS + 1))
-            echo "Testing $name... "
-
-            if eval "${{ github.workspace }}/ffmpeg $command" 2>&1 | grep -q "$expected_output"; then
-              PASSED_TESTS=$((PASSED_TESTS + 1))
-              echo "✅ PASSED"
-            else
-              FAILED_TESTS=$((FAILED_TESTS + 1))
-              echo "❌ FAILED"
-            fi
-          }
+          source scripts/test-runner.sh
         shell: bash
   
   linux-aarch64-ffmpeg-test:
@@ -549,32 +499,16 @@ jobs:
           wget https://github.com/NoMercy-Entertainment/NoMercyFFMpeg/releases/download/${{ needs.check-release.outputs.version }}/ffmpeg-darwin-x86_64-7.1-${{ needs.check-release.outputs.version }}.tar.gz
           tar -xvf ffmpeg-darwin-x86_64-7.1-${{ needs.check-release.outputs.version }}.tar.gz
           chmod +x ./ffmpeg ./tests/ffmpeg-tests.sh
-          
-          echo "ffmpeg_path=./ffmpeg" >> $GITHUB_OUTPUT
 
-          TOTAL_TESTS=0
-          PASSED_TESTS=0
-          FAILED_TESTS=0
+          export TOTAL_TESTS=0
+          export PASSED_TESTS=0
+          export FAILED_TESTS=0
 
           mkdir -p test_files
           dd if=/dev/urandom of=test_files/test.raw bs=1M count=1
 
-          run_test() {
-            local name=$1
-            local command=$2
-            local expected_output=$3
-            
-            TOTAL_TESTS=$((TOTAL_TESTS + 1))
-            echo "Testing $name... "
-
-            if eval "${{ github.workspace }}/ffmpeg $command" 2>&1 | grep -q "$expected_output"; then
-              PASSED_TESTS=$((PASSED_TESTS + 1))
-              echo "✅ PASSED"
-            else
-              FAILED_TESTS=$((FAILED_TESTS + 1))
-              echo "❌ FAILED"
-            fi
-          }
+          source scripts/test-runner.sh
+        shell: bash
 
   darwin-x86_64-ffmpeg-test:
     needs: darwin-x86_64-ffmpeg-download
@@ -710,32 +644,16 @@ jobs:
           wget https://github.com/NoMercy-Entertainment/NoMercyFFMpeg/releases/download/${{ needs.check-release.outputs.version }}/ffmpeg-darwin-arm64-7.1-${{ needs.check-release.outputs.version }}.tar.gz
           tar -xvf ffmpeg-darwin-arm64-7.1-${{ needs.check-release.outputs.version }}.tar.gz
           chmod +x ./ffmpeg
-
-          echo "ffmpeg_path=./ffmpeg" >> $GITHUB_OUTPUT
           
-          TOTAL_TESTS=0
-          PASSED_TESTS=0
-          FAILED_TESTS=0
+          export TOTAL_TESTS=0
+          export PASSED_TESTS=0
+          export FAILED_TESTS=0
 
           mkdir -p test_files
-          dd if=/dev/urandom of=test_files/test.raw bs=1M count=1
-          
-          run_test() {
-            local name=$1
-            local command=$2
-            local expected_output=$3
-            
-            TOTAL_TESTS=$((TOTAL_TESTS + 1))
-            echo "Testing $name... "
+          dd if=/dev/urandom of=test_files/test.raw bs=1M count=1          
 
-            if eval "${{ github.workspace }}/ffmpeg $command" 2>&1 | grep -q "$expected_output"; then
-              PASSED_TESTS=$((PASSED_TESTS + 1))
-              echo "✅ PASSED"
-            else
-              FAILED_TESTS=$((FAILED_TESTS + 1))
-              echo "❌ FAILED"
-            fi
-          }
+          source scripts/test-runner.sh
+        shell: bash
 
   darwin-arm64-ffmpeg-test:
     needs: darwin-arm64-ffmpeg-download
