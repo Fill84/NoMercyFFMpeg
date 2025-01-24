@@ -805,9 +805,9 @@ RUN mkdir -p /ffmpeg/linux \
 RUN rm -rf ${PREFIX} /build
 
 RUN mkdir -p /build/linux /output \
-    && tar -czf /build/ffmpeg-linux-7.1.tar.gz \
+    && tar -czf /build/ffmpeg-linux-x86_64-7.1.tar.gz \
     -C /ffmpeg/linux . \
-    && cp /build/ffmpeg-linux-7.1.tar.gz /output
+    && cp /build/ffmpeg-linux-x86_64-7.1.tar.gz /output
 
 RUN apt-get autoremove -y && apt-get autoclean -y && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
@@ -818,4 +818,4 @@ FROM debian AS final
 
 COPY --from=linux /build /build
 
-CMD ["cp", "/build/ffmpeg-linux-7.1.tar.gz", "/output"]
+CMD ["cp", "/build/ffmpeg-linux-x86_64-7.1.tar.gz", "/output"]

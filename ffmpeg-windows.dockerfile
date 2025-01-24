@@ -627,9 +627,9 @@ RUN mkdir -p /ffmpeg/windows \
 RUN rm -rf ${PREFIX} /build
 
 RUN mkdir -p /build/windows /output \
-    && tar -czf /build/ffmpeg-windows-7.1.tar.gz \
+    && tar -czf /build/ffmpeg-windows-x86_64-7.1.tar.gz \
     -C /ffmpeg/windows . \
-    && cp /build/ffmpeg-windows-7.1.tar.gz /output
+    && cp /build/ffmpeg-windows-x86_64-7.1.tar.gz /output
 
 RUN apt-get autoremove -y && apt-get autoclean -y && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
@@ -640,4 +640,4 @@ FROM debian AS final
 
 COPY --from=windows /build /build
 
-CMD ["cp", "/build/ffmpeg-windows-7.1.tar.gz", "/output"]
+CMD ["cp", "/build/ffmpeg-windows-x86_64-7.1.tar.gz", "/output"]
