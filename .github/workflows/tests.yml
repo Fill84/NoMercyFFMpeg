@@ -277,9 +277,10 @@ jobs:
           echo "----------------------------------------"
 
           # Exit with failure if any tests failed
-          if [ "$FAILED_TESTS" -gt 0 ]; then
+          if ($script:FAILED_TESTS -gt 0) {
+            Write-Host "Tests failed, exiting with error code."
             exit 1
-          fi
+          }
 
   cleanup-release:
     needs: [platform-tests-unix, platform-tests-windows]
