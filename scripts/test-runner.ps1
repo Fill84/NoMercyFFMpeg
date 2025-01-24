@@ -9,7 +9,7 @@ function run_test {
     Write-Host -NoNewline "Testing $name... "
 
     try {
-        $script:output = Invoke-Expression "$GITHUB_WORKSPACE/ffmpeg.exe $command 2>&1" | Out-String
+        $script:output = Invoke-Expression "$global:GITHUB_WORKSPACE/ffmpeg.exe $command 2>&1" | Out-String
         if ($script:output -cmatch $expected_output) {
             Write-Host "✅ PASSED"
             $global:PASSED_TESTS++
