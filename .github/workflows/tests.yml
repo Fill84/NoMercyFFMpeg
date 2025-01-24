@@ -158,7 +158,7 @@ jobs:
 
       - name: Test ffmpeg windows
         run: |          
-          Write-Host ${{ steps.windows-test.outputs.ffmpeg_path }}
+          Write-Host "FFmpeg: ${{ steps.windows-test.outputs.ffmpeg_path }}"
 
           $script:TOTAL_TESTS = 0
           $script:PASSED_TESTS = 0
