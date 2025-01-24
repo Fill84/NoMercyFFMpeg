@@ -16,7 +16,10 @@ jobs:
   check-release:
     runs-on: ubuntu-latest
     outputs:
-      version: ${{ steps.version-check.outputs.version }}      
+      version: ${{ steps.version-check.outputs.version }}   
+      RED: '\033[0;31m'
+      GREEN: '\033[0;32m'
+      NC: '\033[0m'   
 
     steps:
       - name: Checkout Code
@@ -37,11 +40,6 @@ jobs:
   linux-ffmpeg-test:
     needs: check-release
     runs-on: ubuntu-latest
-    outputs:
-      ffmpeg_path: ${{ steps.linux-test.outputs.ffmpeg_path }}
-      RED: '\033[0;31m'
-      GREEN: '\033[0;32m'
-      NC: '\033[0m'
 
     steps:
       - name: Checkout Code
@@ -55,8 +53,6 @@ jobs:
           wget https://github.com/NoMercy-Entertainment/NoMercyFFMpeg/releases/download/${{ needs.check-release.outputs.version }}/ffmpeg-linux-7.1-${{ needs.check-release.outputs.version }}.tar.gz
           tar -xvf ffmpeg-linux-7.1-${{ needs.check-release.outputs.version }}.tar.gz
           chmod +x ./ffmpeg
-
-          echo "ffmpeg_path=./ffmpeg" >> $GITHUB_OUTPUT
 
       - name: Test ffmpeg linux
         run: |
@@ -75,12 +71,12 @@ jobs:
             TOTAL_TESTS=$((TOTAL_TESTS + 1))
             echo "Testing $name... "
 
-            if eval "${{ steps.linux-test.outputs.ffmpeg_path }} $command" 2>&1 | grep -q "$expected_output"; then
+            if eval "${{ github.workspace }}/ffmpeg $command" 2>&1 | grep -q "$expected_output"; then
               PASSED_TESTS=$((PASSED_TESTS + 1))
-              echo "✅ ${{ steps.linux-test.outputs.GREEN }}PASSED${{ steps.linux-test.outputs.NC }}"
+              echo "✅ ${{ needs.check-release.outputs.GREEN }}PASSED${{ needs.check-release.outputs.NC }}"
             else
               FAILED_TESTS=$((FAILED_TESTS + 1))
-              echo "❌ ${{ steps.linux-test.outputs.RED }}FAILED${{ steps.linux-test.outputs.NC }}"
+              echo "❌ ${{ needs.check-release.outputs.RED }}FAILED${{ needs.check-release.outputs.NC }}"
             fi
           }
 
@@ -138,8 +134,6 @@ jobs:
   windows-ffmpeg-test:
     needs: check-release
     runs-on: windows-latest
-    outputs:
-      ffmpeg_path: ${{ steps.windows-test.outputs.ffmpeg_path }}
 
     steps:
       - name: Checkout Code
@@ -154,12 +148,8 @@ jobs:
           $client.DownloadFile("https://github.com/NoMercy-Entertainment/NoMercyFFMpeg/releases/download/${{ needs.check-release.outputs.version }}/ffmpeg-windows-7.1-${{ needs.check-release.outputs.version }}.tar.gz", "ffmpeg-windows-7.1-${{ needs.check-release.outputs.version }}.tar.gz")        
           tar -xvf ffmpeg-windows-7.1-${{ needs.check-release.outputs.version }}.tar.gz
 
-          Write-Host "ffmpeg_path=./ffmpeg.exe" >> $GITHUB_OUTPUT
-
       - name: Test ffmpeg windows
-        run: |          
-          Write-Host "FFmpeg: ${{ steps.windows-test.outputs.ffmpeg_path }}"
-
+        run: |
           $script:TOTAL_TESTS = 0
           $script:PASSED_TESTS = 0
           $script:FAILED_TESTS = 0
@@ -185,7 +175,7 @@ jobs:
             Write-Host -NoNewline "Testing $Name... "
 
             try {
-              $script:output = Invoke-Expression "${{ steps.windows-test.outputs.ffmpeg_path }} $Command 2>&1" | Out-String
+              $script:output = Invoke-Expression "${{ github.workspace }}/ffmpeg.exe $Command 2>&1" | Out-String
               if ($script:output -cmatch $ExpectedOutput) {
                 Write-Host -ForegroundColor Green "✅ PASSED"
                 $script:PASSED_TESTS++
@@ -253,11 +243,6 @@ jobs:
   aarch64-ffmpeg-test:
     needs: check-release
     runs-on: ubuntu-24.04-arm
-    outputs:
-      ffmpeg_path: ${{ steps.aarch64-test.outputs.ffmpeg_path }}
-      RED: '\033[0;31m'
-      GREEN: '\033[0;32m'
-      NC: '\033[0m'
 
     steps:
       - name: Checkout Code
@@ -291,12 +276,12 @@ jobs:
             TOTAL_TESTS=$((TOTAL_TESTS + 1))
             echo "Testing $name... "
 
-            if eval "${{ steps.aarch64-test.outputs.ffmpeg_path }} $command" 2>&1 | grep -q "$expected_output"; then
+            if eval "${{ github.workspace }}/ffmpeg $command" 2>&1 | grep -q "$expected_output"; then
               PASSED_TESTS=$((PASSED_TESTS + 1))
-              echo "✅ ${{ steps.aarch64-test.outputs.GREEN }}PASSED${{ steps.aarch64-test.outputs.NC }}"
+              echo "✅ ${{ needs.check-release.outputs.GREEN }}PASSED${{ needs.check-release.outputs.NC }}"
             else
               FAILED_TESTS=$((FAILED_TESTS + 1))
-              echo "❌ ${{ steps.aarch64-test.outputs.RED }}FAILED${{ steps.aarch64-test.outputs.NC }}"
+              echo "❌ ${{ needs.check-release.outputs.RED }}FAILED${{ needs.check-release.outputs.NC }}"
             fi
           }
 
@@ -354,11 +339,6 @@ jobs:
   darwin-x86_64:
     needs: check-release
     runs-on: macos-13
-    outputs:
-      ffmpeg_path: ${{ steps.darwin_x86_64-test.outputs.ffmpeg_path }}
-      RED: '\033[0;31m'
-      GREEN: '\033[0;32m'
-      NC: '\033[0m'
 
     steps:
       - name: Checkout Code
@@ -392,12 +372,12 @@ jobs:
             TOTAL_TESTS=$((TOTAL_TESTS + 1))
             echo "Testing $name... "
 
-            if eval "${{ steps.darwin_x86_64-test.outputs.ffmpeg_path }} $command" 2>&1 | grep -q "$expected_output"; then
+            if eval "${{ github.workspace }}/ffmpeg $command" 2>&1 | grep -q "$expected_output"; then
               PASSED_TESTS=$((PASSED_TESTS + 1))
-              echo "✅ ${{ steps.darwin_x86_64-test.outputs.GREEN }}PASSED${{ steps.darwin_x86_64-test.outputs.NC }}"
+              echo "✅ ${{ needs.check-release.outputs.GREEN }}PASSED${{ needs.check-release.outputs.NC }}"
             else
               FAILED_TESTS=$((FAILED_TESTS + 1))
-              echo "❌ ${{ steps.darwin_x86_64-test.outputs.RED }}FAILED${{ steps.darwin_x86_64-test.outputs.NC }}"
+              echo "❌ ${{ needs.check-release.outputs.RED }}FAILED${{ needs.check-release.outputs.NC }}"
             fi
           }
 
@@ -455,11 +435,6 @@ jobs:
   darwin-arm64:
     needs: check-release
     runs-on: macos-latest
-    outputs:
-      ffmpeg_path: ${{ steps.darwin_aarch64-test.outputs.ffmpeg_path }}
-      RED: '\033[0;31m'
-      GREEN: '\033[0;32m'
-      NC: '\033[0m'
 
     steps:
       - name: Checkout Code
@@ -493,12 +468,12 @@ jobs:
             TOTAL_TESTS=$((TOTAL_TESTS + 1))
             echo "Testing $name... "
 
-            if eval "${{ steps.darwin_aarch64-test.outputs.ffmpeg_path }} $command" 2>&1 | grep -q "$expected_output"; then
+            if eval "${{ github.workspace }}/ffmpeg $command" 2>&1 | grep -q "$expected_output"; then
               PASSED_TESTS=$((PASSED_TESTS + 1))
-              echo "✅ ${{ steps.darwin_aarch64-test.outputs.GREEN }}PASSED${{ steps.darwin_aarch64-test.outputs.NC }}"
+              echo "✅ ${{ needs.check-release.outputs.GREEN }}PASSED${{ needs.check-release.outputs.NC }}"
             else
               FAILED_TESTS=$((FAILED_TESTS + 1))
-              echo "❌ ${{ steps.darwin_aarch64-test.outputs.RED }}FAILED${{ steps.darwin_aarch64-test.outputs.NC }}"
+              echo "❌ ${{ needs.check-release.outputs.RED }}FAILED${{ needs.check-release.outputs.NC }}"
             fi
           }
 
