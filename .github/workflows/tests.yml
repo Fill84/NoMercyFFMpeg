@@ -75,6 +75,7 @@ jobs:
               echo "❌ FAILED"
             fi
           }
+        shell: bash
 
   linux-x86_64-ffmpeg-test:
     needs: linux-x86_64-ffmpeg-download
@@ -371,6 +372,8 @@ jobs:
   linux-aarch64-ffmpeg-download:
     needs: check-release
     runs-on: ubuntu-24.04-arm
+    outputs:
+      function: ${{ steps.aarch64-test.outputs.function }}
 
     steps:
       - name: Checkout Code
@@ -410,6 +413,7 @@ jobs:
               echo "❌ FAILED"
             fi
           }
+        shell: bash
   
   linux-aarch64-ffmpeg-test:
     needs: linux-aarch64-ffmpeg-download
