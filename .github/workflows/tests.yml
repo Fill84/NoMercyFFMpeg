@@ -16,10 +16,7 @@ jobs:
   check-release:
     runs-on: ubuntu-latest
     outputs:
-      version: ${{ steps.version-check.outputs.version }}   
-      RED: '\033[0;31m'
-      GREEN: '\033[0;32m'
-      NC: '\033[0m'   
+      version: ${{ steps.version-check.outputs.version }}
 
     steps:
       - name: Checkout Code
@@ -37,7 +34,7 @@ jobs:
           echo "Latest tag: $LATEST_TAG$"
           echo "version=$LATEST_TAG" >> $GITHUB_OUTPUT
 
-  linux-ffmpeg-test:
+  linux-x86_64-ffmpeg-test:
     needs: check-release
     runs-on: ubuntu-latest
 
@@ -73,10 +70,10 @@ jobs:
 
             if eval "${{ github.workspace }}/ffmpeg $command" 2>&1 | grep -q "$expected_output"; then
               PASSED_TESTS=$((PASSED_TESTS + 1))
-              echo "✅ ${{ needs.check-release.outputs.GREEN }}PASSED${{ needs.check-release.outputs.NC }}"
+              echo "✅ PASSED"
             else
               FAILED_TESTS=$((FAILED_TESTS + 1))
-              echo "❌ ${{ needs.check-release.outputs.RED }}FAILED${{ needs.check-release.outputs.NC }}"
+              echo "❌ FAILED"
             fi
           }
 
@@ -131,7 +128,7 @@ jobs:
           exit $FAILED_TESTS
         shell: bash
 
-  windows-ffmpeg-test:
+  windows-x86_64-ffmpeg-test:
     needs: check-release
     runs-on: windows-latest
 
@@ -177,14 +174,14 @@ jobs:
             try {
               $script:output = Invoke-Expression "${{ github.workspace }}/ffmpeg.exe $Command 2>&1" | Out-String
               if ($script:output -cmatch $ExpectedOutput) {
-                Write-Host -ForegroundColor Green "✅ PASSED"
+                Write-Host "✅ PASSED"
                 $script:PASSED_TESTS++
               } else {
-                Write-Host -ForegroundColor Red "❌ FAILED"
+                Write-Host "❌ FAILED"
                 $script:FAILED_TESTS++
               }
             } catch {
-              Write-Host -ForegroundColor Red "❌ FAILED (Error)"
+              Write-Host "❌ FAILED (Error)"
               $script:FAILED_TESTS++
             }
           }
@@ -240,7 +237,7 @@ jobs:
           exit $script:FAILED_TESTS
         shell: pwsh
 
-  aarch64-ffmpeg-test:
+  linux-aarch64-ffmpeg-test:
     needs: check-release
     runs-on: ubuntu-24.04-arm
 
@@ -278,10 +275,10 @@ jobs:
 
             if eval "${{ github.workspace }}/ffmpeg $command" 2>&1 | grep -q "$expected_output"; then
               PASSED_TESTS=$((PASSED_TESTS + 1))
-              echo "✅ ${{ needs.check-release.outputs.GREEN }}PASSED${{ needs.check-release.outputs.NC }}"
+              echo "✅ PASSED"
             else
               FAILED_TESTS=$((FAILED_TESTS + 1))
-              echo "❌ ${{ needs.check-release.outputs.RED }}FAILED${{ needs.check-release.outputs.NC }}"
+              echo "❌ FAILED"
             fi
           }
 
@@ -336,7 +333,7 @@ jobs:
           exit $FAILED_TESTS
         shell: bash
 
-  darwin-x86_64:
+  darwin-x86_64-ffmpeg-test:
     needs: check-release
     runs-on: macos-13
 
@@ -374,10 +371,10 @@ jobs:
 
             if eval "${{ github.workspace }}/ffmpeg $command" 2>&1 | grep -q "$expected_output"; then
               PASSED_TESTS=$((PASSED_TESTS + 1))
-              echo "✅ ${{ needs.check-release.outputs.GREEN }}PASSED${{ needs.check-release.outputs.NC }}"
+              echo "✅ PASSED"
             else
               FAILED_TESTS=$((FAILED_TESTS + 1))
-              echo "❌ ${{ needs.check-release.outputs.RED }}FAILED${{ needs.check-release.outputs.NC }}"
+              echo "❌ FAILED"
             fi
           }
 
@@ -432,7 +429,7 @@ jobs:
           exit $FAILED_TESTS
         shell: bash          
 
-  darwin-arm64:
+  darwin-arm64-ffmpeg-test:
     needs: check-release
     runs-on: macos-latest
 
@@ -470,10 +467,10 @@ jobs:
 
             if eval "${{ github.workspace }}/ffmpeg $command" 2>&1 | grep -q "$expected_output"; then
               PASSED_TESTS=$((PASSED_TESTS + 1))
-              echo "✅ ${{ needs.check-release.outputs.GREEN }}PASSED${{ needs.check-release.outputs.NC }}"
+              echo "✅ PASSED"
             else
               FAILED_TESTS=$((FAILED_TESTS + 1))
-              echo "❌ ${{ needs.check-release.outputs.RED }}FAILED${{ needs.check-release.outputs.NC }}"
+              echo "❌ FAILED"
             fi
           }
 
