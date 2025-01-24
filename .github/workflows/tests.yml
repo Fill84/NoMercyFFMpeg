@@ -63,8 +63,6 @@ jobs:
 
           mkdir -p test_files
           dd if=/dev/urandom of=test_files/test.raw bs=1M count=1
-
-          source scripts/test-runner.sh
         shell: bash
 
   linux-x86_64-ffmpeg-test:
@@ -74,90 +72,130 @@ jobs:
     steps:
       # Basic tests
       - name: Version check
-        run: run_test "ffmpeg version" "-version" "7.1"
+        run: |
+          source scripts/test-runner.sh
+          run_test "ffmpeg version" "-version" "7.1"
         shell: bash
 
       # Video codecs
       - name: Video codec libx264
-        run: run_test "libx264" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx264 test_files/test_h264.mp4" "encoder.*libx264"
+        run: |
+          source scripts/test-runner.sh
+          run_test "libx264" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx264 test_files/test_h264.mp4" "encoder.*libx264"
         shell: bash
 
       - name: Video codec libx265
-        run: run_test "libx265" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx265 test_files/test_h265.mp4" "encoder.*libx265"
+        run: |
+          source scripts/test-runner.sh
+          run_test "libx265" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx265 test_files/test_h265.mp4" "encoder.*libx265"
         shell: bash
 
       - name: Video codec libvpx
-        run: run_test "libvpx" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libvpx-vp9 test_files/test_vp9.webm" "encoder.*libvpx-vp9"
+        run: |
+          source scripts/test-runner.sh
+          run_test "libvpx" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libvpx-vp9 test_files/test_vp9.webm" "encoder.*libvpx-vp9"
         shell: bash
 
       # - name: Video coded libaom
-      #   run: run_test "libaom" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libaom-av1 test_files/test_av1.mkv" "encoder.*libaom-av1"
+      #   run: 
+      #    source scripts/test-runner.sh
+      #    run_test "libaom" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libaom-av1 test_files/test_av1.mkv" "encoder.*libaom-av1"
       #   shell: bash
 
       # Audio codecs
       - name: Audio codec libfdk_aac
-        run: run_test "libfdk_aac" "-y -f lavfi -i anullsrc=duration=1 -c:a libfdk_aac test_files/test_aac.m4a" "encoder.*libfdk_aac"
+        run: |
+          source scripts/test-runner.sh
+          run_test "libfdk_aac" "-y -f lavfi -i anullsrc=duration=1 -c:a libfdk_aac test_files/test_aac.m4a" "encoder.*libfdk_aac"
         shell: bash
 
       - name: Audio codec libopus
-        run: run_test "libopus" "-y -f lavfi -i anullsrc=duration=1 -c:a libopus test_files/test_opus.opus" "encoder.*libopus"
+        run: |
+          source scripts/test-runner.sh
+          run_test "libopus" "-y -f lavfi -i anullsrc=duration=1 -c:a libopus test_files/test_opus.opus" "encoder.*libopus"
         shell: bash
 
       - name: Audio codec libmp3lame
-        run: run_test "libmp3lame" "-y -f lavfi -i anullsrc=duration=1 -c:a libmp3lame test_files/test_mp3.mp3" "encoder.*libmp3lame"
+        run: |
+          source scripts/test-runner.sh
+          run_test "libmp3lame" "-y -f lavfi -i anullsrc=duration=1 -c:a libmp3lame test_files/test_mp3.mp3" "encoder.*libmp3lame"
         shell: bash
 
       # Image codecs
       - name: Image codec libwebp
-        run: run_test "libwebp" "-y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libwebp test_files/test.webp" "encoder.*libwebp"
+        run: |
+          source scripts/test-runner.sh
+          run_test "libwebp" "-y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libwebp test_files/test.webp" "encoder.*libwebp"
         shell: bash
 
       - name: Image codec libopenjpeg
-        run: run_test "libopenjpeg" "-y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libopenjpeg test_files/test.jp2" "encoder.*openjpeg"
+        run: |
+          source scripts/test-runner.sh
+          run_test "libopenjpeg" "-y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libopenjpeg test_files/test.jp2" "encoder.*openjpeg"
         shell: bash
 
       # Subtitle codecs
       - name: Subtitle codec libass
-        run: run_test "libass" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate
+        run: |
+          source scripts/test-runner.sh
+          run_test "libass" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate
         shell: bash
 
       - name: Subtitle codec libfribidi
-        run: run_test "libfribidi" "-filters 2>&1 | grep fribidi" "fribidi"
+        run: |
+          source scripts/test-runner.sh
+          run_test "libfribidi" "-filters 2>&1 | grep fribidi" "fribidi"
         shell: bash
 
       # Hardware acceleration
       - name: Hardware acceleration NVENC
-        run: run_test "NVENC" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v h264_nvenc test_files/test_nvenc.mp4" "encoder.*h264_nvenc"
+        run: |
+          source scripts/test-runner.sh
+          run_test "NVENC" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v h264_nvenc test_files/test_nvenc.mp4" "encoder.*h264_nvenc"
         shell: bash
 
       - name: Hardware acceleration VAAPI
-        run: run_test "VAAPI" "-y -vaapi_device /dev/dri/renderD128 -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -vf 'format=nv12,hwupload' -c:v h264_vaapi test_files/test_vaapi.mp4 2>&1" "vaapi"
+        run: |
+          source scripts/test-runner.sh
+          run_test "VAAPI" "-y -vaapi_device /dev/dri/renderD128 -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -vf 'format=nv12,hwupload' -c:v h264_vaapi test_files/test_vaapi.mp4 2>&1" "vaapi"
         shell: bash
 
       # Additional format tests
       - name: Additional format libbluray
-        run: run_test "libbluray" "-h 2>&1 | grep bluray" "bluray"
+        run: |
+          source scripts/test-runner.sh
+          run_test "libbluray" "-h 2>&1 | grep bluray" "bluray"
         shell: bash
 
       - name: Additional format libcdio
-        run: run_test "libcdio" "-h 2>&1 | grep cdio" "cdio"
+        run: |
+          source scripts/test-runner.sh
+          run_test "libcdio" "-h 2>&1 | grep cdio" "cdio"
         shell: bash
 
       - name: Additional format libsrt
-        run: run_test "libsrt" "-h 2>&1 | grep srt" "srt"
+        run: |
+          source scripts/test-runner.sh
+          run_test "libsrt" "-h 2>&1 | grep srt" "srt"
         shell: bash
 
       - name: Additional format libxml2
-        run: run_test "libxml2" "-h 2>&1 | grep xml" "xml"
+        run: |
+          source scripts/test-runner.sh
+          run_test "libxml2" "-h 2>&1 | grep xml" "xml"
         shell: bash
 
       # AV1 codec tests
       - name: AV1 codec libdav1d
-        run: run_test "libdav1d" "-h decoder 2>&1 | grep dav1d" "dav1d"
+        run: |
+          source scripts/test-runner.sh
+          run_test "libdav1d" "-h decoder 2>&1 | grep dav1d" "dav1d"
         shell: bash
 
       - name: AV1 codec librav1e
-        run: run_test "librav1e" "-h encoder 2>&1 | grep rav1e" "rav1e"
+        run: |
+          source scripts/test-runner.sh
+          run_test "librav1e" "-h encoder 2>&1 | grep rav1e" "rav1e"
         shell: bash
 
       # Cleanup
@@ -214,8 +252,6 @@ jobs:
           $randomBytes = New-Object Byte[] 1048576
           (New-Object Random).NextBytes($randomBytes)
           [System.IO.File]::WriteAllBytes("test_files/test.raw", $randomBytes)
-
-          ./scripts/test-runner.ps1
         shell: pwsh
   
   windows-x86_64-ffmpeg-test:
@@ -225,90 +261,130 @@ jobs:
     steps:
       # Basic tests
       - name: Version check
-        run: run_test "ffmpeg version" "-version" "7.1"
+        run: |
+          .\scripts\test-runner.ps1
+          run_test "ffmpeg version" "-version" "7.1"
         shell: pwsh
       
       # Video codecs
       - name: Video codec libx264
-        run: run_test "libx264" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx264 test_files/test_h264.mp4" "encoder.*libx264"
+        run: |
+          .\scripts\test-runner.ps1
+          run_test "libx264" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx264 test_files/test_h264.mp4" "encoder.*libx264"
         shell: pwsh
       
       - name: Video codec libx265
-        run: run_test "libx265" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx265 test_files/test_h265.mp4" "encoder.*libx265"
+        run: |
+          .\scripts\test-runner.ps1
+          run_test "libx265" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx265 test_files/test_h265.mp4" "encoder.*libx265"
         shell: pwsh
 
       - name: Video codec libvpx
-        run: run_test "libvpx" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libvpx-vp9 test_files/test_vp9.webm" "encoder.*libvpx-vp9"
+        run: |
+          .\scripts\test-runner.ps1
+          run_test "libvpx" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libvpx-vp9 test_files/test_vp9.webm" "encoder.*libvpx-vp9"
         shell: pwsh
       
       # - name: Video coded libaom
-      #   run: run_test "libaom" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libaom-av1 test_files/test_av1.mkv" "encoder.*libaom-av1"
+      #   run: 
+      #    .\source\scripts/test-runner.ps1
+      #    run_test "libaom" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libaom-av1 test_files/test_av1.mkv" "encoder.*libaom-av1"
       #   shell: pwsh
       
       # Audio codecs
       - name: Audio codec libfdk_aac
-        run: run_test "libfdk_aac" "-y -f lavfi -i anullsrc=duration=1 -c:a libfdk_aac test_files/test_aac.m4a" "encoder.*libfdk_aac"
+        run: |
+          .\scripts\test-runner.ps1
+          run_test "libfdk_aac" "-y -f lavfi -i anullsrc=duration=1 -c:a libfdk_aac test_files/test_aac.m4a" "encoder.*libfdk_aac"
         shell: pwsh
 
       - name: Audio codec libopus
-        run: run_test "libopus" "-y -f lavfi -i anullsrc=duration=1 -c:a libopus test_files/test_opus.opus" "encoder.*libopus"
+        run: |
+          .\scripts\test-runner.ps1
+          run_test "libopus" "-y -f lavfi -i anullsrc=duration=1 -c:a libopus test_files/test_opus.opus" "encoder.*libopus"
         shell: pwsh
 
       - name: Audio codec libmp3lame
-        run: run_test "libmp3lame" "-y -f lavfi -i anullsrc=duration=1 -c:a libmp3lame test_files/test_mp3.mp3" "encoder.*libmp3lame"
+        run: |
+          .\scripts\test-runner.ps1
+          run_test "libmp3lame" "-y -f lavfi -i anullsrc=duration=1 -c:a libmp3lame test_files/test_mp3.mp3" "encoder.*libmp3lame"
         shell: pwsh
 
       # Image codecs
       - name: Image codec libwebp
-        run: run_test "libwebp" "-y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libwebp test_files/test.webp" "encoder.*libwebp"
+        run: |
+          .\scripts\test-runner.ps1
+          run_test "libwebp" "-y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libwebp test_files/test.webp" "encoder.*libwebp"
         shell: pwsh
 
       - name: Image codec libopenjpeg
-        run: run_test "libopenjpeg" "-y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libopenjpeg test_files/test.jp2" "encoder.*openjpeg"
+        run: |
+          .\scripts\test-runner.ps1
+          run_test "libopenjpeg" "-y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libopenjpeg test_files/test.jp2" "encoder.*openjpeg"
         shell: pwsh
 
       # Subtitle codecs
       - name: Subtitle codec libass
-        run: run_test "libass" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate
+        run: |
+          .\scripts\test-runner.ps1
+          run_test "libass" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate
         shell: pwsh
 
       - name: Subtitle codec libfribidi
-        run: run_test "libfribidi" "-filters 2>&1 | findstr fribidi" "fribidi"
+        run: |
+          .\scripts\test-runner.ps1
+          run_test "libfribidi" "-filters 2>&1 | findstr fribidi" "fribidi"
         shell: pwsh
       
       # Hardware acceleration
       - name: Hardware acceleration NVENC
-        run: run_test "NVENC" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v h264_nvenc test_files/test_nvenc.mp4" "encoder.*h264_nvenc"
+        run: |
+          .\scripts\test-runner.ps1
+          run_test "NVENC" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v h264_nvenc test_files/test_nvenc.mp4" "encoder.*h264_nvenc"
         shell: pwsh
 
       - name: Hardware acceleration VAAPI
-        run: run_test "VAAPI" "-y -vaapi_device /dev/dri/renderD128 -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -vf 'format=nv12,hwupload' -c:v h264_vaapi test_files/test_vaapi.mp4 2>&1" "vaapi"
+        run: |
+          .\scripts\test-runner.ps1
+          run_test "VAAPI" "-y -vaapi_device /dev/dri/renderD128 -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -vf 'format=nv12,hwupload' -c:v h264_vaapi test_files/test_vaapi.mp4 2>&1" "vaapi"
         shell: pwsh
       
       # Additional format tests
       - name: Additional format libbluray
-        run: run_test "libbluray" "-h 2>&1 | findstr bluray" "bluray"
+        run: |
+          .\scripts\test-runner.ps1
+          run_test "libbluray" "-h 2>&1 | findstr bluray" "bluray"
         shell: pwsh
 
       - name: Additional format libcdio
-        run: run_test "libcdio" "-h 2>&1 | findstr cdio" "cdio"
+        run: |
+          .\scripts\test-runner.ps1
+          run_test "libcdio" "-h 2>&1 | findstr cdio" "cdio"
         shell: pwsh
 
       - name: Additional format libsrt
-        run: run_test "libsrt" "-h 2>&1 | findstr srt" "srt"
+        run: |
+          .\scripts\test-runner.ps1
+          run_test "libsrt" "-h 2>&1 | findstr srt" "srt"
         shell: pwsh
 
       - name: Additional format libxml2
-        run: run_test "libxml2" "-h 2>&1 | findstr xml" "xml"
+        run: |
+          .\scripts\test-runner.ps1
+          run_test "libxml2" "-h 2>&1 | findstr xml" "xml"
         shell: pwsh
 
       # AV1 codec tests
       - name: AV1 codec libdav1d
-        run: run_test "libdav1d" "-h decoder 2>&1 | findstr dav1d" "dav1d"
+        run: |
+          .\scripts\test-runner.ps1
+          run_test "libdav1d" "-h decoder 2>&1 | findstr dav1d" "dav1d"
         shell: pwsh
 
       - name: AV1 codec librav1e
-        run: run_test "librav1e" "-h encoder 2>&1 | findstr rav1e" "rav1e"
+        run: |
+          .\scripts\test-runner.ps1
+          run_test "librav1e" "-h encoder 2>&1 | findstr rav1e" "rav1e"
         shell: pwsh
 
       # Cleanup
@@ -372,90 +448,130 @@ jobs:
     steps:
       # Basic tests
       - name: Version check
-        run: run_test "ffmpeg version" "-version" "7.1"
+        run: |
+          source scripts/test-runner.sh
+          run_test "ffmpeg version" "-version" "7.1"
         shell: bash
 
       # Video codecs
       - name: Video codec libx264
-        run: run_test "libx264" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx264 test_files/test_h264.mp4" "encoder.*libx264"
+        run: |
+          source scripts/test-runner.sh
+          run_test "libx264" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx264 test_files/test_h264.mp4" "encoder.*libx264"
         shell: bash
 
       - name: Video codec libx265
-        run: run_test "libx265" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx265 test_files/test_h265.mp4" "encoder.*libx265"
+        run: |
+          source scripts/test-runner.sh
+          run_test "libx265" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx265 test_files/test_h265.mp4" "encoder.*libx265"
         shell: bash
 
       - name: Video codec libvpx
-        run: run_test "libvpx" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libvpx-vp9 test_files/test_vp9.webm" "encoder.*libvpx-vp9"
+        run: |
+          source scripts/test-runner.sh
+          run_test "libvpx" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libvpx-vp9 test_files/test_vp9.webm" "encoder.*libvpx-vp9"
         shell: bash
 
       # - name: Video coded libaom
-      #   run: run_test "libaom" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libaom-av1 test_files/test_av1.mkv" "encoder.*libaom-av1"
+      #   run: 
+      #    source scripts/test-runner.sh
+      #    run_test "libaom" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libaom-av1 test_files/test_av1.mkv" "encoder.*libaom-av1"
       #   shell: bash
 
       # Audio codecs
       - name: Audio codec libfdk_aac
-        run: run_test "libfdk_aac" "-y -f lavfi -i anullsrc=duration=1 -c:a libfdk_aac test_files/test_aac.m4a" "encoder.*libfdk_aac"
+        run: |
+          source scripts/test-runner.sh
+          run_test "libfdk_aac" "-y -f lavfi -i anullsrc=duration=1 -c:a libfdk_aac test_files/test_aac.m4a" "encoder.*libfdk_aac"
         shell: bash
 
       - name: Audio codec libopus
-        run: run_test "libopus" "-y -f lavfi -i anullsrc=duration=1 -c:a libopus test_files/test_opus.opus" "encoder.*libopus"
+        run: |
+          source scripts/test-runner.sh
+          run_test "libopus" "-y -f lavfi -i anullsrc=duration=1 -c:a libopus test_files/test_opus.opus" "encoder.*libopus"
         shell: bash
 
       - name: Audio codec libmp3lame
-        run: run_test "libmp3lame" "-y -f lavfi -i anullsrc=duration=1 -c:a libmp3lame test_files/test_mp3.mp3" "encoder.*libmp3lame"
+        run: |
+          source scripts/test-runner.sh
+          run_test "libmp3lame" "-y -f lavfi -i anullsrc=duration=1 -c:a libmp3lame test_files/test_mp3.mp3" "encoder.*libmp3lame"
         shell: bash
 
       # Image codecs
       - name: Image codec libwebp
-        run: run_test "libwebp" "-y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libwebp test_files/test.webp" "encoder.*libwebp"
+        run: |
+          source scripts/test-runner.sh
+          run_test "libwebp" "-y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libwebp test_files/test.webp" "encoder.*libwebp"
         shell: bash
 
       - name: Image codec libopenjpeg
-        run: run_test "libopenjpeg" "-y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libopenjpeg test_files/test.jp2" "encoder.*openjpeg"
+        run: |
+          source scripts/test-runner.sh
+          run_test "libopenjpeg" "-y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libopenjpeg test_files/test.jp2" "encoder.*openjpeg"
         shell: bash
 
       # Subtitle codecs
       - name: Subtitle codec libass
-        run: run_test "libass" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate
+        run: |
+          source scripts/test-runner.sh
+          run_test "libass" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate
         shell: bash
 
       - name: Subtitle codec libfribidi
-        run: run_test "libfribidi" "-filters 2>&1 | grep fribidi" "fribidi"
+        run: |
+          source scripts/test-runner.sh
+          run_test "libfribidi" "-filters 2>&1 | grep fribidi" "fribidi"
         shell: bash
 
       # Hardware acceleration
       - name: Hardware acceleration NVENC
-        run: run_test "NVENC" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v h264_nvenc test_files/test_nvenc.mp4" "encoder.*h264_nvenc"
+        run: |
+          source scripts/test-runner.sh
+          run_test "NVENC" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v h264_nvenc test_files/test_nvenc.mp4" "encoder.*h264_nvenc"
         shell: bash
 
       - name: Hardware acceleration VAAPI
-        run: run_test "VAAPI" "-y -vaapi_device /dev/dri/renderD128 -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -vf 'format=nv12,hwupload' -c:v h264_vaapi test_files/test_vaapi.mp4 2>&1" "vaapi"
+        run: |
+          source scripts/test-runner.sh
+          run_test "VAAPI" "-y -vaapi_device /dev/dri/renderD128 -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -vf 'format=nv12,hwupload' -c:v h264_vaapi test_files/test_vaapi.mp4 2>&1" "vaapi"
         shell: bash
 
       # Additional format tests
       - name: Additional format libbluray
-        run: run_test "libbluray" "-h 2>&1 | grep bluray" "bluray"
+        run: |
+          source scripts/test-runner.sh
+          run_test "libbluray" "-h 2>&1 | grep bluray" "bluray"
         shell: bash
 
       - name: Additional format libcdio
-        run: run_test "libcdio" "-h 2>&1 | grep cdio" "cdio"
+        run: |
+          source scripts/test-runner.sh
+          run_test "libcdio" "-h 2>&1 | grep cdio" "cdio"
         shell: bash
 
       - name: Additional format libsrt
-        run: run_test "libsrt" "-h 2>&1 | grep srt" "srt"
+        run: |
+          source scripts/test-runner.sh
+          run_test "libsrt" "-h 2>&1 | grep srt" "srt"
         shell: bash
 
       - name: Additional format libxml2
-        run: run_test "libxml2" "-h 2>&1 | grep xml" "xml"
+        run: |
+          source scripts/test-runner.sh
+          run_test "libxml2" "-h 2>&1 | grep xml" "xml"
         shell: bash
 
       # AV1 codec tests
       - name: AV1 codec libdav1d
-        run: run_test "libdav1d" "-h decoder 2>&1 | grep dav1d" "dav1d"
+        run: |
+          source scripts/test-runner.sh
+          run_test "libdav1d" "-h decoder 2>&1 | grep dav1d" "dav1d"
         shell: bash
 
       - name: AV1 codec librav1e
-        run: run_test "librav1e" "-h encoder 2>&1 | grep rav1e" "rav1e"
+        run: |
+          source scripts/test-runner.sh
+          run_test "librav1e" "-h encoder 2>&1 | grep rav1e" "rav1e"
         shell: bash
 
       # Cleanup
@@ -517,90 +633,130 @@ jobs:
     steps:
       # Basic tests
       - name: Version check
-        run: run_test "ffmpeg version" "-version" "7.1"
+        run: |
+          source scripts/test-runner.sh
+          run_test "ffmpeg version" "-version" "7.1"
         shell: bash
 
       # Video codecs
       - name: Video codec libx264
-        run: run_test "libx264" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx264 test_files/test_h264.mp4" "encoder.*libx264"
+        run: |
+          source scripts/test-runner.sh
+          run_test "libx264" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx264 test_files/test_h264.mp4" "encoder.*libx264"
         shell: bash
 
       - name: Video codec libx265
-        run: run_test "libx265" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx265 test_files/test_h265.mp4" "encoder.*libx265"
+        run: |
+          source scripts/test-runner.sh
+          run_test "libx265" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx265 test_files/test_h265.mp4" "encoder.*libx265"
         shell: bash
 
       - name: Video codec libvpx
-        run: run_test "libvpx" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libvpx-vp9 test_files/test_vp9.webm" "encoder.*libvpx-vp9"
+        run: |
+          source scripts/test-runner.sh
+          run_test "libvpx" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libvpx-vp9 test_files/test_vp9.webm" "encoder.*libvpx-vp9"
         shell: bash
 
       # - name: Video coded libaom
-      #   run: run_test "libaom" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libaom-av1 test_files/test_av1.mkv" "encoder.*libaom-av1"
+      #   run: 
+      #    source scripts/test-runner.sh
+      #    run_test "libaom" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libaom-av1 test_files/test_av1.mkv" "encoder.*libaom-av1"
       #   shell: bash
 
       # Audio codecs
       - name: Audio codec libfdk_aac
-        run: run_test "libfdk_aac" "-y -f lavfi -i anullsrc=duration=1 -c:a libfdk_aac test_files/test_aac.m4a" "encoder.*libfdk_aac"
+        run: |
+          source scripts/test-runner.sh
+          run_test "libfdk_aac" "-y -f lavfi -i anullsrc=duration=1 -c:a libfdk_aac test_files/test_aac.m4a" "encoder.*libfdk_aac"
         shell: bash
 
       - name: Audio codec libopus
-        run: run_test "libopus" "-y -f lavfi -i anullsrc=duration=1 -c:a libopus test_files/test_opus.opus" "encoder.*libopus"
+        run: |
+          source scripts/test-runner.sh
+          run_test "libopus" "-y -f lavfi -i anullsrc=duration=1 -c:a libopus test_files/test_opus.opus" "encoder.*libopus"
         shell: bash
 
       - name: Audio codec libmp3lame
-        run: run_test "libmp3lame" "-y -f lavfi -i anullsrc=duration=1 -c:a libmp3lame test_files/test_mp3.mp3" "encoder.*libmp3lame"
+        run: |
+          source scripts/test-runner.sh
+          run_test "libmp3lame" "-y -f lavfi -i anullsrc=duration=1 -c:a libmp3lame test_files/test_mp3.mp3" "encoder.*libmp3lame"
         shell: bash
 
       # Image codecs
       - name: Image codec libwebp
-        run: run_test "libwebp" "-y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libwebp test_files/test.webp" "encoder.*libwebp"
+        run: |
+          source scripts/test-runner.sh
+          run_test "libwebp" "-y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libwebp test_files/test.webp" "encoder.*libwebp"
         shell: bash
 
       - name: Image codec libopenjpeg
-        run: run_test "libopenjpeg" "-y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libopenjpeg test_files/test.jp2" "encoder.*openjpeg"
+        run: |
+          source scripts/test-runner.sh
+          run_test "libopenjpeg" "-y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libopenjpeg test_files/test.jp2" "encoder.*openjpeg"
         shell: bash
 
       # Subtitle codecs
       - name: Subtitle codec libass
-        run: run_test "libass" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate
+        run: |
+          source scripts/test-runner.sh
+          run_test "libass" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate
         shell: bash
 
       - name: Subtitle codec libfribidi
-        run: run_test "libfribidi" "-filters 2>&1 | grep fribidi" "fribidi"
+        run: |
+          source scripts/test-runner.sh
+          run_test "libfribidi" "-filters 2>&1 | grep fribidi" "fribidi"
         shell: bash
 
       # Hardware acceleration
       - name: Hardware acceleration NVENC
-        run: run_test "NVENC" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v h264_nvenc test_files/test_nvenc.mp4" "encoder.*h264_nvenc"
+        run: |
+          source scripts/test-runner.sh
+          run_test "NVENC" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v h264_nvenc test_files/test_nvenc.mp4" "encoder.*h264_nvenc"
         shell: bash
 
       - name: Hardware acceleration VAAPI
-        run: run_test "VAAPI" "-y -vaapi_device /dev/dri/renderD128 -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -vf 'format=nv12,hwupload' -c:v h264_vaapi test_files/test_vaapi.mp4 2>&1" "vaapi"
+        run: |
+          source scripts/test-runner.sh
+          run_test "VAAPI" "-y -vaapi_device /dev/dri/renderD128 -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -vf 'format=nv12,hwupload' -c:v h264_vaapi test_files/test_vaapi.mp4 2>&1" "vaapi"
         shell: bash
 
       # Additional format tests
       - name: Additional format libbluray
-        run: run_test "libbluray" "-h 2>&1 | grep bluray" "bluray"
+        run: |
+          source scripts/test-runner.sh
+          run_test "libbluray" "-h 2>&1 | grep bluray" "bluray"
         shell: bash
 
       - name: Additional format libcdio
-        run: run_test "libcdio" "-h 2>&1 | grep cdio" "cdio"
+        run: |
+          source scripts/test-runner.sh
+          run_test "libcdio" "-h 2>&1 | grep cdio" "cdio"
         shell: bash
 
       - name: Additional format libsrt
-        run: run_test "libsrt" "-h 2>&1 | grep srt" "srt"
+        run: |
+          source scripts/test-runner.sh
+          run_test "libsrt" "-h 2>&1 | grep srt" "srt"
         shell: bash
 
       - name: Additional format libxml2
-        run: run_test "libxml2" "-h 2>&1 | grep xml" "xml"
+        run: |
+          source scripts/test-runner.sh
+          run_test "libxml2" "-h 2>&1 | grep xml" "xml"
         shell: bash
 
       # AV1 codec tests
       - name: AV1 codec libdav1d
-        run: run_test "libdav1d" "-h decoder 2>&1 | grep dav1d" "dav1d"
+        run: |
+          source scripts/test-runner.sh
+          run_test "libdav1d" "-h decoder 2>&1 | grep dav1d" "dav1d"
         shell: bash
 
       - name: AV1 codec librav1e
-        run: run_test "librav1e" "-h encoder 2>&1 | grep rav1e" "rav1e"
+        run: |
+          source scripts/test-runner.sh
+          run_test "librav1e" "-h encoder 2>&1 | grep rav1e" "rav1e"
         shell: bash
 
       # Cleanup
@@ -662,90 +818,130 @@ jobs:
     steps:
       # Basic tests
       - name: Version check
-        run: run_test "ffmpeg version" "-version" "7.1"
+        run: |
+          source scripts/test-runner.sh
+          run_test "ffmpeg version" "-version" "7.1"
         shell: bash
 
       # Video codecs
       - name: Video codec libx264
-        run: run_test "libx264" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx264 test_files/test_h264.mp4" "encoder.*libx264"
+        run: |
+          source scripts/test-runner.sh
+          run_test "libx264" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx264 test_files/test_h264.mp4" "encoder.*libx264"
         shell: bash
 
       - name: Video codec libx265
-        run: run_test "libx265" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx265 test_files/test_h265.mp4" "encoder.*libx265"
+        run: |
+          source scripts/test-runner.sh
+          run_test "libx265" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx265 test_files/test_h265.mp4" "encoder.*libx265"
         shell: bash
 
       - name: Video codec libvpx
-        run: run_test "libvpx" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libvpx-vp9 test_files/test_vp9.webm" "encoder.*libvpx-vp9"
+        run: |
+          source scripts/test-runner.sh
+          run_test "libvpx" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libvpx-vp9 test_files/test_vp9.webm" "encoder.*libvpx-vp9"
         shell: bash
 
       # - name: Video coded libaom
-      #   run: run_test "libaom" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libaom-av1 test_files/test_av1.mkv" "encoder.*libaom-av1"
+      #   run: 
+      #    source scripts/test-runner.sh
+      #    run_test "libaom" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libaom-av1 test_files/test_av1.mkv" "encoder.*libaom-av1"
       #   shell: bash
 
       # Audio codecs
       - name: Audio codec libfdk_aac
-        run: run_test "libfdk_aac" "-y -f lavfi -i anullsrc=duration=1 -c:a libfdk_aac test_files/test_aac.m4a" "encoder.*libfdk_aac"
+        run: |
+          source scripts/test-runner.sh
+          run_test "libfdk_aac" "-y -f lavfi -i anullsrc=duration=1 -c:a libfdk_aac test_files/test_aac.m4a" "encoder.*libfdk_aac"
         shell: bash
 
       - name: Audio codec libopus
-        run: run_test "libopus" "-y -f lavfi -i anullsrc=duration=1 -c:a libopus test_files/test_opus.opus" "encoder.*libopus"
+        run: |
+          source scripts/test-runner.sh
+          run_test "libopus" "-y -f lavfi -i anullsrc=duration=1 -c:a libopus test_files/test_opus.opus" "encoder.*libopus"
         shell: bash
 
       - name: Audio codec libmp3lame
-        run: run_test "libmp3lame" "-y -f lavfi -i anullsrc=duration=1 -c:a libmp3lame test_files/test_mp3.mp3" "encoder.*libmp3lame"
+        run: |
+          source scripts/test-runner.sh
+          run_test "libmp3lame" "-y -f lavfi -i anullsrc=duration=1 -c:a libmp3lame test_files/test_mp3.mp3" "encoder.*libmp3lame"
         shell: bash
 
       # Image codecs
       - name: Image codec libwebp
-        run: run_test "libwebp" "-y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libwebp test_files/test.webp" "encoder.*libwebp"
+        run: |
+          source scripts/test-runner.sh
+          run_test "libwebp" "-y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libwebp test_files/test.webp" "encoder.*libwebp"
         shell: bash
 
       - name: Image codec libopenjpeg
-        run: run_test "libopenjpeg" "-y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libopenjpeg test_files/test.jp2" "encoder.*openjpeg"
+        run: |
+          source scripts/test-runner.sh
+          run_test "libopenjpeg" "-y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libopenjpeg test_files/test.jp2" "encoder.*openjpeg"
         shell: bash
 
       # Subtitle codecs
       - name: Subtitle codec libass
-        run: run_test "libass" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate
+        run: |
+          source scripts/test-runner.sh
+          run_test "libass" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate
         shell: bash
 
       - name: Subtitle codec libfribidi
-        run: run_test "libfribidi" "-filters 2>&1 | grep fribidi" "fribidi"
+        run: |
+          source scripts/test-runner.sh
+          run_test "libfribidi" "-filters 2>&1 | grep fribidi" "fribidi"
         shell: bash
 
       # Hardware acceleration
       - name: Hardware acceleration NVENC
-        run: run_test "NVENC" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v h264_nvenc test_files/test_nvenc.mp4" "encoder.*h264_nvenc"
+        run: |
+          source scripts/test-runner.sh
+          run_test "NVENC" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v h264_nvenc test_files/test_nvenc.mp4" "encoder.*h264_nvenc"
         shell: bash
 
       - name: Hardware acceleration VAAPI
-        run: run_test "VAAPI" "-y -vaapi_device /dev/dri/renderD128 -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -vf 'format=nv12,hwupload' -c:v h264_vaapi test_files/test_vaapi.mp4 2>&1" "vaapi"
+        run: |
+          source scripts/test-runner.sh
+          run_test "VAAPI" "-y -vaapi_device /dev/dri/renderD128 -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -vf 'format=nv12,hwupload' -c:v h264_vaapi test_files/test_vaapi.mp4 2>&1" "vaapi"
         shell: bash
 
       # Additional format tests
       - name: Additional format libbluray
-        run: run_test "libbluray" "-h 2>&1 | grep bluray" "bluray"
+        run: |
+          source scripts/test-runner.sh
+          run_test "libbluray" "-h 2>&1 | grep bluray" "bluray"
         shell: bash
 
       - name: Additional format libcdio
-        run: run_test "libcdio" "-h 2>&1 | grep cdio" "cdio"
+        run: |
+          source scripts/test-runner.sh
+          run_test "libcdio" "-h 2>&1 | grep cdio" "cdio"
         shell: bash
 
       - name: Additional format libsrt
-        run: run_test "libsrt" "-h 2>&1 | grep srt" "srt"
+        run: |
+          source scripts/test-runner.sh
+          run_test "libsrt" "-h 2>&1 | grep srt" "srt"
         shell: bash
 
       - name: Additional format libxml2
-        run: run_test "libxml2" "-h 2>&1 | grep xml" "xml"
+        run: |
+          source scripts/test-runner.sh
+          run_test "libxml2" "-h 2>&1 | grep xml" "xml"
         shell: bash
 
       # AV1 codec tests
       - name: AV1 codec libdav1d
-        run: run_test "libdav1d" "-h decoder 2>&1 | grep dav1d" "dav1d"
+        run: |
+          source scripts/test-runner.sh
+          run_test "libdav1d" "-h decoder 2>&1 | grep dav1d" "dav1d"
         shell: bash
 
       - name: AV1 codec librav1e
-        run: run_test "librav1e" "-h encoder 2>&1 | grep rav1e" "rav1e"
+        run: |
+          source scripts/test-runner.sh
+          run_test "librav1e" "-h encoder 2>&1 | grep rav1e" "rav1e"
         shell: bash
 
       # Cleanup
