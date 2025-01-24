@@ -157,7 +157,9 @@ jobs:
           Write-Host "ffmpeg_path=./ffmpeg.exe" >> $GITHUB_OUTPUT
 
       - name: Test ffmpeg windows
-        run: |
+        run: |          
+          Write-Host ${{ steps.windows-test.outputs.ffmpeg_path }}
+
           $script:TOTAL_TESTS = 0
           $script:PASSED_TESTS = 0
           $script:FAILED_TESTS = 0
@@ -185,14 +187,14 @@ jobs:
             try {
               $script:output = Invoke-Expression "${{ steps.windows-test.outputs.ffmpeg_path }} $Command 2>&1" | Out-String
               if ($script:output -cmatch $ExpectedOutput) {
-                Write-Host "PASSED" -ForegroundColor Green
+                Write-Host -ForegroundColor Green "✅ PASSED"
                 $script:PASSED_TESTS++
               } else {
-                Write-Host "FAILED" -ForegroundColor Red
+                Write-Host -ForegroundColor Red "❌ FAILED"
                 $script:FAILED_TESTS++
               }
             } catch {
-              Write-Host "FAILED (Error)" -ForegroundColor Red
+              Write-Host -ForegroundColor Red "❌ FAILED (Error)"
               $script:FAILED_TESTS++
             }
           }
