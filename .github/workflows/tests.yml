@@ -185,14 +185,14 @@ jobs:
             try {
               $script:output = Invoke-Expression "${{ steps.windows-test.outputs.ffmpeg_path }} $Command 2>&1" | Out-String
               if ($script:output -cmatch $ExpectedOutput) {
-                Write-Host -ForegroundColor Green "✅ PASSED"
+                Write-Host "PASSED" -ForegroundColor Green
                 $script:PASSED_TESTS++
               } else {
-                Write-Host -ForegroundColor Red "❌ FAILED"
+                Write-Host "FAILED" -ForegroundColor Red
                 $script:FAILED_TESTS++
               }
             } catch {
-              Write-Host -ForegroundColor Red "❌ FAILED (Error)"
+              Write-Host "FAILED (Error)" -ForegroundColor Red
               $script:FAILED_TESTS++
             }
           }
