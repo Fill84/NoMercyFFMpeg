@@ -174,17 +174,17 @@ jobs:
 
           function run_test {
             param (
-              [string]$name,
-              [string]$command,
-              [string]$expected_output
+              [string]$Name,
+              [string]$Command,
+              [string]$ExpectedOutput
             )
 
             $script:TOTAL_TESTS++
-            Write-Host -NoNewline "Testing $name... "
+            Write-Host -NoNewline "Testing $Name... "
 
             try {
-              $output = Invoke-Expression "${{ steps.windows-test.outputs.ffmpeg_path }} $command 2>&1" | Out-String
-              if ($output -cmatch $expected_output) {
+              $script:output = Invoke-Expression "${{ steps.windows-test.outputs.ffmpeg_path }} $Command 2>&1" | Out-String
+              if ($script:output -cmatch $ExpectedOutput) {
                 Write-Host -ForegroundColor Green "✅ PASSED"
                 $script:PASSED_TESTS++
               } else {
@@ -217,21 +217,21 @@ jobs:
 
           # Subtitle codecs
           run_test "libass" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -vf ass=test_files/test.ass test_files/test_ass.mp4" "ass"
-          run_test "libfribidi" "-filters 2>&1 | grep fribidi" "fribidi"
+          run_test "libfribidi" "-filters 2>&1 | findstr fribidi" "fribidi"
 
           # Hardware acceleration
           run_test "NVENC" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v h264_nvenc test_files/test_nvenc.mp4" "encoder.*h264_nvenc"
           run_test "VAAPI" "-y -vaapi_device /dev/dri/renderD128 -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -vf 'format=nv12,hwupload' -c:v h264_vaapi test_files/test_vaapi.mp4 2>&1" "vaapi"
                     
           # Additional format tests
-          run_test "libbluray" "-h 2>&1 | grep bluray" "bluray"
-          run_test "libcdio" "-h 2>&1 | grep cdio" "cdio"
-          run_test "libsrt" "-h 2>&1 | grep srt" "srt"
-          run_test "libxml2" "-h 2>&1 | grep xml" "xml"
+          run_test "libbluray" "-h 2>&1 | findstr bluray" "bluray"
+          run_test "libcdio" "-h 2>&1 | findstr cdio" "cdio"
+          run_test "libsrt" "-h 2>&1 | findstr srt" "srt"
+          run_test "libxml2" "-h 2>&1 | findstr xml" "xml"
 
           # AV1 codec tests
-          run_test "libdav1d" "-h decoder 2>&1 | grep dav1d" "dav1d"
-          run_test "librav1e" "-h encoder 2>&1 | grep rav1e" "rav1e"
+          run_test "libdav1d" "-h decoder 2>&1 | findstr dav1d" "dav1d"
+          run_test "librav1e" "-h encoder 2>&1 | findstr rav1e" "rav1e"
           
           # Cleanup
           Remove-Item -Path test_files -Recurse -Force
@@ -239,13 +239,13 @@ jobs:
           # Print summary
           Write-Host "----------------------------------------"
           Write-Host "Test Summary:"
-          Write-Host "Total tests: $env:TOTAL_TESTS"
-          Write-Host "Passed tests: $env:PASSED_TESTS"
-          Write-Host "Failed tests: $env:FAILED_TESTS"
+          Write-Host "Total tests: $script:TOTAL_TESTS"
+          Write-Host "Passed tests: $script:PASSED_TESTS"
+          Write-Host "Failed tests: $script:FAILED_TESTS"
           Write-Host "----------------------------------------"
 
           # Exit with failure if any tests failed
-          exit $env:FAILED_TESTS
+          exit $script:FAILED_TESTS
         shell: pwsh
 
   aarch64-ffmpeg-test:
