@@ -67,7 +67,9 @@ jobs:
           dd if=/dev/urandom of=test_files/test.raw bs=1M count=1
 
           GITHUB_WORKSPACE="${{ github.workspace }}"
-          . "${{ github.workspace }}/scripts/test-runner.sh"
+          . ${{ github.workspace }}/scripts/test-runner.sh
+
+          run_test "ffmpeg version" "-version" "7.1"
         shell: bash
 
       # Basic tests
@@ -234,13 +236,10 @@ jobs:
           [System.IO.File]::WriteAllBytes("test_files/test.raw", $randomBytes)
           
           $global:GIT_WORKSPACE = "${{ github.workspace }}"
-          . "${{ github.workspace }}\scripts\test-runner.ps1"
+          . ${{ github.workspace }}\scripts\test-runner.ps1
+
+          run_test "ffmpeg version" "-version" "7.1"
         shell: pwsh
-        
-      - name: Checkout Code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       # Basic tests
       - name: Version check
@@ -402,7 +401,9 @@ jobs:
           dd if=/dev/urandom of=test_files/test.raw bs=1M count=1
 
           GITHUB_WORKSPACE="${{ github.workspace }}"
-          . "${{ github.workspace }}/scripts/test-runner.sh"
+          . ${{ github.workspace }}/scripts/test-runner.sh
+
+          run_test "ffmpeg version" "-version" "7.1"
         shell: bash
           
       # Basic tests
@@ -564,7 +565,9 @@ jobs:
           dd if=/dev/urandom of=test_files/test.raw bs=1M count=1
 
           GITHUB_WORKSPACE="${{ github.workspace }}"
-          . "${{ github.workspace }}/scripts/test-runner.sh"
+          . ${{ github.workspace }}/scripts/test-runner.sh
+
+          run_test "ffmpeg version" "-version" "7.1"
         shell: bash
 
       # Basic tests
@@ -725,7 +728,9 @@ jobs:
           dd if=/dev/urandom of=test_files/test.raw bs=1M count=1
 
           GITHUB_WORKSPACE="${{ github.workspace }}"
-          . "${{ github.workspace }}/scripts/test-runner.sh"
+          . ${{ github.workspace }}/scripts/test-runner.sh
+
+          run_test "ffmpeg version" "-version" "7.1"
         shell: bash
 
       # Basic tests
