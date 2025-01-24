@@ -397,7 +397,7 @@ jobs:
           mkdir -p downloads/linux
           docker pull nomercyentertainment/ffmpeg-linux:latest
           docker create --name linux-container nomercyentertainment/ffmpeg-linux:latest
-          docker cp linux-container:/build/ffmpeg-linux-7.1.tar.gz downloads/ffmpeg-linux-7.1.tar.gz || echo "File not found in container."
+          docker cp linux-container:/build/ffmpeg-linux-x86_64-7.1.tar.gz downloads/ffmpeg-linux-x86_64-7.1.tar.gz || echo "File not found in container."
           docker cp linux-container:/build/linux downloads/linux || echo "Directory not found in container."
           docker rm linux-container
 
@@ -406,7 +406,7 @@ jobs:
           mkdir -p downloads/windows
           docker pull nomercyentertainment/ffmpeg-windows:latest
           docker create --name windows-container nomercyentertainment/ffmpeg-windows:latest
-          docker cp windows-container:/build/ffmpeg-windows-7.1.tar.gz downloads/ffmpeg-windows-7.1.tar.gz || echo "File not found in container."
+          docker cp windows-container:/build/ffmpeg-windows-x86_64-7.1.tar.gz downloads/ffmpeg-windows-x86_64-7.1.tar.gz || echo "File not found in container."
           docker cp windows-container:/build/windows downloads/windows || echo "Directory not found in container."
           docker rm windows-container
 
@@ -443,8 +443,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create-release.outputs.upload_url }}
-          asset_path: downloads/ffmpeg-linux-7.1.tar.gz
-          asset_name: ffmpeg-linux-7.1-${{ needs.check-changes.outputs.version }}.tar.gz
+          asset_path: downloads/ffmpeg-linux-x86_64-7.1.tar.gz
+          asset_name: ffmpeg-linux-x86_64-7.1-${{ needs.check-changes.outputs.version }}.tar.gz
           asset_content_type: application/gzip
 
       - name: Upload Windows Release Asset
@@ -453,8 +453,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create-release.outputs.upload_url }}
-          asset_path: downloads/ffmpeg-windows-7.1.tar.gz
-          asset_name: ffmpeg-windows-7.1-${{ needs.check-changes.outputs.version }}.tar.gz
+          asset_path: downloads/ffmpeg-windows-x86_64-7.1.tar.gz
+          asset_name: ffmpeg-windows-x86_64-7.1-${{ needs.check-changes.outputs.version }}.tar.gz
           asset_content_type: application/gzip
 
       - name: Upload Aarch64 Release Asset

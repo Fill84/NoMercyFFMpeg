@@ -55,6 +55,10 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Install wget for Windows
+        if: matrix.os == 'windows-latest'
+        run: choco install wget --no-progress
+
       - name: Download Release
         shell: bash
         run: |
