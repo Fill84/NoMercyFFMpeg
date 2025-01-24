@@ -65,6 +65,7 @@ jobs:
           FAILED_TESTS=0
 
           mkdir -p test_files
+          dd if=/dev/urandom of=test_files/test.raw bs=1M count=1
 
           run_test() {
             local name=$1
@@ -139,9 +140,6 @@ jobs:
     runs-on: windows-latest
     outputs:
       ffmpeg_path: ${{ steps.windows-test.outputs.ffmpeg_path }}
-      RED: '\033[0;31m'
-      GREEN: '\033[0;32m'
-      NC: '\033[0m'
 
     steps:
       - name: Checkout Code
@@ -166,21 +164,35 @@ jobs:
 
           mkdir -p test_files
 
-          run_test() {
-            local name=$1
-            local command=$2
-            local expected_output=$3
-            
-            TOTAL_TESTS=$((TOTAL_TESTS + 1))
-            echo "Testing $name... "
+          # Create test files
+          New-Item -ItemType Directory -Path test_files -Force | Out-Null
 
-            if eval "${{ steps.windows-test.outputs.ffmpeg_path }} $command" 2>&1 | grep -q "$expected_output"; then
-              PASSED_TESTS=$((PASSED_TESTS + 1))
-              echo "✅ ${{ steps.windows-test.outputs.GREEN }}PASSED${{ steps.windows-test.outputs.NC }}"
-            else
-              FAILED_TESTS=$((FAILED_TESTS + 1))
-              echo "❌ ${{ steps.windows-test.outputs.RED }}FAILED${{ steps.windows-test.outputs.NC }}"
-            fi
+          # Create a 1MB random file
+          $randomBytes = New-Object Byte[] 1048576
+          (New-Object Random).NextBytes($randomBytes)
+          [System.IO.File]::WriteAllBytes("test_files/test.raw", $randomBytes)
+
+          function run_test {
+            param (
+              [string]$name,
+              [string]$command,
+              [string]$expected_output
+            )
+
+            $script:TOTAL_TESTS++
+            Write-Host -NoNewline "Testing $name... "
+
+            try {
+              $output = Invoke-Expression "${{ steps.windows-test.outputs.ffmpeg_path }}  $command 2>&1" | Out-String
+              if ($output -cmatch $expected_output) {
+                Write-Host -ForegroundColor Green "✅ PASSED"
+                $script:PASSED_TESTS++
+              } else {
+                Write-Host -ForegroundColor Red "❌ FAILED"
+              }
+            } catch {
+              Write-Host -ForegroundColor Red "❌ FAILED (Error)"
+            }
           }
 
           # Basic tests
@@ -220,19 +232,19 @@ jobs:
           run_test "librav1e" "-h encoder 2>&1 | grep rav1e" "rav1e"
           
           # Cleanup
-          rm -rf test_files
+          Remove-Item -Path test_files -Recurse -Force
 
           # Print summary
-          echo "----------------------------------------"
-          echo "Test Summary:"
-          echo "Total tests: $TOTAL_TESTS"
-          echo "Passed tests: $PASSED_TESTS"
-          echo "Failed tests: $FAILED_TESTS"
-          echo "----------------------------------------"
+          Write-Host "----------------------------------------"
+          Write-Host "Test Summary:"
+          Write-Host "Total tests: $TOTAL_TESTS"
+          Write-Host "Passed tests: $PASSED_TESTS"
+          Write-Host "Failed tests: $FAILED_TESTS"
+          Write-Host "----------------------------------------"
 
           # Exit with failure if any tests failed
           exit $FAILED_TESTS
-        shell: bash
+        shell: pwsh
 
   aarch64-ffmpeg-test:
     needs: check-release
@@ -265,6 +277,7 @@ jobs:
           FAILED_TESTS=0
 
           mkdir -p test_files
+          dd if=/dev/urandom of=test_files/test.raw bs=1M count=1
 
           run_test() {
             local name=$1
@@ -365,6 +378,7 @@ jobs:
           FAILED_TESTS=0
 
           mkdir -p test_files
+          dd if=/dev/urandom of=test_files/test.raw bs=1M count=1
 
           run_test() {
             local name=$1
@@ -465,7 +479,8 @@ jobs:
           FAILED_TESTS=0
 
           mkdir -p test_files
-
+          dd if=/dev/urandom of=test_files/test.raw bs=1M count=1
+          
           run_test() {
             local name=$1
             local command=$2
