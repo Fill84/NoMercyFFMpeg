@@ -110,14 +110,14 @@ jobs:
           run_test "VAAPI" "-y -vaapi_device /dev/dri/renderD128 -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -vf 'format=nv12,hwupload' -c:v h264_vaapi test_files/test_vaapi.mp4 2>&1" "vaapi"
                     
           # Additional format tests
-          test_feature "libbluray" "-h 2>&1 | grep bluray" "bluray"
-          test_feature "libcdio" "-h 2>&1 | grep cdio" "cdio"
-          test_feature "libsrt" "-h 2>&1 | grep srt" "srt"
-          test_feature "libxml2" "-h 2>&1 | grep xml" "xml"
+          run_test "libbluray" "-h 2>&1 | grep bluray" "bluray"
+          run_test "libcdio" "-h 2>&1 | grep cdio" "cdio"
+          run_test "libsrt" "-h 2>&1 | grep srt" "srt"
+          run_test "libxml2" "-h 2>&1 | grep xml" "xml"
 
           # AV1 codec tests
-          test_feature "libdav1d" "-h decoder 2>&1 | grep dav1d" "dav1d"
-          test_feature "librav1e" "-h encoder 2>&1 | grep rav1e" "rav1e"
+          run_test "libdav1d" "-h decoder 2>&1 | grep dav1d" "dav1d"
+          run_test "librav1e" "-h encoder 2>&1 | grep rav1e" "rav1e"
           
           # Cleanup
           rm -rf test_files
@@ -210,14 +210,14 @@ jobs:
           run_test "VAAPI" "-y -vaapi_device /dev/dri/renderD128 -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -vf 'format=nv12,hwupload' -c:v h264_vaapi test_files/test_vaapi.mp4 2>&1" "vaapi"
                     
           # Additional format tests
-          test_feature "libbluray" "-h 2>&1 | grep bluray" "bluray"
-          test_feature "libcdio" "-h 2>&1 | grep cdio" "cdio"
-          test_feature "libsrt" "-h 2>&1 | grep srt" "srt"
-          test_feature "libxml2" "-h 2>&1 | grep xml" "xml"
+          run_test "libbluray" "-h 2>&1 | grep bluray" "bluray"
+          run_test "libcdio" "-h 2>&1 | grep cdio" "cdio"
+          run_test "libsrt" "-h 2>&1 | grep srt" "srt"
+          run_test "libxml2" "-h 2>&1 | grep xml" "xml"
 
           # AV1 codec tests
-          test_feature "libdav1d" "-h decoder 2>&1 | grep dav1d" "dav1d"
-          test_feature "librav1e" "-h encoder 2>&1 | grep rav1e" "rav1e"
+          run_test "libdav1d" "-h decoder 2>&1 | grep dav1d" "dav1d"
+          run_test "librav1e" "-h encoder 2>&1 | grep rav1e" "rav1e"
           
           # Cleanup
           rm -rf test_files
@@ -310,14 +310,14 @@ jobs:
           run_test "VAAPI" "-y -vaapi_device /dev/dri/renderD128 -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -vf 'format=nv12,hwupload' -c:v h264_vaapi test_files/test_vaapi.mp4 2>&1" "vaapi"
                     
           # Additional format tests
-          test_feature "libbluray" "-h 2>&1 | grep bluray" "bluray"
-          test_feature "libcdio" "-h 2>&1 | grep cdio" "cdio"
-          test_feature "libsrt" "-h 2>&1 | grep srt" "srt"
-          test_feature "libxml2" "-h 2>&1 | grep xml" "xml"
+          run_test "libbluray" "-h 2>&1 | grep bluray" "bluray"
+          run_test "libcdio" "-h 2>&1 | grep cdio" "cdio"
+          run_test "libsrt" "-h 2>&1 | grep srt" "srt"
+          run_test "libxml2" "-h 2>&1 | grep xml" "xml"
 
           # AV1 codec tests
-          test_feature "libdav1d" "-h decoder 2>&1 | grep dav1d" "dav1d"
-          test_feature "librav1e" "-h encoder 2>&1 | grep rav1e" "rav1e"
+          run_test "libdav1d" "-h decoder 2>&1 | grep dav1d" "dav1d"
+          run_test "librav1e" "-h encoder 2>&1 | grep rav1e" "rav1e"
           
           # Cleanup
           rm -rf test_files
@@ -410,14 +410,14 @@ jobs:
           run_test "VAAPI" "-y -vaapi_device /dev/dri/renderD128 -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -vf 'format=nv12,hwupload' -c:v h264_vaapi test_files/test_vaapi.mp4 2>&1" "vaapi"
                     
           # Additional format tests
-          test_feature "libbluray" "-h 2>&1 | grep bluray" "bluray"
-          test_feature "libcdio" "-h 2>&1 | grep cdio" "cdio"
-          test_feature "libsrt" "-h 2>&1 | grep srt" "srt"
-          test_feature "libxml2" "-h 2>&1 | grep xml" "xml"
+          run_test "libbluray" "-h 2>&1 | grep bluray" "bluray"
+          run_test "libcdio" "-h 2>&1 | grep cdio" "cdio"
+          run_test "libsrt" "-h 2>&1 | grep srt" "srt"
+          run_test "libxml2" "-h 2>&1 | grep xml" "xml"
 
           # AV1 codec tests
-          test_feature "libdav1d" "-h decoder 2>&1 | grep dav1d" "dav1d"
-          test_feature "librav1e" "-h encoder 2>&1 | grep rav1e" "rav1e"
+          run_test "libdav1d" "-h decoder 2>&1 | grep dav1d" "dav1d"
+          run_test "librav1e" "-h encoder 2>&1 | grep rav1e" "rav1e"
           
           # Cleanup
           rm -rf test_files
@@ -510,14 +510,14 @@ jobs:
           run_test "VAAPI" "-y -vaapi_device /dev/dri/renderD128 -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -vf 'format=nv12,hwupload' -c:v h264_vaapi test_files/test_vaapi.mp4 2>&1" "vaapi"
                     
           # Additional format tests
-          test_feature "libbluray" "-h 2>&1 | grep bluray" "bluray"
-          test_feature "libcdio" "-h 2>&1 | grep cdio" "cdio"
-          test_feature "libsrt" "-h 2>&1 | grep srt" "srt"
-          test_feature "libxml2" "-h 2>&1 | grep xml" "xml"
+          run_test "libbluray" "-h 2>&1 | grep bluray" "bluray"
+          run_test "libcdio" "-h 2>&1 | grep cdio" "cdio"
+          run_test "libsrt" "-h 2>&1 | grep srt" "srt"
+          run_test "libxml2" "-h 2>&1 | grep xml" "xml"
 
           # AV1 codec tests
-          test_feature "libdav1d" "-h decoder 2>&1 | grep dav1d" "dav1d"
-          test_feature "librav1e" "-h encoder 2>&1 | grep rav1e" "rav1e"
+          run_test "libdav1d" "-h decoder 2>&1 | grep dav1d" "dav1d"
+          run_test "librav1e" "-h encoder 2>&1 | grep rav1e" "rav1e"
           
           # Cleanup
           rm -rf test_files
