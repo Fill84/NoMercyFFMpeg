@@ -157,11 +157,11 @@ jobs:
           echo "ffmpeg_path=./ffmpeg.exe" >> $GITHUB_OUTPUT
 
       - name: Test ffmpeg windows
-        env:
-          TOTAL_TESTS: 0
-          PASSED_TESTS: 0
-          FAILED_TESTS: 0
         run: |
+          $script:TOTAL_TESTS = 0
+          $script:PASSED_TESTS = 0
+          $script:FAILED_TESTS = 0
+
           mkdir -p test_files
 
           # Create test files
@@ -179,21 +179,21 @@ jobs:
               [string]$expected_output
             )
 
-            $env:TOTAL_TESTS=$((TOTAL_TESTS + 1))
+            $script:TOTAL_TESTS++
             Write-Host -NoNewline "Testing $name... "
 
             try {
               $output = Invoke-Expression "${{ steps.windows-test.outputs.ffmpeg_path }} $command 2>&1" | Out-String
               if ($output -cmatch $expected_output) {
                 Write-Host -ForegroundColor Green "✅ PASSED"
-                $env:PASSED_TESTS=$((PASSED_TESTS + 1))
+                $script:PASSED_TESTS++
               } else {
                 Write-Host -ForegroundColor Red "❌ FAILED"
-                $env:FAILED_TESTS=$((FAILED_TESTS + 1))
+                $script:FAILED_TESTS++
               }
             } catch {
               Write-Host -ForegroundColor Red "❌ FAILED (Error)"
-              $env:FAILED_TESTS=$((FAILED_TESTS + 1))
+              $script:FAILED_TESTS++
             }
           }
 
