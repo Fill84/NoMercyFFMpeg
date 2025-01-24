@@ -65,32 +65,35 @@ jobs:
 
           mkdir -p test_files
           dd if=/dev/urandom of=test_files/test.raw bs=1M count=1
-
-          GITHUB_WORKSPACE="${{ github.workspace }}"
-          . ${{ github.workspace }}/scripts/test-runner.sh
-
-          run_test "ffmpeg version" "-version" "7.1"
         shell: bash
 
       # Basic tests
       - name: Version check
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "ffmpeg version" "-version" "7.1"
         shell: bash
 
       # Video codecs
       - name: Video codec libx264
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "libx264" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx264 test_files/test_h264.mp4" "encoder.*libx264"
         shell: bash
 
       - name: Video codec libx265
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "libx265" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx265 test_files/test_h265.mp4" "encoder.*libx265"
         shell: bash
 
       - name: Video codec libvpx
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "libvpx" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libvpx-vp9 test_files/test_vp9.webm" "encoder.*libvpx-vp9"
         shell: bash
 
@@ -102,81 +105,111 @@ jobs:
       # Audio codecs
       - name: Audio codec libfdk_aac
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "libfdk_aac" "-y -f lavfi -i anullsrc=duration=1 -c:a libfdk_aac test_files/test_aac.m4a" "encoder.*libfdk_aac"
         shell: bash
 
       - name: Audio codec libopus
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "libopus" "-y -f lavfi -i anullsrc=duration=1 -c:a libopus test_files/test_opus.opus" "encoder.*libopus"
         shell: bash
 
       - name: Audio codec libmp3lame
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "libmp3lame" "-y -f lavfi -i anullsrc=duration=1 -c:a libmp3lame test_files/test_mp3.mp3" "encoder.*libmp3lame"
         shell: bash
 
       # Image codecs
       - name: Image codec libwebp
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "libwebp" "-y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libwebp test_files/test.webp" "encoder.*libwebp"
         shell: bash
 
       - name: Image codec libopenjpeg
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "libopenjpeg" "-y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libopenjpeg test_files/test.jp2" "encoder.*openjpeg"
         shell: bash
 
       # Subtitle codecs
       - name: Subtitle codec libass
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "libass" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate
         shell: bash
 
       - name: Subtitle codec libfribidi
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "libfribidi" "-filters 2>&1 | grep fribidi" "fribidi"
         shell: bash
 
       # Hardware acceleration
       - name: Hardware acceleration NVENC
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "NVENC" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v h264_nvenc test_files/test_nvenc.mp4" "encoder.*h264_nvenc"
         shell: bash
 
       - name: Hardware acceleration VAAPI
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "VAAPI" "-y -vaapi_device /dev/dri/renderD128 -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -vf 'format=nv12,hwupload' -c:v h264_vaapi test_files/test_vaapi.mp4 2>&1" "vaapi"
         shell: bash
 
       # Additional format tests
       - name: Additional format libbluray
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "libbluray" "-h 2>&1 | grep bluray" "bluray"
         shell: bash
 
       - name: Additional format libcdio
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "libcdio" "-h 2>&1 | grep cdio" "cdio"
         shell: bash
 
       - name: Additional format libsrt
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "libsrt" "-h 2>&1 | grep srt" "srt"
         shell: bash
 
       - name: Additional format libxml2
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "libxml2" "-h 2>&1 | grep xml" "xml"
         shell: bash
 
       # AV1 codec tests
       - name: AV1 codec libdav1d
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "libdav1d" "-h decoder 2>&1 | grep dav1d" "dav1d"
         shell: bash
 
       - name: AV1 codec librav1e
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "librav1e" "-h encoder 2>&1 | grep rav1e" "rav1e"
         shell: bash
 
@@ -234,32 +267,35 @@ jobs:
           $randomBytes = New-Object Byte[] 1048576
           (New-Object Random).NextBytes($randomBytes)
           [System.IO.File]::WriteAllBytes("test_files/test.raw", $randomBytes)
-          
-          $global:GIT_WORKSPACE = "${{ github.workspace }}"
-          . ${{ github.workspace }}\scripts\test-runner.ps1
-
-          run_test "ffmpeg version" "-version" "7.1"
         shell: pwsh
 
       # Basic tests
       - name: Version check
         run: |
+          $global:GIT_WORKSPACE = "${{ github.workspace }}"
+          . ${{ github.workspace }}\scripts\test-runner.ps1
           run_test "ffmpeg version" "-version" "7.1"
         shell: pwsh
       
       # Video codecs
       - name: Video codec libx264
         run: |
+          $global:GIT_WORKSPACE = "${{ github.workspace }}"
+          . ${{ github.workspace }}\scripts\test-runner.ps1
           run_test "libx264" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx264 test_files/test_h264.mp4" "encoder.*libx264"
         shell: pwsh
       
       - name: Video codec libx265
         run: |
+          $global:GIT_WORKSPACE = "${{ github.workspace }}"
+          . ${{ github.workspace }}\scripts\test-runner.ps1
           run_test "libx265" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx265 test_files/test_h265.mp4" "encoder.*libx265"
         shell: pwsh
 
       - name: Video codec libvpx
         run: |
+          $global:GIT_WORKSPACE = "${{ github.workspace }}"
+          . ${{ github.workspace }}\scripts\test-runner.ps1
           run_test "libvpx" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libvpx-vp9 test_files/test_vp9.webm" "encoder.*libvpx-vp9"
         shell: pwsh
       
@@ -271,81 +307,111 @@ jobs:
       # Audio codecs
       - name: Audio codec libfdk_aac
         run: |
+          $global:GIT_WORKSPACE = "${{ github.workspace }}"
+          . ${{ github.workspace }}\scripts\test-runner.ps1
           run_test "libfdk_aac" "-y -f lavfi -i anullsrc=duration=1 -c:a libfdk_aac test_files/test_aac.m4a" "encoder.*libfdk_aac"
         shell: pwsh
 
       - name: Audio codec libopus
         run: |
+          $global:GIT_WORKSPACE = "${{ github.workspace }}"
+          . ${{ github.workspace }}\scripts\test-runner.ps1
           run_test "libopus" "-y -f lavfi -i anullsrc=duration=1 -c:a libopus test_files/test_opus.opus" "encoder.*libopus"
         shell: pwsh
 
       - name: Audio codec libmp3lame
         run: |
+          $global:GIT_WORKSPACE = "${{ github.workspace }}"
+          . ${{ github.workspace }}\scripts\test-runner.ps1
           run_test "libmp3lame" "-y -f lavfi -i anullsrc=duration=1 -c:a libmp3lame test_files/test_mp3.mp3" "encoder.*libmp3lame"
         shell: pwsh
 
       # Image codecs
       - name: Image codec libwebp
         run: |
+          $global:GIT_WORKSPACE = "${{ github.workspace }}"
+          . ${{ github.workspace }}\scripts\test-runner.ps1
           run_test "libwebp" "-y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libwebp test_files/test.webp" "encoder.*libwebp"
         shell: pwsh
 
       - name: Image codec libopenjpeg
         run: |
+          $global:GIT_WORKSPACE = "${{ github.workspace }}"
+          . ${{ github.workspace }}\scripts\test-runner.ps1
           run_test "libopenjpeg" "-y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libopenjpeg test_files/test.jp2" "encoder.*openjpeg"
         shell: pwsh
 
       # Subtitle codecs
       - name: Subtitle codec libass
         run: |
+          $global:GIT_WORKSPACE = "${{ github.workspace }}"
+          . ${{ github.workspace }}\scripts\test-runner.ps1
           run_test "libass" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate
         shell: pwsh
 
       - name: Subtitle codec libfribidi
         run: |
+          $global:GIT_WORKSPACE = "${{ github.workspace }}"
+          . ${{ github.workspace }}\scripts\test-runner.ps1
           run_test "libfribidi" "-filters 2>&1 | findstr fribidi" "fribidi"
         shell: pwsh
       
       # Hardware acceleration
       - name: Hardware acceleration NVENC
         run: |
+          $global:GIT_WORKSPACE = "${{ github.workspace }}"
+          . ${{ github.workspace }}\scripts\test-runner.ps1
           run_test "NVENC" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v h264_nvenc test_files/test_nvenc.mp4" "encoder.*h264_nvenc"
         shell: pwsh
 
       - name: Hardware acceleration VAAPI
         run: |
+          $global:GIT_WORKSPACE = "${{ github.workspace }}"
+          . ${{ github.workspace }}\scripts\test-runner.ps1
           run_test "VAAPI" "-y -vaapi_device /dev/dri/renderD128 -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -vf 'format=nv12,hwupload' -c:v h264_vaapi test_files/test_vaapi.mp4 2>&1" "vaapi"
         shell: pwsh
       
       # Additional format tests
       - name: Additional format libbluray
         run: |
+          $global:GIT_WORKSPACE = "${{ github.workspace }}"
+          . ${{ github.workspace }}\scripts\test-runner.ps1
           run_test "libbluray" "-h 2>&1 | findstr bluray" "bluray"
         shell: pwsh
 
       - name: Additional format libcdio
         run: |
+          $global:GIT_WORKSPACE = "${{ github.workspace }}"
+          . ${{ github.workspace }}\scripts\test-runner.ps1
           run_test "libcdio" "-h 2>&1 | findstr cdio" "cdio"
         shell: pwsh
 
       - name: Additional format libsrt
         run: |
+          $global:GIT_WORKSPACE = "${{ github.workspace }}"
+          . ${{ github.workspace }}\scripts\test-runner.ps1
           run_test "libsrt" "-h 2>&1 | findstr srt" "srt"
         shell: pwsh
 
       - name: Additional format libxml2
         run: |
+          $global:GIT_WORKSPACE = "${{ github.workspace }}"
+          . ${{ github.workspace }}\scripts\test-runner.ps1
           run_test "libxml2" "-h 2>&1 | findstr xml" "xml"
         shell: pwsh
 
       # AV1 codec tests
       - name: AV1 codec libdav1d
         run: |
+          $global:GIT_WORKSPACE = "${{ github.workspace }}"
+          . ${{ github.workspace }}\scripts\test-runner.ps1
           run_test "libdav1d" "-h decoder 2>&1 | findstr dav1d" "dav1d"
         shell: pwsh
 
       - name: AV1 codec librav1e
         run: |
+          $global:GIT_WORKSPACE = "${{ github.workspace }}"
+          . ${{ github.workspace }}\scripts\test-runner.ps1
           run_test "librav1e" "-h encoder 2>&1 | findstr rav1e" "rav1e"
         shell: pwsh
 
@@ -399,33 +465,36 @@ jobs:
 
           mkdir -p test_files
           dd if=/dev/urandom of=test_files/test.raw bs=1M count=1
-
-          GITHUB_WORKSPACE="${{ github.workspace }}"
-          . ${{ github.workspace }}/scripts/test-runner.sh
-
-          run_test "ffmpeg version" "-version" "7.1"
         shell: bash
           
       # Basic tests
       - name: Version check
       # run_test is de functie wat in ut test-runner.sh script steit
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "ffmpeg version" "-version" "7.1"
         shell: bash
 
       # Video codecs
       - name: Video codec libx264
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "libx264" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx264 test_files/test_h264.mp4" "encoder.*libx264"
         shell: bash
 
       - name: Video codec libx265
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "libx265" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx265 test_files/test_h265.mp4" "encoder.*libx265"
         shell: bash
 
       - name: Video codec libvpx
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "libvpx" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libvpx-vp9 test_files/test_vp9.webm" "encoder.*libvpx-vp9"
         shell: bash
 
@@ -437,81 +506,111 @@ jobs:
       # Audio codecs
       - name: Audio codec libfdk_aac
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "libfdk_aac" "-y -f lavfi -i anullsrc=duration=1 -c:a libfdk_aac test_files/test_aac.m4a" "encoder.*libfdk_aac"
         shell: bash
 
       - name: Audio codec libopus
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "libopus" "-y -f lavfi -i anullsrc=duration=1 -c:a libopus test_files/test_opus.opus" "encoder.*libopus"
         shell: bash
 
       - name: Audio codec libmp3lame
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "libmp3lame" "-y -f lavfi -i anullsrc=duration=1 -c:a libmp3lame test_files/test_mp3.mp3" "encoder.*libmp3lame"
         shell: bash
 
       # Image codecs
       - name: Image codec libwebp
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "libwebp" "-y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libwebp test_files/test.webp" "encoder.*libwebp"
         shell: bash
 
       - name: Image codec libopenjpeg
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "libopenjpeg" "-y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libopenjpeg test_files/test.jp2" "encoder.*openjpeg"
         shell: bash
 
       # Subtitle codecs
       - name: Subtitle codec libass
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "libass" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate
         shell: bash
 
       - name: Subtitle codec libfribidi
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "libfribidi" "-filters 2>&1 | grep fribidi" "fribidi"
         shell: bash
 
       # Hardware acceleration
       - name: Hardware acceleration NVENC
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "NVENC" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v h264_nvenc test_files/test_nvenc.mp4" "encoder.*h264_nvenc"
         shell: bash
 
       - name: Hardware acceleration VAAPI
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "VAAPI" "-y -vaapi_device /dev/dri/renderD128 -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -vf 'format=nv12,hwupload' -c:v h264_vaapi test_files/test_vaapi.mp4 2>&1" "vaapi"
         shell: bash
 
       # Additional format tests
       - name: Additional format libbluray
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "libbluray" "-h 2>&1 | grep bluray" "bluray"
         shell: bash
 
       - name: Additional format libcdio
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "libcdio" "-h 2>&1 | grep cdio" "cdio"
         shell: bash
 
       - name: Additional format libsrt
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "libsrt" "-h 2>&1 | grep srt" "srt"
         shell: bash
 
       - name: Additional format libxml2
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "libxml2" "-h 2>&1 | grep xml" "xml"
         shell: bash
 
       # AV1 codec tests
       - name: AV1 codec libdav1d
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "libdav1d" "-h decoder 2>&1 | grep dav1d" "dav1d"
         shell: bash
 
       - name: AV1 codec librav1e
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "librav1e" "-h encoder 2>&1 | grep rav1e" "rav1e"
         shell: bash
 
@@ -563,32 +662,35 @@ jobs:
 
           mkdir -p test_files
           dd if=/dev/urandom of=test_files/test.raw bs=1M count=1
-
-          GITHUB_WORKSPACE="${{ github.workspace }}"
-          . ${{ github.workspace }}/scripts/test-runner.sh
-
-          run_test "ffmpeg version" "-version" "7.1"
         shell: bash
 
       # Basic tests
       - name: Version check
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "ffmpeg version" "-version" "7.1"
         shell: bash
 
       # Video codecs
       - name: Video codec libx264
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "libx264" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx264 test_files/test_h264.mp4" "encoder.*libx264"
         shell: bash
 
       - name: Video codec libx265
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "libx265" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx265 test_files/test_h265.mp4" "encoder.*libx265"
         shell: bash
 
       - name: Video codec libvpx
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "libvpx" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libvpx-vp9 test_files/test_vp9.webm" "encoder.*libvpx-vp9"
         shell: bash
 
@@ -600,81 +702,111 @@ jobs:
       # Audio codecs
       - name: Audio codec libfdk_aac
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "libfdk_aac" "-y -f lavfi -i anullsrc=duration=1 -c:a libfdk_aac test_files/test_aac.m4a" "encoder.*libfdk_aac"
         shell: bash
 
       - name: Audio codec libopus
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "libopus" "-y -f lavfi -i anullsrc=duration=1 -c:a libopus test_files/test_opus.opus" "encoder.*libopus"
         shell: bash
 
       - name: Audio codec libmp3lame
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "libmp3lame" "-y -f lavfi -i anullsrc=duration=1 -c:a libmp3lame test_files/test_mp3.mp3" "encoder.*libmp3lame"
         shell: bash
 
       # Image codecs
       - name: Image codec libwebp
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "libwebp" "-y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libwebp test_files/test.webp" "encoder.*libwebp"
         shell: bash
 
       - name: Image codec libopenjpeg
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "libopenjpeg" "-y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libopenjpeg test_files/test.jp2" "encoder.*openjpeg"
         shell: bash
 
       # Subtitle codecs
       - name: Subtitle codec libass
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "libass" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate
         shell: bash
 
       - name: Subtitle codec libfribidi
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "libfribidi" "-filters 2>&1 | grep fribidi" "fribidi"
         shell: bash
 
       # Hardware acceleration
       - name: Hardware acceleration NVENC
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "NVENC" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v h264_nvenc test_files/test_nvenc.mp4" "encoder.*h264_nvenc"
         shell: bash
 
       - name: Hardware acceleration VAAPI
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "VAAPI" "-y -vaapi_device /dev/dri/renderD128 -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -vf 'format=nv12,hwupload' -c:v h264_vaapi test_files/test_vaapi.mp4 2>&1" "vaapi"
         shell: bash
 
       # Additional format tests
       - name: Additional format libbluray
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "libbluray" "-h 2>&1 | grep bluray" "bluray"
         shell: bash
 
       - name: Additional format libcdio
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "libcdio" "-h 2>&1 | grep cdio" "cdio"
         shell: bash
 
       - name: Additional format libsrt
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "libsrt" "-h 2>&1 | grep srt" "srt"
         shell: bash
 
       - name: Additional format libxml2
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "libxml2" "-h 2>&1 | grep xml" "xml"
         shell: bash
 
       # AV1 codec tests
       - name: AV1 codec libdav1d
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "libdav1d" "-h decoder 2>&1 | grep dav1d" "dav1d"
         shell: bash
 
       - name: AV1 codec librav1e
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "librav1e" "-h encoder 2>&1 | grep rav1e" "rav1e"
         shell: bash
 
@@ -726,32 +858,35 @@ jobs:
 
           mkdir -p test_files
           dd if=/dev/urandom of=test_files/test.raw bs=1M count=1
-
-          GITHUB_WORKSPACE="${{ github.workspace }}"
-          . ${{ github.workspace }}/scripts/test-runner.sh
-
-          run_test "ffmpeg version" "-version" "7.1"
         shell: bash
 
       # Basic tests
       - name: Version check
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "ffmpeg version" "-version" "7.1"
         shell: bash
 
       # Video codecs
       - name: Video codec libx264
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "libx264" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx264 test_files/test_h264.mp4" "encoder.*libx264"
         shell: bash
 
       - name: Video codec libx265
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "libx265" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx265 test_files/test_h265.mp4" "encoder.*libx265"
         shell: bash
 
       - name: Video codec libvpx
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "libvpx" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libvpx-vp9 test_files/test_vp9.webm" "encoder.*libvpx-vp9"
         shell: bash
 
@@ -763,81 +898,111 @@ jobs:
       # Audio codecs
       - name: Audio codec libfdk_aac
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "libfdk_aac" "-y -f lavfi -i anullsrc=duration=1 -c:a libfdk_aac test_files/test_aac.m4a" "encoder.*libfdk_aac"
         shell: bash
 
       - name: Audio codec libopus
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "libopus" "-y -f lavfi -i anullsrc=duration=1 -c:a libopus test_files/test_opus.opus" "encoder.*libopus"
         shell: bash
 
       - name: Audio codec libmp3lame
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "libmp3lame" "-y -f lavfi -i anullsrc=duration=1 -c:a libmp3lame test_files/test_mp3.mp3" "encoder.*libmp3lame"
         shell: bash
 
       # Image codecs
       - name: Image codec libwebp
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "libwebp" "-y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libwebp test_files/test.webp" "encoder.*libwebp"
         shell: bash
 
       - name: Image codec libopenjpeg
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "libopenjpeg" "-y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libopenjpeg test_files/test.jp2" "encoder.*openjpeg"
         shell: bash
 
       # Subtitle codecs
       - name: Subtitle codec libass
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "libass" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate
         shell: bash
 
       - name: Subtitle codec libfribidi
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "libfribidi" "-filters 2>&1 | grep fribidi" "fribidi"
         shell: bash
 
       # Hardware acceleration
       - name: Hardware acceleration NVENC
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "NVENC" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v h264_nvenc test_files/test_nvenc.mp4" "encoder.*h264_nvenc"
         shell: bash
 
       - name: Hardware acceleration VAAPI
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "VAAPI" "-y -vaapi_device /dev/dri/renderD128 -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -vf 'format=nv12,hwupload' -c:v h264_vaapi test_files/test_vaapi.mp4 2>&1" "vaapi"
         shell: bash
 
       # Additional format tests
       - name: Additional format libbluray
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "libbluray" "-h 2>&1 | grep bluray" "bluray"
         shell: bash
 
       - name: Additional format libcdio
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "libcdio" "-h 2>&1 | grep cdio" "cdio"
         shell: bash
 
       - name: Additional format libsrt
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "libsrt" "-h 2>&1 | grep srt" "srt"
         shell: bash
 
       - name: Additional format libxml2
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "libxml2" "-h 2>&1 | grep xml" "xml"
         shell: bash
 
       # AV1 codec tests
       - name: AV1 codec libdav1d
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "libdav1d" "-h decoder 2>&1 | grep dav1d" "dav1d"
         shell: bash
 
       - name: AV1 codec librav1e
         run: |
+          GITHUB_WORKSPACE="${{ github.workspace }}"
+          . ${{ github.workspace }}/scripts/test-runner.sh
           run_test "librav1e" "-h encoder 2>&1 | grep rav1e" "rav1e"
         shell: bash
 
