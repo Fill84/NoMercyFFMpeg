@@ -59,9 +59,9 @@ jobs:
 
       - name: Test ffmpeg linux
         run: |
-          export TOTAL_TESTS=0
-          export PASSED_TESTS=0
-          export FAILED_TESTS=0
+          TOTAL_TESTS=0
+          PASSED_TESTS=0
+          FAILED_TESTS=0
 
           mkdir -p test_files
           dd if=/dev/urandom of=test_files/test.raw bs=1M count=1
@@ -121,15 +121,7 @@ jobs:
           
           # Cleanup
           rm -rf test_files
-        shell: bash
-
-  linux-x86_64-ffmpeg-report:
-    needs: linux-x86_64-ffmpeg-test
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Print summary
-        run: |
+          
           # Print summary
           echo "----------------------------------------"
           echo "Test Summary:"
@@ -162,9 +154,9 @@ jobs:
 
       - name: Test ffmpeg windows
         run: |
-          $global:TOTAL_TESTS = 0
-          $global:PASSED_TESTS = 0
-          $global:FAILED_TESTS = 0
+          $script:TOTAL_TESTS = 0
+          $script:PASSED_TESTS = 0
+          $script:FAILED_TESTS = 0
 
           mkdir -p test_files
 
@@ -183,21 +175,21 @@ jobs:
               [string]$ExpectedOutput
             )
 
-            $global:TOTAL_TESTS++
+            $script:TOTAL_TESTS++
             Write-Host -NoNewline "Testing $Name... "
 
             try {
               $script:output = Invoke-Expression "${{ github.workspace }}/ffmpeg.exe $Command 2>&1" | Out-String
               if ($script:output -cmatch $ExpectedOutput) {
                 Write-Host "✅ PASSED"
-                $global:PASSED_TESTS++
+                $script:PASSED_TESTS++
               } else {
                 Write-Host "❌ FAILED"
-                $global:FAILED_TESTS++
+                $script:FAILED_TESTS++
               }
             } catch {
               Write-Host "❌ FAILED (Error)"
-              $global:FAILED_TESTS++
+              $script:FAILED_TESTS++
             }
           }
 
@@ -239,25 +231,17 @@ jobs:
           
           # Cleanup
           Remove-Item -Path test_files -Recurse -Force
-        shell: pwsh
-  
-  windows-x86_64-ffmpeg-report:
-    needs: windows-x86_64-ffmpeg-test
-    runs-on: windows-latest
-
-    steps:
-      - name: Print summary
-        run: |
+          
           # Print summary
           Write-Host "----------------------------------------"
           Write-Host "Test Summary:"
-          Write-Host "Total tests: $global:TOTAL_TESTS"
-          Write-Host "Passed tests: $global:PASSED_TESTS"
-          Write-Host "Failed tests: $global:FAILED_TESTS"
+          Write-Host "Total tests: $script:TOTAL_TESTS"
+          Write-Host "Passed tests: $script:PASSED_TESTS"
+          Write-Host "Failed tests: $script:FAILED_TESTS"
           Write-Host "----------------------------------------"
 
           # Exit with failure if any tests failed
-          exit $global:FAILED_TESTS
+          exit $script:FAILED_TESTS
         shell: pwsh
 
   linux-aarch64-ffmpeg-test:
@@ -342,15 +326,7 @@ jobs:
           
           # Cleanup
           rm -rf test_files
-        shell: bash
-
-  linux-aarch64-ffmpeg-report:
-    needs: linux-aarch64-ffmpeg-test
-    runs-on: ubuntu-24.04-arm
-
-    steps:
-      - name: Print summary
-        run: |
+          
           # Print summary
           echo "----------------------------------------"
           echo "Test Summary:"
@@ -383,9 +359,9 @@ jobs:
 
       - name: Test ffmpeg darwin x86_64
         run: |
-          export TOTAL_TESTS=0
-          export PASSED_TESTS=0
-          export FAILED_TESTS=0
+          TOTAL_TESTS=0
+          PASSED_TESTS=0
+          FAILED_TESTS=0
 
           mkdir -p test_files
           dd if=/dev/urandom of=test_files/test.raw bs=1M count=1
@@ -445,15 +421,7 @@ jobs:
           
           # Cleanup
           rm -rf test_files
-        shell: bash
-
-  darwin-x86_64-ffmpeg-report:
-    needs: darwin-x86_64-ffmpeg-test
-    runs-on: macos-13
-    
-    steps:
-      - name: Print summary
-        run: |
+          
           # Print summary
           echo "----------------------------------------"
           echo "Test Summary:"
@@ -486,9 +454,9 @@ jobs:
 
       - name: Test ffmpeg darwin arm64
         run: |
-          export TOTAL_TESTS=0
-          export PASSED_TESTS=0
-          export FAILED_TESTS=0
+          TOTAL_TESTS=0
+          PASSED_TESTS=0
+          FAILED_TESTS=0
 
           mkdir -p test_files
           dd if=/dev/urandom of=test_files/test.raw bs=1M count=1
@@ -548,15 +516,7 @@ jobs:
           
           # Cleanup
           rm -rf test_files
-        shell: bash
-
-  darwin-arm64-ffmpeg-report:
-    needs: darwin-arm64-ffmpeg-test
-    runs-on: macos-latest
-
-    steps:
-      - name: Print summary
-        run: |
+          
           # Print summary
           echo "----------------------------------------"
           echo "Test Summary:"
