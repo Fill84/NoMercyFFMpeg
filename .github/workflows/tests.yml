@@ -284,7 +284,7 @@ jobs:
 
   cleanup-release:
     needs: [platform-tests-unix, platform-tests-windows]
-    if: ${{ always() && (needs.platform-tests-unix.result == 'failure' || needs.platform-tests-windows.result == 'failure') }}
+    if: ${{ failure() }}
     runs-on: ubuntu-latest
     steps:
       - name: Delete Release
