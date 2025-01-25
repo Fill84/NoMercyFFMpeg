@@ -58,8 +58,10 @@ jobs:
       - name: Download Release
         shell: bash
         run: |
-          if [ "${{ matrix.os }}" == "ubuntu-latest" ]; then
+          if [ "${{ matrix.os }}" == "ubuntu-latest" ] && [ "${{ matrix.arch }}" == "x86_64" ]; then
             FILE_NAME="ffmpeg-linux-${{ matrix.arch }}-7.1-${{ needs.check-release.outputs.version }}.tar.gz"
+          elif [ "${{ matrix.os }}" == "ubuntu-latest" ] && [ "${{ matrix.arch }}" == "arm64" ]; then
+            FILE_NAME="ffmpeg-linux-${{ matrix.arch }}-7.1-aarch64.tar.gz"
           elif [ "${{ matrix.os }}" == "macos-latest" ]; then
             FILE_NAME="ffmpeg-darwin-${{ matrix.arch }}-7.1-${{ needs.check-release.outputs.version }}.tar.gz"
           fi
@@ -149,6 +151,7 @@ jobs:
 
           # Exit with failure if any tests failed
           if [ "$FAILED_TESTS" -gt 0 ]; then
+            printf "Some tests failed." >&2
             exit 1
           fi
 
@@ -160,7 +163,7 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest]
-        arch: [x86_64]
+        arch: [x86_64] #, arm64]
     continue-on-error: true
     steps:
       - name: Checkout Code
@@ -278,7 +281,7 @@ jobs:
 
           # Exit with failure if any tests failed
           if ($script:FAILED_TESTS -gt 0) {
-            Write-Host "Tests failed, exiting with error code."
+            throw "Some tests failed."
             exit 1
           }
 

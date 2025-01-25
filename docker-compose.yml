@@ -1,7 +1,6 @@
 volumes:
   tmp:
 
-
 services:
   ffmpeg-base:
     container_name: ffmpeg-base
@@ -14,41 +13,53 @@ services:
       - tmp:/tmp
       - ./output:/output
 
-  ffmpeg-linux:
-    container_name: ffmpeg-linux
+  ffmpeg-linux-x86_64:
+    container_name: ffmpeg-linux-x86_64
     privileged: true
     build:
       context: .
-      dockerfile: ffmpeg-linux.dockerfile
+      dockerfile: ffmpeg-linux-x86_64.dockerfile
     depends_on:
       - ffmpeg-base
     volumes:
       - tmp:/tmp
       - ./output:/output
 
-  ffmpeg-windows:
-    container_name: ffmpeg-windows
+  ffmpeg-linux-aarch64:
+    container_name: ffmpeg-linux-aarch64
     privileged: true
     build:
       context: .
-      dockerfile: ffmpeg-windows.dockerfile
+      dockerfile: ffmpeg-linux-aarch64.dockerfile
     depends_on:
       - ffmpeg-base
     volumes:
       - tmp:/tmp
       - ./output:/output
 
-  ffmpeg-aarch64:
-    container_name: ffmpeg-aarch64
+  ffmpeg-windows-x86_64:
+    container_name: ffmpeg-windows-x86_64
     privileged: true
     build:
       context: .
-      dockerfile: ffmpeg-aarch64.dockerfile
+      dockerfile: ffmpeg-windows-x86_64.dockerfile
     depends_on:
       - ffmpeg-base
     volumes:
       - tmp:/tmp
       - ./output:/output
+
+  # ffmpeg-windows-arm64:
+    # container_name: ffmpeg-windows-arm64
+    # privileged: true
+    # build:
+    #   context: .
+    #   dockerfile: ffmpeg-windows-arm64.dockerfile
+    # depends_on:
+    #   - ffmpeg-base
+    # volumes:
+    #   - tmp:/tmp
+    #   - ./output:/output
 
   ffmpeg-darwin-x86_64:
     container_name: ffmpeg-darwin-x86_64
