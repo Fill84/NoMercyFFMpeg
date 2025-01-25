@@ -728,9 +728,9 @@ RUN mkdir -p /ffmpeg/aarch64 \
 RUN rm -rf ${PREFIX} /build
 
 RUN mkdir -p /build/aarch64 /output \
-    && tar -czf /build/ffmpeg-aarch64-7.1.tar.gz \
+    && tar -czf /build/ffmpeg-linux-aarch64-7.1.tar.gz \
     -C /ffmpeg/aarch64 . \
-    && cp /build/ffmpeg-aarch64-7.1.tar.gz /output
+    && cp /build/ffmpeg-linux-aarch64-7.1.tar.gz /output
 
 RUN apt-get autoremove -y && apt-get autoclean -y && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
@@ -741,4 +741,4 @@ FROM debian AS final
 
 COPY --from=aarch64 /build /build
 
-CMD ["cp", "/build/ffmpeg-aarch64-7.1.tar.gz", "/output"]
+CMD ["cp", "/build/ffmpeg-linux-aarch64-7.1.tar.gz", "/output"]

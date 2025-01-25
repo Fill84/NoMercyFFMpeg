@@ -157,7 +157,8 @@ jobs:
 
   build-base:
     needs: check-changes
-    if: needs.check-changes.outputs.base-changed == 'true' || needs.check-changes.outputs.workflow-changed == 'true'
+    if: needs.check-changes.outputs.base-changed == 'true' 
+    # || needs.check-changes.outputs.workflow-changed == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Free Disk Space (Ubuntu)
