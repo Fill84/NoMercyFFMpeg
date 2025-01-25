@@ -52,7 +52,7 @@ jobs:
           fetch-depth: 0
 
       - name: Download build artifacts
-        uses: dawidd6/action-download-artifact@v2
+        uses: dawidd6/action-download-artifact@v8
         with:
           workflow: main.yml
           name: ffmpeg-binaries
@@ -178,7 +178,7 @@ jobs:
         run: choco install wget --no-progress
 
       - name: Download build artifacts
-        uses: dawidd6/action-download-artifact@v2
+        uses: dawidd6/action-download-artifact@v8
         with:
           workflow: main.yml
           name: ffmpeg-binaries

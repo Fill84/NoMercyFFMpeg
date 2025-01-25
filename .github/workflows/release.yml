@@ -6,6 +6,13 @@ on:
       - Test
     types:
       - completed
+  workflow_dispatch:
+    inputs:
+      force_rebuild:
+        description: 'Force rebuild of all images'
+        required: true
+        type: boolean
+        default: true
       
 jobs:
     
@@ -56,7 +63,7 @@ jobs:
         id: check-workflow
         run: |
           git config --global --add safe.directory ${{ github.workspace }}
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.force_rebuild }}" == "true" ]]; then
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && ${{ github.event.inputs.force_rebuild }} ]]; then
             CHANGED=true
           else
             CHANGED=false
@@ -68,7 +75,7 @@ jobs:
         id: check-base
         run: |
           git config --global --add safe.directory ${{ github.workspace }}
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.force_rebuild }}" == "true" ]]; then
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && ${{ github.event.inputs.force_rebuild }} ]]; then
             CHANGED=true
           else
             CHANGED=false
@@ -80,7 +87,7 @@ jobs:
         id: check-linux-x86_64
         run: |
           git config --global --add safe.directory ${{ github.workspace }}
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.force_rebuild }}" == "true" ]]; then
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && ${{ github.event.inputs.force_rebuild }} ]]; then
             CHANGED=true
           else
             CHANGED=false
@@ -92,7 +99,7 @@ jobs:
         id: check-linux-aarch64
         run: |
           git config --global --add safe.directory ${{ github.workspace }}
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.force_rebuild }}" == "true" ]]; then
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && ${{ github.event.inputs.force_rebuild }} ]]; then
             CHANGED=true
           else
             CHANGED=false
@@ -104,7 +111,7 @@ jobs:
         id: check-windows-x86_64
         run: |
           git config --global --add safe.directory ${{ github.workspace }}
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.force_rebuild }}" == "true" ]]; then
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && ${{ github.event.inputs.force_rebuild }} ]]; then
             CHANGED=true
           else
             CHANGED=false
@@ -116,7 +123,7 @@ jobs:
         # id: check-windows-arm64
         # run: |
         #   git config --global --add safe.directory ${{ github.workspace }}
-        #   if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.force_rebuild }}" == "true" ]]; then
+        #   if [[ "${{ github.event_name }}" == "workflow_dispatch" && ${{ github.event.inputs.force_rebuild }} ]]; then
         #     CHANGED=true
         #   else
         #     CHANGED=false
@@ -128,7 +135,7 @@ jobs:
         id: check-darwin-x86_64
         run: |
           git config --global --add safe.directory ${{ github.workspace }}
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.force_rebuild }}" == "true" ]]; then
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && ${{ github.event.inputs.force_rebuild }} ]]; then
             CHANGED=true
           else
             CHANGED=false
@@ -140,7 +147,7 @@ jobs:
         id: check-darwin-arm64
         run: |
           git config --global --add safe.directory ${{ github.workspace }}
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.force_rebuild }}" == "true" ]]; then
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && ${{ github.event.inputs.force_rebuild }} ]]; then
             CHANGED=true
           else
             CHANGED=false
@@ -159,7 +166,7 @@ jobs:
           fetch-depth: 0
 
       - name: Download build artifacts
-        uses: dawidd6/action-download-artifact@v2
+        uses: dawidd6/action-download-artifact@v8
         with:
           workflow: main.yml
           name: ffmpeg-binaries
@@ -237,4 +244,3 @@ jobs:
           asset_path: downloads/ffmpeg-darwin-arm64-7.1.tar.gz
           asset_name: ffmpeg-darwin-arm64-7.1-${{ needs.check-changes.outputs.version }}.tar.gz
           asset_content_type: application/gzip
-          

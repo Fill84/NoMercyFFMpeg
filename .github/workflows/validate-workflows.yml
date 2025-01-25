@@ -2,13 +2,13 @@ name: Validate Workflow Execution
 
 on:
   workflow_dispatch:
-#   workflow_run:
-#     workflows:
-#       - Build
-#       - Test
-#       - Release
-#     types:
-#       - completed
+  workflow_run:
+    workflows:
+      - Build
+      - Test
+      - Release
+    types:
+      - completed
 
 jobs:
   validate:
