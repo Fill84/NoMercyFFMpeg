@@ -57,6 +57,7 @@ jobs:
           workflow: main.yml
           name: ffmpeg-binaries
           path: downloads
+          run_id: ${{ github.event.workflow_run.id }}
           workflow_conclusion: success
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -183,6 +184,7 @@ jobs:
           workflow: main.yml
           name: ffmpeg-binaries
           path: downloads
+          run_id: ${{ github.event.workflow_run.id }}
           workflow_conclusion: success
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
