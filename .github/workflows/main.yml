@@ -1,4 +1,4 @@
-name: Parallel Docker Builds with Caching
+name: Build
 
 on:
   push:

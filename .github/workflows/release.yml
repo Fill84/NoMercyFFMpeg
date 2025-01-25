@@ -1,9 +1,9 @@
-name: Release Binaries
+name: Release
 
 on:
   workflow_run:
     workflows:
-      - Parallel FFmpeg Test
+      - Test
     types:
       - completed
       

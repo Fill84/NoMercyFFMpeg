@@ -3,9 +3,9 @@ name: Validate Workflow Execution
 on:
   workflow_run:
     workflows:
-      - Parallel Docker Builds with Caching
-      - Parallel FFmpeg Test
-      - Release Binaries
+      - Build
+      - Test
+      - Release
     types:
       - completed
 
@@ -25,7 +25,7 @@ jobs:
           fi
 
       - name: Verify artifact availability
-        if: github.event.workflow_run.name == 'Parallel Docker Builds with Caching'
+        if: github.event.workflow_run.name == 'Build'
         run: |
           # Check if ffmpeg-binaries artifact exists
           ARTIFACTS_URL="${{ github.event.workflow_run.artifacts_url }}"
@@ -37,7 +37,7 @@ jobs:
           fi
 
       - name: Verify release availability
-        if: github.event.workflow_run.name == 'Release Binaries'
+        if: github.event.workflow_run.name == 'Release'
         run: |
           # Get latest release
           RELEASE_URL="https://api.github.com/repos/${{ github.repository }}/releases/latest"
@@ -74,7 +74,7 @@ jobs:
           echo "::notice::All workflows completed successfully!"
           echo "✅ Build workflow status: ${{ github.event.workflow_run.conclusion }}"
           
-          if [ "${{ github.event.workflow_run.name }}" == "Release Binaries" ]; then
+          if [ "${{ github.event.workflow_run.name }}" == "Release" ]; then
             RELEASE_URL="https://api.github.com/repos/${{ github.repository }}/releases/latest"
             RELEASE=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" $RELEASE_URL)
             VERSION=$(echo $RELEASE | jq -r '.tag_name')

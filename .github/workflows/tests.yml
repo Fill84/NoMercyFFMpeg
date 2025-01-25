@@ -1,9 +1,9 @@
-name: Parallel FFmpeg Test
+name: Test
 
 on:
   workflow_run:
     workflows:
-      - Parallel Docker Builds with Caching
+      - Build
     types:
       - completed
   workflow_dispatch:
@@ -34,6 +34,12 @@ jobs:
 
           echo "Latest tag: $LATEST_TAG$"          
           echo "version=$LATEST_TAG" >> $GITHUB_OUTPUT
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: ffmpeg-binaries
+          path: downloads
 
   platform-tests-unix:
     needs: check-release
