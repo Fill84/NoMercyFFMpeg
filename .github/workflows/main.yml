@@ -232,8 +232,6 @@ jobs:
           cache-from: type=registry,ref=nomercyentertainment/ffmpeg-linux-x86_64:buildcache
           cache-to: type=registry,ref=nomercyentertainment/ffmpeg-linux-x86_64:buildcache,mode=max
 
-          
-
   build-linux-aarch64:
     needs: [check-changes, build-base]
     if: needs.check-changes.outputs.linux-aarch64-changed || needs.check-changes.outputs.base-changed || needs.check-changes.outputs.workflow-changed || github.event.inputs.force_rebuild
@@ -428,7 +426,7 @@ jobs:
           cache-from: type=registry,ref=nomercyentertainment/ffmpeg-darwin-arm64:buildcache
           cache-to: type=registry,ref=nomercyentertainment/ffmpeg-darwin-arm64:buildcache,mode=max
 
-          
+
   export-artifacts:
     runs-on: ubuntu-latest
     needs: [build-linux-x86_64, build-linux-aarch64, build-windows-x86_64, build-darwin-x86_64, build-darwin-arm64, check-changes] #, build-windows-arm64
