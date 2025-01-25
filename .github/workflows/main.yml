@@ -158,7 +158,7 @@ jobs:
 
   build-base:
     needs: check-changes
-    if: needs.check-changes.outputs.base-changed || needs.check-changes.outputs.workflow-changed
+    if: needs.check-changes.outputs.base-changed || needs.check-changes.outputs.workflow-changed || github.event.inputs.force_rebuild
     runs-on: ubuntu-latest
     steps:
       - name: Free Disk Space (Ubuntu)
