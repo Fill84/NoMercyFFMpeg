@@ -6,9 +6,6 @@ on:
       - Parallel Docker Builds with Caching
     types:
       - completed
-  release:
-    types:
-      - published
   workflow_dispatch:
     inputs:
       force_test:
@@ -22,7 +19,6 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.version-check.outputs.version }}
-
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -55,20 +51,23 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Download Release
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: ffmpeg-binaries
+          path: downloads
+
+      - name: Unpack ffmpeg binary
         shell: bash
         run: |
           if [ "${{ matrix.os }}" == "ubuntu-latest" ] && [ "${{ matrix.arch }}" == "x86_64" ]; then
-            FILE_NAME="ffmpeg-linux-${{ matrix.arch }}-7.1-${{ needs.check-release.outputs.version }}.tar.gz"
+            FILE_NAME="downloads/ffmpeg-linux-${{ matrix.arch }}-7.1-x86_64.tar.gz"
           elif [ "${{ matrix.os }}" == "ubuntu-latest" ] && [ "${{ matrix.arch }}" == "arm64" ]; then
-            FILE_NAME="ffmpeg-linux-${{ matrix.arch }}-7.1-aarch64.tar.gz"
+            FILE_NAME="downloads/ffmpeg-linux-${{ matrix.arch }}-7.1-aarch64.tar.gz"
           elif [ "${{ matrix.os }}" == "macos-latest" ]; then
-            FILE_NAME="ffmpeg-darwin-${{ matrix.arch }}-7.1-${{ needs.check-release.outputs.version }}.tar.gz"
+            FILE_NAME="downloads/ffmpeg-darwin-${{ matrix.arch }}-7.1-${{ needs.check-release.outputs.version }}.tar.gz"
           fi
 
-          wget https://github.com/NoMercy-Entertainment/NoMercyFFMpeg/releases/download/${{ needs.check-release.outputs.version }}/$FILE_NAME
-
-          echo "Using file: $FILE_NAME"
           tar -xvf $FILE_NAME
 
       - name: Run Tests
@@ -175,14 +174,16 @@ jobs:
         if: matrix.os == 'windows-latest'
         run: choco install wget --no-progress
 
-      - name: Download Release
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: ffmpeg-binaries
+          path: downloads
+
+      - name: Unpack ffmpeg binary
         shell: bash
         run: |
-          FILE_NAME="ffmpeg-windows-${{ matrix.arch }}-7.1-${{ needs.check-release.outputs.version }}.tar.gz"
-
-          wget https://github.com/NoMercy-Entertainment/NoMercyFFMpeg/releases/download/${{ needs.check-release.outputs.version }}/$FILE_NAME
-
-          echo "Using file: $FILE_NAME"
+          FILE_NAME="downloads/ffmpeg-windows-${{ matrix.arch }}-7.1-${{ needs.check-release.outputs.version }}.tar.gz"
           tar -xvf $FILE_NAME
 
       - name: Run Tests
@@ -284,15 +285,3 @@ jobs:
             throw "Some tests failed."
             exit 1
           }
-
-  cleanup-release:
-    needs: [platform-tests-unix, platform-tests-windows]
-    if: ${{ failure() }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Delete Release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          RELEASE_ID=$(gh release view ${{ needs.platform-tests-unix.outputs.version }} --json id -q .id)
-          gh release delete $RELEASE_ID --yes
