@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
     inputs:
       force_test:
-        description: 'Force test of all images'
+        description: "Force test of all images"
         required: true
         type: boolean
         default: true
@@ -35,12 +35,6 @@ jobs:
           echo "Latest tag: $LATEST_TAG$"          
           echo "version=$LATEST_TAG" >> $GITHUB_OUTPUT
 
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: ffmpeg-binaries
-          path: downloads
-
   platform-tests-unix:
     needs: check-release
     runs-on: ${{ matrix.os }}
@@ -58,10 +52,13 @@ jobs:
           fetch-depth: 0
 
       - name: Download build artifacts
-        uses: actions/download-artifact@v3
+        uses: dawidd6/action-download-artifact@v2
         with:
+          workflow: main.yml
           name: ffmpeg-binaries
           path: downloads
+          workflow_conclusion: success
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Unpack ffmpeg binary
         shell: bash
@@ -75,7 +72,7 @@ jobs:
           fi
 
           tar -xvf $FILE_NAME
-
+          
       - name: Run Tests
         id: tests
         run: |
@@ -138,10 +135,10 @@ jobs:
           # AV1 codec tests
           run_test "libdav1d" "-h decoder 2>&1 | grep dav1d" "dav1d"
           run_test "librav1e" "-h encoder 2>&1 | grep rav1e" "rav1e"
-          
+
           # Cleanup
           rm -rf test_files
-          
+
           # Print summary
           echo "----------------------------------------"
           echo "Test Summary:"
@@ -181,10 +178,13 @@ jobs:
         run: choco install wget --no-progress
 
       - name: Download build artifacts
-        uses: actions/download-artifact@v3
+        uses: dawidd6/action-download-artifact@v2
         with:
+          workflow: main.yml
           name: ffmpeg-binaries
           path: downloads
+          workflow_conclusion: success
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Unpack ffmpeg binary
         shell: bash
@@ -194,7 +194,7 @@ jobs:
 
       - name: Run Tests
         id: tests
-        shell: pwsh    
+        shell: pwsh
         run: |
           $script:TOTAL_TESTS = 0
           $script:PASSED_TESTS = 0
@@ -270,10 +270,10 @@ jobs:
           # AV1 codec tests
           run_test "libdav1d" "-h decoder 2>&1 | grep dav1d" "dav1d"
           run_test "librav1e" "-h encoder 2>&1 | grep rav1e" "rav1e"
-          
+
           # Cleanup
           Remove-Item -Path test_files -Recurse -Force
-          
+
           # Print summary
           Write-Host "----------------------------------------"
           Write-Host "Test Summary:"

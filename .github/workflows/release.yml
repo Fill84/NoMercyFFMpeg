@@ -159,10 +159,13 @@ jobs:
           fetch-depth: 0
 
       - name: Download build artifacts
-        uses: actions/download-artifact@v3
+        uses: dawidd6/action-download-artifact@v2
         with:
+          workflow: main.yml
           name: ffmpeg-binaries
           path: downloads
+          workflow_conclusion: success
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create Release
         id: create-release
@@ -234,3 +237,4 @@ jobs:
           asset_path: downloads/ffmpeg-darwin-arm64-7.1.tar.gz
           asset_name: ffmpeg-darwin-arm64-7.1-${{ needs.check-changes.outputs.version }}.tar.gz
           asset_content_type: application/gzip
+          
