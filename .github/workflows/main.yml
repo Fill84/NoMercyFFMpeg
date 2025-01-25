@@ -64,7 +64,7 @@ jobs:
         run: |
           echo force: ${{ github.event.inputs.force_rebuild }}
           git config --global --add safe.directory ${{ github.workspace }}
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" && ${{ github.event.inputs.force_rebuild }} ]]; then
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.force_rebuild }}" == "true" ]]; then
             CHANGED=true
           else
             CHANGED=false
@@ -76,7 +76,7 @@ jobs:
         id: check-base
         run: |
           git config --global --add safe.directory ${{ github.workspace }}
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" && ${{ github.event.inputs.force_rebuild }} ]]; then
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.force_rebuild }}" == "true" ]]; then
             CHANGED=true
           else
             CHANGED=false
@@ -88,7 +88,7 @@ jobs:
         id: check-linux-x86_64
         run: |
           git config --global --add safe.directory ${{ github.workspace }}
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" && ${{ github.event.inputs.force_rebuild }} ]]; then
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.force_rebuild }}" == "true" ]]; then
             CHANGED=true
           else
             CHANGED=false
@@ -100,7 +100,7 @@ jobs:
         id: check-linux-aarch64
         run: |
           git config --global --add safe.directory ${{ github.workspace }}
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" && ${{ github.event.inputs.force_rebuild }} ]]; then
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.force_rebuild }}" == "true" ]]; then
             CHANGED=true
           else
             CHANGED=false
@@ -112,7 +112,7 @@ jobs:
         id: check-windows-x86_64
         run: |
           git config --global --add safe.directory ${{ github.workspace }}
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" && ${{ github.event.inputs.force_rebuild }} ]]; then
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.force_rebuild }}" == "true" ]]; then
             CHANGED=true
           else
             CHANGED=false
@@ -124,7 +124,7 @@ jobs:
         # id: check-windows-arm64
         # run: |
         #   git config --global --add safe.directory ${{ github.workspace }}
-        #   if [[ "${{ github.event_name }}" == "workflow_dispatch" && ${{ github.event.inputs.force_rebuild }} ]]; then
+        #   if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.force_rebuild }}" == "true" ]]; then
         #     CHANGED=true
         #   else
         #     CHANGED=false
@@ -136,7 +136,7 @@ jobs:
         id: check-darwin-x86_64
         run: |
           git config --global --add safe.directory ${{ github.workspace }}
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" && ${{ github.event.inputs.force_rebuild }} ]]; then
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.force_rebuild }}" == "true" ]]; then
             CHANGED=true
           else
             CHANGED=false
@@ -148,7 +148,7 @@ jobs:
         id: check-darwin-arm64
         run: |
           git config --global --add safe.directory ${{ github.workspace }}
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" && ${{ github.event.inputs.force_rebuild }} ]]; then
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.force_rebuild }}" == "true" ]]; then
             CHANGED=true
           else
             CHANGED=false
