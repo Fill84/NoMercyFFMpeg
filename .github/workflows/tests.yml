@@ -65,15 +65,12 @@ jobs:
         shell: bash
         run: |
           if [ "${{ matrix.os }}" == "ubuntu-latest" ] && [ "${{ matrix.arch }}" == "x86_64" ]; then
-            FILE_NAME="downloads/ffmpeg-linux-${{ matrix.arch }}-7.1-x86_64.tar.gz"
+            FILE_NAME="downloads/ffmpeg-linux-${{ matrix.arch }}-7.1.tar.gz"
           elif [ "${{ matrix.os }}" == "ubuntu-latest" ] && [ "${{ matrix.arch }}" == "arm64" ]; then
-            FILE_NAME="downloads/ffmpeg-linux-${{ matrix.arch }}-7.1-aarch64.tar.gz"
+            FILE_NAME="downloads/ffmpeg-linux-aarch64-7.1.tar.gz"
           elif [ "${{ matrix.os }}" == "macos-latest" ]; then
             FILE_NAME="downloads/ffmpeg-darwin-${{ matrix.arch }}-7.1.tar.gz"
           fi
-
-          ls -al ./
-          ls -al downloads
 
           tar -xvf $FILE_NAME
           
