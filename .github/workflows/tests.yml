@@ -72,6 +72,9 @@ jobs:
             FILE_NAME="downloads/ffmpeg-darwin-${{ matrix.arch }}-7.1-${{ needs.check-release.outputs.version }}.tar.gz"
           fi
 
+          ls -al ./
+          ls -al downloads
+
           tar -xvf $FILE_NAME
           
       - name: Run Tests
