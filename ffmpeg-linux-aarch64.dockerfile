@@ -470,6 +470,50 @@ RUN cd /build/opus \
     && make -j$(nproc) && make install \
     && rm -rf /build/opus
 
+# libaom
+RUN cd /build/libaom \
+    && mkdir -p build && cd build \
+    && cmake -S .. -B . \
+    ${CMAKE_COMMON_ARG} \
+    -DENABLE_EXAMPLES=NO -DENABLE_TESTS=NO -DENABLE_TOOLS=NO -DCONFIG_TUNE_VMAF=1 \
+    && make -j$(nproc) && make install \
+    && echo "Requires.private: libvmaf" >> ${PREFIX}/lib/pkgconfig/aom.pc \
+    && rm -rf /build/libaom
+
+# libtheora
+RUN cd /build/libtheora \
+    && ./autogen.sh --prefix=${PREFIX} \
+    --disable-shared \
+    --enable-static \
+    --with-pic \
+    --disable-examples \
+    --disable-oggtest \
+    --disable-vorbistest \
+    --disable-spec \
+    --disable-doc \
+    --host=${CROSS_PREFIX%-} \
+    && ./configure --prefix=${PREFIX} \
+    --disable-shared \
+    --enable-static \
+    --with-pic \
+    --disable-examples \
+    --disable-oggtest \
+    --disable-vorbistest \
+    --disable-spec \
+    --disable-doc \
+    --host=${CROSS_PREFIX%-} \
+    && make -j$(nproc) && make install \
+    && rm -rf /build/libtheora
+
+# libsvtav1
+RUN cd /build/libsvtav1 \
+    && mkdir -p build && cd build \
+    && cmake -S .. -B . \
+    ${CMAKE_COMMON_ARG} \
+    -DBUILD_APPS=OFF -DBUILD_EXAMPLES=OFF -DENABLE_AVX512=ON \
+    && make -j$(nproc) && make install \
+    && rm -rf /build/libsvtav1
+
 # libvpx
 RUN cd /build/libvpx \
     && CROSS=${CROSS_PREFIX} \
@@ -589,6 +633,32 @@ RUN cd /build/libwebp \
     && cp -R /usr/local/cuda/include/* ${PREFIX}/include \
     && cp -R /usr/local/cuda/lib64/* ${PREFIX}/lib
 
+# frei0r
+RUN cd /build/frei0r \
+    && mkdir -p build && cd build \
+    && cmake -S .. -B . \
+    ${CMAKE_COMMON_ARG} \
+    # && make -j$(nproc) && make install \
+    && cp frei0r.pc ${PREFIX}/lib/pkgconfig/frei0r.pc \
+    && cp ../include/frei0r.h ${PREFIX}/include \
+    && rm -rf /build/frei0r
+
+# libvpl
+RUN cd /build/libvpl \
+    && mkdir -p build && cd build \
+    && cmake -GNinja -S .. -B . \
+    ${CMAKE_COMMON_ARG} \
+    -DCMAKE_INSTALL_BINDIR=${PREFIX}/bin -DCMAKE_INSTALL_LIBDIR=${PREFIX}/lib \
+    -DBUILD_DISPATCHER=ON -DBUILD_DEV=ON \
+    -DBUILD_PREVIEW=OFF -DBUILD_TOOLS=OFF -DBUILD_TOOLS_ONEVPL_EXPERIMENTAL=OFF -DINSTALL_EXAMPLE_CODE=OFF \
+    -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTS=OFF \
+    && ninja -j$(nproc) && ninja install \
+    && rm -rf /build/libvpl ${PREFIX}/{etc,share}
+
+# amf
+RUN cd /build/amf \
+    && mv amf/public/include ${PREFIX}/include/AMF
+
 # leptonica
 RUN cd /build/leptonica \
     && cp ${PREFIX}/lib/pkgconfig/libsharpyuv.pc ${PREFIX}/lib/pkgconfig/sharpyuv.pc \
@@ -695,22 +765,39 @@ RUN cd /build/ffmpeg \
     --enable-libsrt \
     --enable-libtwolame \
     --enable-libmp3lame \
+    --enable-libfdk-aac \
+    --enable-libopus \
+    --enable-libaom \
+    --enable-libtheora \
+    --enable-libsvtav1 \
     --enable-libvpx \
     --enable-libx264 \
     --enable-libx265 \
     --enable-libxavs2 \
     --enable-libxvid \
-    --enable-libfdk-aac \
-    --enable-libopus \
     --enable-libwebp \
     --enable-libopenjpeg \
     --enable-libzimg \
+    --enable-frei0r \
+    --enable-libvpl \
+    --enable-amf \
     --enable-ffnvcodec \
     --enable-nvdec \
     --enable-nvenc \
     --enable-cuda \
+    --enable-cuda-nvcc \
     --enable-cuvid \
     --enable-sdl2 \
+    --enable-decoder=h264_cuvid \
+    --enable-decoder=hevc_cuvid \
+    --enable-decoder=mjpeg_cuvid \
+    --enable-decoder=mpeg1_cuvid \
+    --enable-decoder=mpeg2_cuvid \
+    --enable-decoder=mpeg4_cuvid \
+    --enable-decoder=vc1_cuvid \
+    --enable-decoder=vp8_cuvid \
+    --enable-decoder=vp9_cuvid \
+    --enable-encoder=h264_nvenc \
     --enable-runtime-cpudetect \
     --extra-version="NoMercy-MediaServer" \
     --extra-cflags="-static -static-libgcc -static-libstdc++ -I${PREFIX}/include" \

@@ -46,11 +46,6 @@ jobs:
         arch: [x86_64, arm64]
     continue-on-error: true
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
       - name: Download build artifacts
         uses: dawidd6/action-download-artifact@v8
         with:
@@ -108,7 +103,8 @@ jobs:
           run_test "libx264" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx264 test_files/test_h264.mp4" "encoder.*libx264"
           run_test "libx265" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx265 test_files/test_h265.mp4" "encoder.*libx265"
           run_test "libvpx" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libvpx-vp9 test_files/test_vp9.webm" "encoder.*libvpx-vp9"
-          # run_test "libaom" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libaom-av1 test_files/test_av1.mkv" "encoder.*libaom-av1"
+          run_test "libaom" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libaom-av1 test_files/test_av1.mkv" "encoder.*libaom-av1"
+          run_test "libtheora" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libtheora test_files/test_theora.ogv" "encoder.*libtheora"
 
           # Audio codecs
           run_test "libfdk_aac" "-y -f lavfi -i anullsrc=duration=1 -c:a libfdk_aac test_files/test_aac.m4a" "encoder.*libfdk_aac"
@@ -126,7 +122,10 @@ jobs:
           # Hardware acceleration
           run_test "NVENC" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v h264_nvenc test_files/test_nvenc.mp4" "encoder.*h264_nvenc"
           run_test "VAAPI" "-y -vaapi_device /dev/dri/renderD128 -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -vf 'format=nv12,hwupload' -c:v h264_vaapi test_files/test_vaapi.mp4 2>&1" "vaapi"
-                    
+          run_test "VPL" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v h264_vpl test_files/test_vpl.mp4" "encoder.*h264_vpl"
+          run_test "AMF" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v h264_amf test_files/test_amf.mp4" "encoder.*h264_amf"
+          run_test "AMF_HEVC" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v hevc_amf test_files/test_amf_hevc.mp4" "encoder.*hevc_amf"
+
           # Additional format tests
           run_test "libbluray" "-h 2>&1 | grep bluray" "bluray"
           run_test "libcdio" "-h 2>&1 | grep cdio" "cdio"
@@ -169,15 +168,6 @@ jobs:
         arch: [x86_64] #, arm64]
     continue-on-error: true
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Install wget for Windows
-        if: matrix.os == 'windows-latest'
-        run: choco install wget --no-progress
-
       - name: Download build artifacts
         uses: dawidd6/action-download-artifact@v8
         with:
@@ -244,7 +234,8 @@ jobs:
           run_test "libx264" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx264 test_files/test_h264.mp4" "encoder.*libx264"
           run_test "libx265" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx265 test_files/test_h265.mp4" "encoder.*libx265"
           run_test "libvpx" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libvpx-vp9 test_files/test_vp9.webm" "encoder.*libvpx-vp9"
-          # run_test "libaom" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libaom-av1 test_files/test_av1.mkv" "encoder.*libaom-av1"
+          run_test "libaom" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libaom-av1 test_files/test_av1.mkv" "encoder.*libaom-av1"
+          run_test "libtheora" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libtheora test_files/test_theora.ogv" "encoder.*libtheora"
 
           # Audio codecs
           run_test "libfdk_aac" "-y -f lavfi -i anullsrc=duration=1 -c:a libfdk_aac test_files/test_aac.m4a" "encoder.*libfdk_aac"
@@ -262,7 +253,10 @@ jobs:
           # Hardware acceleration
           run_test "NVENC" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v h264_nvenc test_files/test_nvenc.mp4" "encoder.*h264_nvenc"
           run_test "VAAPI" "-y -vaapi_device /dev/dri/renderD128 -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -vf 'format=nv12,hwupload' -c:v h264_vaapi test_files/test_vaapi.mp4 2>&1" "vaapi"
-                    
+          run_test "VPL" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v h264_vpl test_files/test_vpl.mp4" "encoder.*h264_vpl"
+          run_test "AMF" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v h264_amf test_files/test_amf.mp4" "encoder.*h264_amf"
+          run_test "AMF_HEVC" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v hevc_amf test_files/test_amf_hevc.mp4" "encoder.*hevc_amf"
+
           # Additional format tests
           run_test "libbluray" "-h 2>&1 | grep bluray" "bluray"
           run_test "libcdio" "-h 2>&1 | grep cdio" "cdio"

@@ -48,6 +48,8 @@ ENV ffmpeg_version=7.1 \
     mp3lame_version=3.100 \
     fdk_aac_version=2.0.3 \
     opus_version=1.5.2 \
+    libaom_version=3.11.0 \
+    libtheora_version=1.1.1 \
     libvpx_version=1.15.0 \
     x264_version=stable \
     x265_version=master \
@@ -56,6 +58,10 @@ ENV ffmpeg_version=7.1 \
     libwebp_version=1.4.0 \
     openjpeg_version=2.5.3 \
     zimg_version=3.0.5 \
+    frei0r_version=2.3.3 \
+    libvpl_version=2.14.0 \
+    libsvtav1_version=2.3.0 \
+    amf_version=1.4.35 \
     nvcodec_version=12.2.72.0 \
     leptonica_version=1.85.0 \
     libtesseract_version=5.5.0 \
@@ -244,6 +250,15 @@ RUN wget -O fdk-aac.tar.gz https://github.com/mstorsjo/fdk-aac/archive/v${fdk_aa
 # Download Opus
 RUN git clone --branch v${opus_version} https://github.com/xiph/opus.git opus
 
+# Download libaom
+RUN git clone --branch v${libaom_version} https://aomedia.googlesource.com/aom libaom
+
+# Download libtheora
+RUN git clone --branch v${libtheora_version} https://github.com/xiph/theora.git libtheora
+
+# Download libsvtav1
+RUN git clone --branch v${libsvtav1_version} https://gitlab.com/AOMediaCodec/SVT-AV1.git libsvtav1
+
 # Download libvpx
 RUN git clone --branch v${libvpx_version} https://chromium.googlesource.com/webm/libvpx.git libvpx
 
@@ -270,6 +285,15 @@ RUN git clone --branch v${openjpeg_version} https://github.com/uclouvain/openjpe
 
 # Download zimg
 RUN git clone --branch release-${zimg_version} https://github.com/sekrit-twc/zimg.git zimg
+
+# Download frei0r
+RUN git clone --branch v${frei0r_version} https://github.com/dyne/frei0r.git frei0r
+
+# Download libvpl
+RUN git clone --branch v${libvpl_version} https://github.com/intel/libvpl.git libvpl
+
+# Download amf
+RUN git clone --branch v${amf_version} https://github.com/GPUOpen-LibrariesAndSDKs/AMF.git amf
 
 # Download ffnvcodec
 RUN git clone --branch n${nvcodec_version} https://github.com/FFmpeg/nv-codec-headers.git ffnvcodec
