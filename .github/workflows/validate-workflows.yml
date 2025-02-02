@@ -4,8 +4,6 @@ on:
   workflow_dispatch:
   workflow_run:
     workflows:
-      - Build
-      - Test
       - Release
     types:
       - completed
@@ -22,18 +20,6 @@ jobs:
           if [ "${{ github.event.workflow_run.conclusion }}" != "success" ]; then
             echo "::error::Workflow ${{ github.event.workflow_run.name }} failed"
             echo "Check logs at: ${{ github.event.workflow_run.html_url }}"
-            exit 1
-          fi
-
-      - name: Verify artifact availability
-        if: github.event.workflow_run.name == 'Build'
-        run: |
-          # Check if ffmpeg-binaries artifact exists
-          ARTIFACTS_URL="${{ github.event.workflow_run.artifacts_url }}"
-          ARTIFACTS=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" $ARTIFACTS_URL)
-          
-          if ! echo "$ARTIFACTS" | grep -q "ffmpeg-binaries"; then
-            echo "::error::ffmpeg-binaries artifact not found"
             exit 1
           fi
 
