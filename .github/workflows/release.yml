@@ -55,15 +55,12 @@ jobs:
     runs-on: ubuntu-latest
     needs: [check-changes]
     steps:
-      - name: Download build artifacts
-        uses: dawidd6/action-download-artifact@v8
+      - name: Restore cache artifacts 
+        id: cache-downloads-restore
+        uses: actions/cache/restore@v4
         with:
-          workflow: main.yml
-          name: ffmpeg-binaries
           path: downloads
-          run_id: ${{ github.event.workflow_run.id }}
-          workflow_conclusion: success
-          github_token: ${{ secrets.GITHUB_TOKEN }}  
+          key: downloads
 
       - name: Create Release
         id: create-release

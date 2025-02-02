@@ -493,8 +493,9 @@ jobs:
           # docker cp darwin-arm64-container:/build/darwin/arm64 downloads/darwin/arm64 || echo "Directory not found in container."
           docker rm darwin-arm64-container
 
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+      - name: Cache artifacts 
+        id: cache-downloads-save
+        uses: actions/cache/save@v4
         with:
-          name: ffmpeg-binaries
           path: downloads
+          key: downloads
