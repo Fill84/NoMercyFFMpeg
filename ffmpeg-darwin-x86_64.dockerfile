@@ -9,12 +9,6 @@ ENV DEBIAN_FRONTEND=noninteractive \
     NVIDIA_VISIBLE_DEVICES=all \
     NVIDIA_DRIVER_CAPABILITIES=compute,utility,video
 
-ENV PREFIX=/ffmpeg_build/darwin
-ENV MACOSX_DEPLOYMENT_TARGET=10.13.0
-ENV SDK_VERSION=15.1
-ENV SDK_PATH=${PREFIX}/osxcross/SDK/MacOSX${SDK_VERSION}.sdk
-ENV OSX_FRAMEWORKS=${SDK_PATH}/System/Library/Frameworks
-
 RUN apt-get update && apt-get install -y --no-install-recommends \
     clang patch liblzma-dev libxml2-dev xz-utils bzip2 cpio zlib1g-dev libgit2-dev \
     && apt-get upgrade -y && apt-get autoremove -y && apt-get autoclean -y && apt-get clean -y \
@@ -22,6 +16,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 RUN rustup target add x86_64-apple-darwin \
     && cargo install cargo-c
+
+ENV PREFIX=/ffmpeg_build/darwin
+ENV MACOSX_DEPLOYMENT_TARGET=10.13.0
+ENV SDK_VERSION=15.1
+ENV SDK_PATH=${PREFIX}/osxcross/SDK/MacOSX${SDK_VERSION}.sdk
+ENV OSX_FRAMEWORKS=${SDK_PATH}/System/Library/Frameworks
 
 RUN git clone https://github.com/tpoechtrager/osxcross.git /build/osxcross && cd /build/osxcross \
     && wget -nc https://github.com/joseluisq/macosx-sdks/releases/download/${SDK_VERSION}/MacOSX${SDK_VERSION}.sdk.tar.xz \
@@ -38,6 +38,7 @@ RUN echo "MACOSX_DEPLOYMENT_TARGET=${MACOSX_DEPLOYMENT_TARGET}" > ${PREFIX}/osxc
 RUN cd /build
 
 # Set environment variables for building ffmpeg
+ENV PREFIX=/ffmpeg_build/darwin
 ENV ARCH=x86_64
 ENV CROSS_PREFIX=${ARCH}-apple-darwin24.1-
 ENV CC=${CROSS_PREFIX}clang
@@ -95,8 +96,9 @@ RUN ln -s ${PREFIX}/osxcross/bin/${CROSS_PREFIX}install_name_tool ${SDK_PATH}/us
     && chmod +x ${SDK_PATH}/usr/bin/${CROSS_PREFIX}objdump \
     && ln -s /build/osxcross/build/apple-libtapi/build/tools/llvm-objcopy ${SDK_PATH}/usr/bin/${CROSS_PREFIX}objcopy \
     && chmod +x ${SDK_PATH}/usr/bin/${CROSS_PREFIX}objcopy \
-    && ln -s ${CROSS_PREFIX}libtool /usr/bin/libtool \
-    && mkdir -p /System/Library/Frameworks \
+    && ln -s ${CROSS_PREFIX}libtool /usr/bin/libtool
+
+RUN mkdir -p /System/Library/Frameworks \
     && ln -s ${OSX_FRAMEWORKS}/System/Library/Frameworks /System/Library/Frameworks
 
 ENV INSTALL_NAME_TOOL=${SDK_PATH}/usr/bin/${CROSS_PREFIX}install_name_tool
@@ -122,7 +124,7 @@ RUN cd /build/iconv \
     \
     # zlib
     && cd /build/zlib \
-    && ./configure --prefix=${PREFIX} --static \
+    && ./configure --prefix=${PREFIX} --static --archs="-arch ${ARCH}" \
     && make -j$(nproc) && make install \
     && rm -rf /build/zlib \
     \
@@ -455,13 +457,25 @@ RUN cd /build/libtheora \
     && make -j$(nproc) && make install \
     && rm -rf /build/libtheora
 
-# libsvtav1
-RUN cd /build/libsvtav1 \
+# CPUInfo (needed for SVT-AV1)
+RUN git clone https://github.com/pytorch/cpuinfo.git /build/cpuinfo \
+    && cd /build/cpuinfo \
+    && mkdir -p build && cd build \
+    && cmake -S .. -B . \
+    ${CMAKE_COMMON_ARG} \
+    -DCMAKE_SYSTEM_PROCESSOR=${ARCH} -Wno-dev\
+    && make -j$(nproc) && make install \
+    \
+    # libsvtav1
+    && cd /build/libsvtav1 \
     && mkdir -p build && cd build \
     && cmake -S .. -B . \
     ${CMAKE_COMMON_ARG} \
     -DBUILD_APPS=OFF -DBUILD_EXAMPLES=OFF -DENABLE_AVX512=ON \
+    -DCPUINFO_ARCHITECTURE=${ARCH} \
+    -DCMAKE_SYSTEM_PROCESSOR=${ARCH} -Wno-dev \
     && make -j$(nproc) && make install \
+    && echo "Libs.private: -lstdc++ -lcpuinfo" >> ${PREFIX}/lib/pkgconfig/svt-av1.pc \
     && rm -rf /build/libsvtav1
 
 # libvpx
@@ -566,17 +580,16 @@ RUN cd /build/libwebp \
     && ./configure --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
     --host=${CROSS_PREFIX%-} \
     && make -j$(nproc) && make install \
-    && rm -rf /build/zimg 
-#     && rm -rf /build/zimg \
-#     \
-#     # ffnvcodec
-#     && cd /build/ffnvcodec \
-#     && make PREFIX=${PREFIX} install \
-#     && rm -rf /build/ffnvcodec \
-#     \
-#     # cuda
-#     && cp -R /usr/local/cuda/include/* ${PREFIX}/include \
-#     && cp -R /usr/local/cuda/lib64/* ${PREFIX}/lib
+    && rm -rf /build/zimg \
+    \
+    # ffnvcodec
+    && cd /build/ffnvcodec \
+    && make PREFIX=${PREFIX} install \
+    && rm -rf /build/ffnvcodec \
+    \
+    # cuda
+    && cp -R /usr/local/cuda/include/* ${PREFIX}/include \
+    && cp -R /usr/local/cuda/lib64/* ${PREFIX}/lib
 
 # frei0r
 RUN cd /build/frei0r \
@@ -604,71 +617,105 @@ RUN cd /build/frei0r \
 RUN cd /build/amf \
     && mv amf/public/include ${PREFIX}/include/AMF
 
-# # leptonica
-# RUN cd /build/leptonica \
-#     && cp ${PREFIX}/lib/pkgconfig/libsharpyuv.pc ${PREFIX}/lib/pkgconfig/sharpyuv.pc \
-#     && ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
-#     --disable-programs \
-#     --without-giflib \
-#     --without-jpeg \
-#     --host=${CROSS_PREFIX%-} \
-#     && ./configure --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
-#     --disable-programs \
-#     --without-giflib \
-#     --without-jpeg \
-#     --host=${CROSS_PREFIX%-} \
-#     && make -j$(nproc) && make install \
-#     && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/liblept.pc \
-#     && rm -rf /build/leptonica \
-#     \
-#     # libtesseract (tesseract-ocr)
-#     && cd /build/libtesseract \
-#     && ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared \
-#     --disable-doc \
-#     --without-archive \
-#     --disable-openmp \
-#     --without-curl \
-#     --with-extra-includes=${PREFIX}/include \
-#     --with-extra-libraries=${PREFIX}/lib \
-#     --host=${CROSS_PREFIX%-} \
-#     && ./configure --prefix=${PREFIX} --enable-static --disable-shared \
-#     --disable-doc \
-#     --without-archive \
-#     --disable-openmp \
-#     --without-curl \
-#     --with-extra-includes=${PREFIX}/include \
-#     --with-extra-libraries=${PREFIX}/lib \
-#     --host=${CROSS_PREFIX%-} \
-#     && make -j$(nproc) && make install \
-#     && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/tesseract.pc \
-#     && cp ${PREFIX}/lib/pkgconfig/tesseract.pc ${PREFIX}/lib/pkgconfig/libtesseract.pc \
-#     && rm -rf /build/libtesseract
+ENV OLD_CMAKE_COMMON_ARG=${CMAKE_COMMON_ARG}
+ENV CMAKE_COMMON_ARG="-DCMAKE_INSTALL_PREFIX=${PREFIX} -DCMAKE_SYSTEM_NAME=Darwin -DCMAKE_OSX_ARCHITECTURES=${ARCH} -DCMAKE_OSX_DEPLOYMENT_TARGET=${MACOSX_DEPLOYMENT_TARGET} -DCMAKE_OSX_SYSROOT=${SDK_PATH} -DCMAKE_C_COMPILER=${CC} -DCMAKE_CXX_COMPILER=${CXX} -DENABLE_SHARED=OFF -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_SYSTEM_PROCESSOR=${ARCH} -DCMAKE_ASM_NASM_FLAGS=-w-macro-params-legacy"
+# Build libjpeg-turbo
+RUN wget https://github.com/libjpeg-turbo/libjpeg-turbo/archive/refs/tags/3.1.0.tar.gz -O libjpeg-turbo-3.1.0.tar.gz \
+    && tar xzf libjpeg-turbo-3.1.0.tar.gz \
+    && cd libjpeg-turbo-3.1.0 \
+    && mkdir build && cd build \
+    && cmake -S .. -B . \
+    ${CMAKE_COMMON_ARG} \
+    && make -j$(nproc) && make install \
+    && rm -rf /build/libjpeg-turbo-3.1.0
+ENV CMAKE_COMMON_ARG=${OLD_CMAKE_COMMON_ARG}
+
+# Build libtiff
+RUN wget https://download.osgeo.org/libtiff/tiff-4.6.0.tar.gz \
+    && tar xzf tiff-4.6.0.tar.gz \
+    && cd tiff-4.6.0 \
+    && ./configure --host=${CROSS_PREFIX%-} --prefix=${PREFIX} \
+    --enable-static --disable-shared \
+    && make -j$(nproc) && make install \
+    && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/libtiff-4.pc && \
+    rm -rf /build/tiff-4.6.0
+
+# leptonica
+RUN cd /build/leptonica \
+    && ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
+    --disable-programs \
+    --without-giflib \
+    --without-jpeg \
+    --without-libopenjpeg \
+    --without-libwebp \
+    --without-libtiff \
+    --host=${CROSS_PREFIX%-} \
+    && ./configure --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
+    --disable-programs \
+    --without-giflib \
+    --without-jpeg \
+    --without-libopenjpeg \
+    --without-libwebp \
+    --without-libtiff \
+    --host=${CROSS_PREFIX%-} \
+    && make -j$(nproc) && make install \
+    && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/lept.pc \
+    && cp ${PREFIX}/lib/pkgconfig/lept.pc ${PREFIX}/lib/pkgconfig/liblept.pc \
+    && rm -rf /build/leptonica && cd /build \
+    \
+    # libtesseract (tesseract-ocr)
+    && cd /build/libtesseract \
+    && sed -i '/#include <filesystem>/d' src/ccutil/ccutil.cpp \
+    && sed -i 's/#include <cstring>/#include <cstring> \n#include <sys\/stat.h> \n#include <unistd.h>/' src/ccutil/ccutil.cpp \
+    && sed -i 's/if (tessdata_prefix != nullptr && !std::filesystem::exists(tessdata_prefix)) {/struct stat buffer;\n    if (tessdata_prefix != nullptr \&\& stat(tessdata_prefix, \&buffer) != 0) {/' src/ccutil/ccutil.cpp \
+    && sed -i 's/std::filesystem::exists(subdir)/stat(subdir.c_str(), \&buffer) == 0/' src/ccutil/ccutil.cpp \
+    && sed -i 's/std::filesystem::path subdir = std::filesystem::path(path) \/ "tessdata";/std::string subdir = std::string(path) + "\\\\tessdata";/' src/ccutil/ccutil.cpp \
+    && sed -i -e '/#include <filesystem>/d' \
+    -e 's/#include <memory>/#include <memory>\n#include <dirent.h>\n#include <sys\/stat.h>/' \
+    -e '/void addAvailableLanguages(const std::string \&datadir,/,/^}/c\\n void addAvailableLanguages(const std::string \&datadir, std::vector<std::string> *langs) {\n  DIR *dir = opendir(datadir.c_str());\n  if (!dir) return;\n\n  struct dirent *entry;\n  while ((entry = readdir(dir)) != nullptr) {\n    if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) continue;\n\n    std::string fullpath = datadir + "/" + entry->d_name;\n    struct stat statbuf;\n    if (stat(fullpath.c_str(), \&statbuf) != 0) continue;\n\n    if (S_ISDIR(statbuf.st_mode)) {\n      addAvailableLanguages(fullpath, langs);\n    } else {\n      std::string name = entry->d_name;\n      size_t pos = name.rfind(".traineddata");\n      if (pos != std::string::npos && pos == name.length() - 12) {\n        langs->push_back(name.substr(0, pos));\n      }\n    }\n  }\n  closedir(dir);\n}' src/api/baseapi.cpp \
+    && ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared \
+    --disable-doc \
+    --without-archive \
+    --disable-openmp \
+    --without-curl \
+    --with-extra-includes=${PREFIX}/include \
+    --with-extra-libraries=${PREFIX}/lib \
+    --host=${CROSS_PREFIX%-} \
+    && ./configure --prefix=${PREFIX} --enable-static --disable-shared \
+    --disable-doc \
+    --without-archive \
+    --disable-openmp \
+    --without-curl \
+    --with-extra-includes=${PREFIX}/include \
+    --with-extra-libraries=${PREFIX}/lib \
+    --host=${CROSS_PREFIX%-} \
+    && make -j$(nproc) && make install \
+    && echo "Libs.private: -lstdc++ -lz -framework Accelerate" >> ${PREFIX}/lib/pkgconfig/tesseract.pc \
+    && cp ${PREFIX}/lib/pkgconfig/tesseract.pc ${PREFIX}/lib/pkgconfig/libtesseract.pc \
+    && rm -rf /build/libtesseract
 
 # # libsamplerate
 # RUN git clone --branch 0.2.2 https://github.com/libsndfile/libsamplerate.git /build/libsamplerate \
 #     && mkdir -p /build/libsamplerate/build && cd /build/libsamplerate/build \
 #     && cmake -S .. -B . \
 #     ${CMAKE_COMMON_ARG} \
-#     -DBUILD_TESTING=OFF -DLIBSAMPLERATE_EXAMPLES=OFF -DLIBSAMPLERATE_INSTALL=ON \
+#     -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTING=OFF -DLIBSAMPLERATE_EXAMPLES=OFF -DLIBSAMPLERATE_INSTALL=ON \
 #     && make -j$(nproc) && make install \
 #     && rm -rf /build/libsamplerate && cd /build \
 #     \    
 #     # sdl2
 #     && cd /build/sdl2 \
 #     && mkdir -p build && cd build \
-#     && cmake -S .. -B . \
+#     && cmake -GNinja -S .. -B . \
 #     ${CMAKE_COMMON_ARG} \
 #     -DSDL_SHARED=OFF \
 #     -DSDL_STATIC=ON \
 #     -DSDL_STATIC_PIC=ON \
 #     -DSDL_TEST=OFF \
-#     -DSDL_X11=OFF \
-#     -DSDL_X11_SHARED=OFF \
-#     -DHAVE_XGENERICEVENT=FALSE \
-#     -DSDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM=0 \
-#     -DSDL_PULSEAUDIO=OFF \
-#     -DSDL_PULSEAUDIO_SHARED=OFF \
-#     && make -j$(nproc) && make install \
+#     -DSDL_VIDEO=ON \
+#     -DCMAKE_C_STANDARD=17 \
+#     -DCMAKE_C_FLAGS="-std=c17" \
+#     && ninja -j$(nproc) && ninja install \
 #     && sed -ri -e 's/\-Wl,\-\-no\-undefined.*//' -e 's/ \-l\/.+?\.a//g' ${PREFIX}/lib/pkgconfig/sdl2.pc \
 #     && sed -ri -e 's/ -lSDL2//g' -e 's/Libs: /Libs: -lSDL2 /' ${PREFIX}/lib/pkgconfig/sdl2.pc \
 #     && echo 'Requires: samplerate' >> ${PREFIX}/lib/pkgconfig/sdl2.pc \
@@ -695,7 +742,7 @@ RUN cd /build/ffmpeg \
     --enable-libfreetype \
     --enable-libfribidi \
     --enable-fontconfig \
-    # --enable-libtesseract \
+    --enable-libtesseract \
     # --enable-libdrm \ 
     --enable-libvorbis \
     --enable-libvmaf \ 
@@ -715,7 +762,7 @@ RUN cd /build/ffmpeg \
     --enable-libopus \
     --enable-libaom \
     --enable-libtheora \
-    # --enable-libsvtav1 \
+    --enable-libsvtav1 \
     --enable-libvpx \ 
     --enable-libx264 \
     --enable-libx265 \ 
@@ -727,30 +774,20 @@ RUN cd /build/ffmpeg \
     --enable-frei0r \
     # --enable-libvpl \
     --enable-amf \
-    # --enable-ffnvcodec \ 
-    # --enable-nvdec \ 
-    # --enable-nvenc \ 
-    # --enable-cuda \ 
+    # --enable-ffnvcodec \
+    # --enable-nvdec \
+    # --enable-nvenc \
+    # --enable-cuda \
     # --enable-cuda-nvcc \
-    # --enable-cuvid \ 
+    # --enable-cuvid \
     # --enable-sdl2 \
-    # --enable-decoder=h264_cuvid \
-    # --enable-decoder=hevc_cuvid \
-    # --enable-decoder=mjpeg_cuvid \
-    # --enable-decoder=mpeg1_cuvid \
-    # --enable-decoder=mpeg2_cuvid \
-    # --enable-decoder=mpeg4_cuvid \
-    # --enable-decoder=vc1_cuvid \
-    # --enable-decoder=vp8_cuvid \
-    # --enable-decoder=vp9_cuvid \
-    # --enable-encoder=h264_nvenc \
     --enable-runtime-cpudetect \
     --cc=${CC} \
     --cxx=${CXX} \
     --extra-version="NoMercy-MediaServer" \
     --extra-cflags="-arch ${ARCH} -mmacosx-version-min=${MACOSX_DEPLOYMENT_TARGET} -isysroot ${SDK_PATH} -F${OSX_FRAMEWORKS} -stdlib=libc++ -isysroot ${SDK_PATH} -mmacosx-version-min=${MACOSX_DEPLOYMENT_TARGET} -I${PREFIX}/include" \
     --extra-ldflags="-arch ${ARCH} -mmacosx-version-min=${MACOSX_DEPLOYMENT_TARGET} -isysroot ${SDK_PATH} -F${OSX_FRAMEWORKS} -stdlib=libc++ -isysroot ${SDK_PATH} -mmacosx-version-min=${MACOSX_DEPLOYMENT_TARGET} -L${PREFIX}/lib" \
-    --extra-libs="-lpthread -lm -lsharpyuv" \
+    --extra-libs="-lpthread -lm" \
     || (cat ffbuild/config.log ; false) && \
     make -j$(nproc) && make install
 

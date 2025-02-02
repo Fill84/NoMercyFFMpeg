@@ -19,14 +19,6 @@ jobs:
   check-changes:
     runs-on: ubuntu-latest
     outputs:
-      workflow-changed: ${{ steps.check-workflow.outputs.changed }}
-      base-changed: ${{ steps.check-base.outputs.changed }}
-      linux-x86_64-changed: ${{ steps.check-linux-x86_64.outputs.changed }}
-      linux-aarch64-changed: ${{ steps.check-linux-aarch64.outputs.changed }}
-      windows-x86_64-changed: ${{ steps.check-windows-x86_64.outputs.changed }}
-      # windows-arm64-changed: ${{ steps.check-windows-arm64.outputs.changed }}
-      darwin-x86_64-changed: ${{ steps.check-darwin-x86_64.outputs.changed }}
-      darwin-arm64-changed: ${{ steps.check-darwin-arm64.outputs.changed }}
       version: ${{ steps.bump-version.outputs.version }}
       
     steps:
@@ -59,112 +51,10 @@ jobs:
           echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
           echo "New version will be: $NEW_VERSION"
 
-      - name: Check workflow changes
-        id: check-workflow
-        run: |
-          git config --global --add safe.directory ${{ github.workspace }}
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.force_rebuild }}" == "true" ]]; then
-            CHANGED=true
-          else
-            CHANGED=false
-            git diff --name-only HEAD^ HEAD | grep -q ".github/workflows/main.yml" && CHANGED=true
-          fi
-          echo "changed=$CHANGED" >> $GITHUB_OUTPUT
-
-      - name: Check base image changes
-        id: check-base
-        run: |
-          git config --global --add safe.directory ${{ github.workspace }}
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.force_rebuild }}" == "true" ]]; then
-            CHANGED=true
-          else
-            CHANGED=false
-            git diff --name-only HEAD^ HEAD | grep -q "ffmpeg-base.dockerfile" && CHANGED=true
-          fi
-          echo "changed=$CHANGED" >> $GITHUB_OUTPUT
-
-      - name: Check Linux x86_64 image changes
-        id: check-linux-x86_64
-        run: |
-          git config --global --add safe.directory ${{ github.workspace }}
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.force_rebuild }}" == "true" ]]; then
-            CHANGED=true
-          else
-            CHANGED=false
-            git diff --name-only HEAD^ HEAD | grep -q "ffmpeg-linux-x86_64.dockerfile" && CHANGED=true
-          fi
-          echo "changed=$CHANGED" >> $GITHUB_OUTPUT
-
-      - name: Check Linux Aarch64 image changes
-        id: check-linux-aarch64
-        run: |
-          git config --global --add safe.directory ${{ github.workspace }}
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.force_rebuild }}" == "true" ]]; then
-            CHANGED=true
-          else
-            CHANGED=false
-            git diff --name-only HEAD^ HEAD | grep -q "ffmpeg-linux-aarch64.dockerfile" && CHANGED=true
-          fi
-          echo "changed=$CHANGED" >> $GITHUB_OUTPUT
-          
-      - name: Check Windows x86_64 image changes
-        id: check-windows-x86_64
-        run: |
-          git config --global --add safe.directory ${{ github.workspace }}
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.force_rebuild }}" == "true" ]]; then
-            CHANGED=true
-          else
-            CHANGED=false
-            git diff --name-only HEAD^ HEAD | grep -q "ffmpeg-windows-x86_64.dockerfile" && CHANGED=true
-          fi
-          echo "changed=$CHANGED" >> $GITHUB_OUTPUT
-
-      # - name: Check Windows Arm64 image changes
-        # id: check-windows-arm64
-        # run: |
-        #   git config --global --add safe.directory ${{ github.workspace }}
-        #   if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.force_rebuild }}" == "true" ]]; then
-        #     CHANGED=true
-        #   else
-        #     CHANGED=false
-        #     git diff --name-only HEAD^ HEAD | grep -q "ffmpeg-windows-arm64.dockerfile" && CHANGED=true
-        #   fi
-        #   echo "changed=$CHANGED" >> $GITHUB_OUTPUT
-
-      - name: Check Darwin x86_64 image changes
-        id: check-darwin-x86_64
-        run: |
-          git config --global --add safe.directory ${{ github.workspace }}
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.force_rebuild }}" == "true" ]]; then
-            CHANGED=true
-          else
-            CHANGED=false
-            git diff --name-only HEAD^ HEAD | grep -q "ffmpeg-darwin-x86_64.dockerfile" && CHANGED=true
-          fi
-          echo "changed=$CHANGED" >> $GITHUB_OUTPUT
-
-      - name: Check Darwin arm64 image changes
-        id: check-darwin-arm64
-        run: |
-          git config --global --add safe.directory ${{ github.workspace }}
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.force_rebuild }}" == "true" ]]; then
-            CHANGED=true
-          else
-            CHANGED=false
-            git diff --name-only HEAD^ HEAD | grep -q "ffmpeg-darwin-arm64.dockerfile" && CHANGED=true
-          fi
-          echo "changed=$CHANGED" >> $GITHUB_OUTPUT
-
   release:
     runs-on: ubuntu-latest
     needs: [check-changes]
     steps:
-      
-      - name: Checkout Code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
       - name: Download build artifacts
         uses: dawidd6/action-download-artifact@v8
         with:
@@ -173,7 +63,7 @@ jobs:
           path: downloads
           run_id: ${{ github.event.workflow_run.id }}
           workflow_conclusion: success
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}  
 
       - name: Create Release
         id: create-release

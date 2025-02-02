@@ -3,7 +3,7 @@ FROM nomercyentertainment/ffmpeg-base AS windows
 
 LABEL maintainer="Phillippe Pelzer"
 LABEL version="1.0.0"
-LABEL description="FFmpeg for Windows"
+LABEL description="FFmpeg for Windows x86_64"
 
 ENV DEBIAN_FRONTEND=noninteractive \
     NVIDIA_VISIBLE_DEVICES=all \
@@ -570,40 +570,77 @@ RUN cd /build/libvpl \
 
 # amf
 RUN cd /build/amf \
-    && mv amf/public/include ${PREFIX}/include/AMF
+    && mv amf/public/include ${PREFIX}/include/AMF \
+    && rm -rf /build/amf
 
-# # leptonica
-# RUN cd /build/leptonica \
-#     && ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
-#     --disable-programs \
-#     --without-giflib \
-#     --without-jpeg \
-#     --host=${CROSS_PREFIX%-} \
-#     && ./configure --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
-#     --disable-programs \
-#     --without-giflib \
-#     --without-jpeg \
-#     --host=${CROSS_PREFIX%-} \
-#     && make -j$(nproc) && make install \
-#     && cp ${PREFIX}/lib/pkgconfig/libsharpyuv.pc ${PREFIX}/lib/pkgconfig/sharpyuv.pc \
-#     && rm -rf /build/leptonica && cd /build 
+# Build libjpeg-turbo
+RUN wget https://github.com/libjpeg-turbo/libjpeg-turbo/archive/refs/tags/3.0.2.tar.gz -O libjpeg-turbo-3.0.2.tar.gz \
+    && tar xzf libjpeg-turbo-3.0.2.tar.gz \
+    && cd libjpeg-turbo-3.0.2 \
+    && mkdir build && cd build \
+    && cmake -S .. -B . \
+    ${CMAKE_COMMON_ARG} \
+    && make -j$(nproc) && make install \
+    && rm -rf /build/libjpeg-turbo-3.0.2
 
-# # libtesseract (tesseract-ocr)
-# RUN  cd /build/libtesseract \
-#     && mkdir build && cd build \
-#     && cmake -S .. -B . \
-#     ${CMAKE_COMMON_ARG} \
-#     -DBUILD_DOCS=OFF \
-#     -DBUILD_EXAMPLES=OFF \
-#     -DBUILD_TESTS=OFF \
-#     -DUSE_SYSTEM_ICU=ON \
-#     -DSW_BUILD=OFF -DENABLE_LTO=ON -DBUILD_TRAINING_TOOLS=OFF -DFAST_FLOAT=ON -DGRAPHICS_DISABLED=OFF -DOPENMP_BUILD=OFF \
-#     -DCMAKE_PREFIX_PATH=${PREFIX} \
-#     -DCMAKE_INSTALL_PREFIX=${PREFIX} \
-#     && make -j$(nproc) && make install \
-#     && echo "Libs.private: -lstdc++ " >> ${PREFIX}/lib/pkgconfig/tesseract.pc \
-#     && cp ${PREFIX}/lib/pkgconfig/tesseract.pc ${PREFIX}/lib/pkgconfig/libtesseract.pc \
-#     && rm -rf /build/libtesseract
+# Build libtiff
+RUN wget https://download.osgeo.org/libtiff/tiff-4.6.0.tar.gz \
+    && tar xzf tiff-4.6.0.tar.gz \
+    && cd tiff-4.6.0 \
+    && ./configure --host=${CROSS_PREFIX%-} --prefix=${PREFIX} \
+    --enable-static --disable-shared \
+    --host=${CROSS_PREFIX%-} \
+    && make -j$(nproc) && make install \
+    && sed -i 's/^Libs: \(.*\)/Libs: \1 -lz/' ${PREFIX}/lib/pkgconfig/libtiff-4.pc \
+    && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/libtiff-4.pc && \
+    rm -rf /build/tiff-4.6.0
+
+# leptonica
+RUN cd /build/leptonica \
+    && ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared \
+    --disable-programs \
+    --without-giflib \
+    --without-jpeg \
+    --without-libopenjpeg \
+    --without-libwebp \
+    --without-libtiff \
+    --host=${CROSS_PREFIX%-} \
+    && ./configure --prefix=${PREFIX} --enable-static --disable-shared \
+    --disable-programs \
+    --without-giflib \
+    --without-jpeg \
+    --without-libopenjpeg \
+    --without-libwebp \
+    --without-libtiff \
+    --host=${CROSS_PREFIX%-} \
+    && make -j$(nproc) && make install \
+    && sed -i 's/^Libs: \(.*\)/Libs: \1 -lws2_32/' ${PREFIX}/lib/pkgconfig/lept.pc \
+    && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/lept.pc \
+    && cp ${PREFIX}/lib/pkgconfig/lept.pc ${PREFIX}/lib/pkgconfig/liblept.pc \
+    && rm -rf /build/leptonica && cd /build \
+    \
+    # libtesseract (tesseract-ocr)
+    && cd /build/libtesseract \
+    && ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared \
+    --disable-doc \
+    --without-archive \
+    --disable-openmp \
+    --without-curl \
+    --with-extra-includes=${PREFIX}/include \
+    --with-extra-libraries=${PREFIX}/lib \
+    --host=${CROSS_PREFIX%-} \
+    && ./configure --prefix=${PREFIX} --enable-static --disable-shared \
+    --disable-doc \
+    --without-archive \
+    --disable-openmp \
+    --without-curl \
+    --with-extra-includes=${PREFIX}/include \
+    --with-extra-libraries=${PREFIX}/lib \
+    --host=${CROSS_PREFIX%-} \
+    && make -j$(nproc) && make install \
+    && sed -i 's/^Libs: \(.*\)/Libs: \1 -lws2_32/' ${PREFIX}/lib/pkgconfig/tesseract.pc \
+    && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/tesseract.pc \
+    && cp ${PREFIX}/lib/pkgconfig/tesseract.pc ${PREFIX}/lib/pkgconfig/libtesseract.pc 
 
 # libsamplerate
 RUN git clone --branch 0.2.2 https://github.com/libsndfile/libsamplerate.git /build/libsamplerate \
@@ -648,7 +685,7 @@ RUN cd /build/ffmpeg \
     --enable-libfreetype \
     --enable-libfribidi \
     --enable-fontconfig \
-    # --enable-libtesseract \
+    --enable-libtesseract \
     # --enable-libdrm \
     --enable-libvorbis \
     --enable-libvmaf \
@@ -687,17 +724,9 @@ RUN cd /build/ffmpeg \
     --enable-cuda-nvcc \
     --enable-cuvid \
     --enable-sdl2 \
-    --enable-decoder=h264_cuvid \
-    --enable-decoder=hevc_cuvid \
-    --enable-decoder=mjpeg_cuvid \
-    --enable-decoder=mpeg1_cuvid \
-    --enable-decoder=mpeg2_cuvid \
-    --enable-decoder=mpeg4_cuvid \
-    --enable-decoder=vc1_cuvid \
-    --enable-decoder=vp8_cuvid \
-    --enable-decoder=vp9_cuvid \
-    --enable-encoder=h264_nvenc \
     --enable-runtime-cpudetect \
+    --cc=${CC} \
+    --cxx=${CXX} \
     --extra-version="NoMercy-MediaServer" \
     --extra-cflags="-static -static-libgcc -static-libstdc++ -I${PREFIX}/include" \
     --extra-ldflags="-static -static-libgcc -static-libstdc++ -L${PREFIX}/lib" \

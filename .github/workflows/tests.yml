@@ -71,6 +71,7 @@ jobs:
           
       - name: Run Tests
         id: tests
+        shell: bash
         run: |
           TOTAL_TESTS=0
           PASSED_TESTS=0
@@ -78,6 +79,10 @@ jobs:
 
           mkdir -p test_files
           dd if=/dev/urandom of=test_files/test.raw bs=1M count=1
+
+          check_command() {
+              command -v $1 >/dev/null 2>&1 || { echo "Required command $1 not found. Aborting."; exit 1; }
+          }
 
           run_test() {
             local name=$1
@@ -95,6 +100,11 @@ jobs:
               echo "❌ FAILED"
             fi
           }
+
+          # Check for required commands
+          check_command ./ffmpeg
+          check_command ./ffprobe
+          # check_command ./ffplay
 
           # Basic tests
           run_test "ffmpeg version" "-version" "7.1"
@@ -121,6 +131,7 @@ jobs:
 
           # Hardware acceleration
           run_test "NVENC" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v h264_nvenc test_files/test_nvenc.mp4" "encoder.*h264_nvenc"
+          run_test "HEVC" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v h264_hevc test_files/test_hevc.mp4" "encoder.*h264_hevc"
           run_test "VAAPI" "-y -vaapi_device /dev/dri/renderD128 -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -vf 'format=nv12,hwupload' -c:v h264_vaapi test_files/test_vaapi.mp4 2>&1" "vaapi"
           run_test "VPL" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v h264_vpl test_files/test_vpl.mp4" "encoder.*h264_vpl"
           run_test "AMF" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v h264_amf test_files/test_amf.mp4" "encoder.*h264_amf"
@@ -147,15 +158,12 @@ jobs:
           echo "Failed tests: $FAILED_TESTS"
           echo "----------------------------------------"
 
-          echo "passed=$PASSED_TESTS" >> $GITHUB_OUTPUT
-          echo "failed=$FAILED_TESTS" >> $GITHUB_OUTPUT
-          echo "----------------------------------------"
-
           # Exit with failure if any tests failed
           if [ "$FAILED_TESTS" -gt 0 ]; then
             printf "Some tests failed." >&2
             exit 1
           fi
+          exit 0
 
   platform-tests-windows:
     needs: check-release
@@ -202,6 +210,16 @@ jobs:
           (New-Object Random).NextBytes($randomBytes)
           [System.IO.File]::WriteAllBytes("test_files/test.raw", $randomBytes)
 
+          function check_command {
+              param (
+                  [string]$Command
+              )
+              if (-not (Test-Path $Command -PathType Leaf)) {
+                  Write-Host "Required command $Command not found. Aborting." -ForegroundColor Red
+                  exit 1
+              }
+          }
+
           function run_test {
             param (
               [string]$Name,
@@ -226,6 +244,11 @@ jobs:
               $script:FAILED_TESTS++
             }
           }
+
+          # Check for required commands
+          check_command ./ffmpeg
+          check_command ./ffprobe
+          # check_command ./ffplay
 
           # Basic tests
           run_test "ffmpeg version" "-version" "7.1"
@@ -278,12 +301,9 @@ jobs:
           Write-Host "Failed tests: $script:FAILED_TESTS"
           Write-Host "----------------------------------------"
 
-          echo "passed=$script$PASSED_TESTS" >> $GITHUB_OUTPUT
-          echo "failed=$script$FAILED_TESTS" >> $GITHUB_OUTPUT
-          echo "----------------------------------------"
-
           # Exit with failure if any tests failed
           if ($script:FAILED_TESTS -gt 0) {
             throw "Some tests failed."
             exit 1
           }
+          exit 0

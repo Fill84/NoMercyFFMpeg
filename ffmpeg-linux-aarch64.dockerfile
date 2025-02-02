@@ -3,7 +3,7 @@ FROM nomercyentertainment/ffmpeg-base AS aarch64
 
 LABEL maintainer="Phillippe Pelzer"
 LABEL version="1.0.0"
-LABEL description="FFmpeg for Aarch64"
+LABEL description="FFmpeg for Linux Aarch64"
 
 ENV DEBIAN_FRONTEND=noninteractive \
     NVIDIA_VISIBLE_DEVICES=all \
@@ -659,6 +659,27 @@ RUN cd /build/libvpl \
 RUN cd /build/amf \
     && mv amf/public/include ${PREFIX}/include/AMF
 
+# Build libjpeg-turbo
+RUN wget https://github.com/libjpeg-turbo/libjpeg-turbo/archive/refs/tags/3.0.2.tar.gz -O libjpeg-turbo-3.0.2.tar.gz \
+    && tar xzf libjpeg-turbo-3.0.2.tar.gz \
+    && cd libjpeg-turbo-3.0.2 \
+    && mkdir build && cd build \
+    && cmake -S .. -B . \
+    ${CMAKE_COMMON_ARG} \
+    && make -j$(nproc) && make install \
+    && rm -rf /build/libjpeg-turbo-3.0.2
+
+# Build libtiff
+RUN wget https://download.osgeo.org/libtiff/tiff-4.6.0.tar.gz \
+    && tar xzf tiff-4.6.0.tar.gz \
+    && cd tiff-4.6.0 \
+    && ./configure --host=${CROSS_PREFIX%-} --prefix=${PREFIX} \
+    --enable-static --disable-shared \
+    --host=${CROSS_PREFIX%-} \
+    && make -j$(nproc) && make install \
+    && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/libtiff-4.pc && \
+    rm -rf /build/tiff-4.6.0
+
 # leptonica
 RUN cd /build/leptonica \
     && cp ${PREFIX}/lib/pkgconfig/libsharpyuv.pc ${PREFIX}/lib/pkgconfig/sharpyuv.pc \
@@ -666,14 +687,21 @@ RUN cd /build/leptonica \
     --disable-programs \
     --without-giflib \
     --without-jpeg \
+    --without-libopenjpeg \
+    --without-libwebp \
+    --without-libtiff \
     --host=${CROSS_PREFIX%-} \
     && ./configure --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
     --disable-programs \
     --without-giflib \
     --without-jpeg \
+    --without-libopenjpeg \
+    --without-libwebp \
+    --without-libtiff \
     --host=${CROSS_PREFIX%-} \
     && make -j$(nproc) && make install \
-    && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/liblept.pc \
+    && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/lept.pc \
+    && cp ${PREFIX}/lib/pkgconfig/lept.pc ${PREFIX}/lib/pkgconfig/liblept.pc \
     && rm -rf /build/leptonica \
     \
     # libtesseract (tesseract-ocr)
@@ -788,21 +816,11 @@ RUN cd /build/ffmpeg \
     --enable-cuda-nvcc \
     --enable-cuvid \
     --enable-sdl2 \
-    --enable-decoder=h264_cuvid \
-    --enable-decoder=hevc_cuvid \
-    --enable-decoder=mjpeg_cuvid \
-    --enable-decoder=mpeg1_cuvid \
-    --enable-decoder=mpeg2_cuvid \
-    --enable-decoder=mpeg4_cuvid \
-    --enable-decoder=vc1_cuvid \
-    --enable-decoder=vp8_cuvid \
-    --enable-decoder=vp9_cuvid \
-    --enable-encoder=h264_nvenc \
     --enable-runtime-cpudetect \
     --extra-version="NoMercy-MediaServer" \
     --extra-cflags="-static -static-libgcc -static-libstdc++ -I${PREFIX}/include" \
     --extra-ldflags="-static -static-libgcc -static-libstdc++ -L${PREFIX}/lib" \
-    --extra-libs="-lpthread -lm -lsharpyuv" \
+    --extra-libs="-lpthread -lm" \
     || (cat ffbuild/config.log ; false) && \
     make -j$(nproc) && make install
 
