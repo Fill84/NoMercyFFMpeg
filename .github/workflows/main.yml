@@ -270,7 +270,6 @@ jobs:
           cache-from: type=registry,ref=nomercyentertainment/ffmpeg-linux-aarch64:buildcache
           cache-to: type=registry,ref=nomercyentertainment/ffmpeg-linux-aarch64:buildcache,mode=max
 
-
   build-windows-x86_64:
     needs: [check-changes, build-base]
     if: needs.check-changes.outputs.windows-x86_64-changed || needs.check-changes.outputs.base-changed || needs.check-changes.outputs.workflow-changed || github.event.inputs.force_rebuild
@@ -308,7 +307,6 @@ jobs:
           tags: nomercyentertainment/ffmpeg-windows-x86_64:latest
           cache-from: type=registry,ref=nomercyentertainment/ffmpeg-windows-x86_64:buildcache
           cache-to: type=registry,ref=nomercyentertainment/ffmpeg-windows-x86_64:buildcache,mode=max
-
 
   # build-windows-arch64:
     # needs: [check-changes, build-base]
@@ -348,7 +346,6 @@ jobs:
     #       cache-from: type=registry,ref=nomercyentertainment/ffmpeg-windows-arch64:buildcache
     #       cache-to: type=registry,ref=nomercyentertainment/ffmpeg-windows-arch64:buildcache,mode=max
 
-
   build-darwin-x86_64:
     needs: [check-changes, build-base]
     if: needs.check-changes.outputs.darwin-x86_64-changed || needs.check-changes.outputs.base-changed || needs.check-changes.outputs.workflow-changed || github.event.inputs.force_rebuild
@@ -386,7 +383,6 @@ jobs:
           tags: nomercyentertainment/ffmpeg-darwin-x86_64:latest
           cache-from: type=registry,ref=nomercyentertainment/ffmpeg-darwin-x86_64:buildcache
           cache-to: type=registry,ref=nomercyentertainment/ffmpeg-darwin-x86_64:buildcache,mode=max
-
 
   build-darwin-arm64:
     needs: [check-changes, build-base]
@@ -426,7 +422,6 @@ jobs:
           cache-from: type=registry,ref=nomercyentertainment/ffmpeg-darwin-arm64:buildcache
           cache-to: type=registry,ref=nomercyentertainment/ffmpeg-darwin-arm64:buildcache,mode=max
 
-
   export-artifacts:
     runs-on: ubuntu-latest
     needs: [build-linux-x86_64, build-linux-aarch64, build-windows-x86_64, build-darwin-x86_64, build-darwin-arm64, check-changes] #, build-windows-arm64
@@ -444,7 +439,7 @@ jobs:
           mkdir -p downloads/linux-x86_64
           docker pull nomercyentertainment/ffmpeg-linux-x86_64:latest
           docker create --name linux-x86_64-container nomercyentertainment/ffmpeg-linux-x86_64:latest
-          docker cp linux-x86_64-container:/build/ffmpeg-linux-x86_64-7.1.tar.gz downloads/ffmpeg-linux-x86_64-7.1.tar.gz || echo "File not found in container."
+          docker cp linux-x86_64-container:/build/ffmpeg-7.1-linux-x86_64.tar.gz downloads/ffmpeg-7.1-linux-x86_64.tar.gz || echo "File not found in container."
           # docker cp linux-x86_64-container:/build/linux-x86_64 downloads/linux-x86_64 || echo "Directory not found in container."
           docker rm linux-x86_64-container
           
@@ -453,7 +448,7 @@ jobs:
           mkdir -p downloads/aarch64
           docker pull nomercyentertainment/ffmpeg-linux-aarch64:latest
           docker create --name linux-aarch64-container nomercyentertainment/ffmpeg-linux-aarch64:latest
-          docker cp linux-aarch64-container:/build/ffmpeg-linux-aarch64-7.1.tar.gz downloads/ffmpeg-linux-aarch64-7.1.tar.gz || echo "File not found in container."
+          docker cp linux-aarch64-container:/build/ffmpeg-7.1-linux-aarch64.tar.gz downloads/ffmpeg-7.1-linux-aarch64.tar.gz || echo "File not found in container."
           # docker cp linux-aarch64-container:/build/aarch64 downloads/aarch64 || echo "Directory not found in container."
           docker rm linux-aarch64-container
 
@@ -462,7 +457,7 @@ jobs:
           mkdir -p downloads/windows-x86_64
           docker pull nomercyentertainment/ffmpeg-windows-x86_64:latest
           docker create --name windows-x86_64-container nomercyentertainment/ffmpeg-windows-x86_64:latest
-          docker cp windows-x86_64-container:/build/ffmpeg-windows-x86_64-7.1.tar.gz downloads/ffmpeg-windows-x86_64-7.1.tar.gz || echo "File not found in container."
+          docker cp windows-x86_64-container:/build/ffmpeg-7.1-windows-x86_64.tar.gz downloads/ffmpeg-7.1-windows-x86_64.tar.gz || echo "File not found in container."
           # docker cp windows-x86_64-container:/build/windows downloads/windows-x86_64 || echo "Directory not found in container."
           docker rm windows-x86_64-container
 
@@ -471,7 +466,7 @@ jobs:
         #   mkdir -p downloads/windows-arm64
         #   docker pull nomercyentertainment/ffmpeg-windows-arm64:latest
         #   docker create --name windows-arm64-container nomercyentertainment/ffmpeg-windows-arm64:latest
-        #   docker cp windows-arm64-container:/build/ffmpeg-windows-arm64-7.1.tar.gz downloads/ffmpeg-windows-arm64-7.1.tar.gz || echo "File not found in container."
+        #   docker cp windows-arm64-container:/build/ffmpeg-7.1-windows-arm64.tar.gz downloads/ffmpeg-7.1-windows-arm64.tar.gz || echo "File not found in container."
         #   docker cp windows-arm64-container:/build/windows downloads/windows-arm64 || echo "Directory not found in container."
         #   docker rm windows-arm64-container
 
@@ -480,7 +475,7 @@ jobs:
           mkdir -p downloads/darwin/x86_64
           docker pull nomercyentertainment/ffmpeg-darwin-x86_64:latest
           docker create --name darwin-x86_64-container nomercyentertainment/ffmpeg-darwin-x86_64:latest
-          docker cp darwin-x86_64-container:/build/ffmpeg-darwin-x86_64-7.1.tar.gz downloads/ffmpeg-darwin-x86_64-7.1.tar.gz || echo "File not found in container."
+          docker cp darwin-x86_64-container:/build/ffmpeg-7.1-darwin-x86_64.tar.gz downloads/ffmpeg-7.1-darwin-x86_64.tar.gz || echo "File not found in container."
           # docker cp darwin-x86_64-container:/build/darwin/x86_64 downloads/darwin/x86_64 || echo "Directory not found in container."
           docker rm darwin-x86_64-container
 
@@ -489,12 +484,12 @@ jobs:
           mkdir -p downloads/darwin/arm64
           docker pull nomercyentertainment/ffmpeg-darwin-arm64:latest
           docker create --name darwin-arm64-container nomercyentertainment/ffmpeg-darwin-arm64:latest
-          docker cp darwin-arm64-container:/build/ffmpeg-darwin-arm64-7.1.tar.gz downloads/ffmpeg-darwin-arm64-7.1.tar.gz || echo "File not found in container."
+          docker cp darwin-arm64-container:/build/ffmpeg-7.1-darwin-arm64.tar.gz downloads/ffmpeg-7.1-darwin-arm64.tar.gz || echo "File not found in container."
           # docker cp darwin-arm64-container:/build/darwin/arm64 downloads/darwin/arm64 || echo "Directory not found in container."
           docker rm darwin-arm64-container
 
       - name: Cache artifacts 
-        id: cache-downloads-save
+        id: cached-downloads
         uses: actions/cache/save@v4
         with:
           path: downloads

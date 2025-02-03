@@ -47,7 +47,7 @@ jobs:
     continue-on-error: true
     steps:
       - name: Restore cache artifacts 
-        id: cache-downloads-restore
+        id: cached-downloads
         uses: actions/cache/restore@v4
         with:
           path: downloads
@@ -57,14 +57,16 @@ jobs:
         shell: bash
         run: |
           if [ "${{ matrix.os }}" == "ubuntu-latest" ] && [ "${{ matrix.arch }}" == "x86_64" ]; then
-            FILE_NAME="downloads/ffmpeg-linux-${{ matrix.arch }}-7.1.tar.gz"
+            FILE_NAME="downloads/ffmpeg-7.1-linux-${{ matrix.arch }}.tar.gz"
           elif [ "${{ matrix.os }}" == "ubuntu-latest" ] && [ "${{ matrix.arch }}" == "arm64" ]; then
-            FILE_NAME="downloads/ffmpeg-linux-aarch64-7.1.tar.gz"
+            FILE_NAME="downloads/ffmpeg-7.1-linux-aarch64.tar.gz"
           elif [ "${{ matrix.os }}" == "macos-latest" ]; then
-            FILE_NAME="downloads/ffmpeg-darwin-${{ matrix.arch }}-7.1.tar.gz"
+            FILE_NAME="downloads/ffmpeg-7.1-darwin-${{ matrix.arch }}.tar.gz"
           fi
 
           tar -xvf $FILE_NAME
+
+          chmod +x ${{ github.workspace }}/ffmpeg ${{ github.workspace }}/ffprobe
           
       - name: Run Tests
         id: tests
@@ -183,7 +185,7 @@ jobs:
       - name: Unpack ffmpeg binary
         shell: bash
         run: |
-          FILE_NAME="downloads/ffmpeg-windows-${{ matrix.arch }}-7.1.tar.gz"
+          FILE_NAME="downloads/ffmpeg-7.1-windows-${{ matrix.arch }}.tar.gz"
           tar -xvf $FILE_NAME
 
       - name: Run Tests
@@ -240,9 +242,9 @@ jobs:
           }
 
           # Check for required commands
-          check_command ./ffmpeg
-          check_command ./ffprobe
-          # check_command ./ffplay
+          check_command ./ffmpeg.exe
+          check_command ./ffprobe.exe
+          # check_command ./ffplay.exe
 
           # Basic tests
           run_test "ffmpeg version" "-version" "7.1"

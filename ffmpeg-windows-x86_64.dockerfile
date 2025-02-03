@@ -734,26 +734,26 @@ RUN cd /build/ffmpeg \
     || (cat ffbuild/config.log ; false) && \
     make -j$(nproc) && make install
 
-RUN mkdir -p /ffmpeg/windows \
-    && cp ${PREFIX}/bin/ffplay.exe /ffmpeg/windows \
-    && cp ${PREFIX}/bin/ffmpeg.exe /ffmpeg/windows \
-    && cp ${PREFIX}/bin/ffprobe.exe /ffmpeg/windows
+RUN mkdir -p /ffmpeg/windows/${ARCH} \
+    && cp ${PREFIX}/bin/ffplay.exe /ffmpeg/windows/${ARCH} \
+    && cp ${PREFIX}/bin/ffmpeg.exe /ffmpeg/windows/${ARCH} \
+    && cp ${PREFIX}/bin/ffprobe.exe /ffmpeg/windows/${ARCH}
 
 # cleanup
 RUN rm -rf ${PREFIX} /build
 
-RUN mkdir -p /build/windows /output \
-    && tar -czf /build/ffmpeg-windows-x86_64-7.1.tar.gz \
-    -C /ffmpeg/windows . \
-    && cp /build/ffmpeg-windows-x86_64-7.1.tar.gz /output
+RUN mkdir -p /output \
+    && tar -czf /build/ffmpeg-7.1-windows-${ARCH}.tar.gz \
+    -C /ffmpeg/windows/${ARCH} . \
+    && cp /build/ffmpeg-7.1-windows-${ARCH}.tar.gz /output
 
 RUN apt-get autoremove -y && apt-get autoclean -y && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-RUN cp /ffmpeg/windows /build/windows -r
+RUN cp /ffmpeg/windows/${ARCH} /build/windows -r
 
 FROM debian AS final
 
 COPY --from=windows /build /build
 
-CMD ["cp", "/build/ffmpeg-windows-x86_64-7.1.tar.gz", "/output"]
+CMD ["cp", "/build/ffmpeg-7.1-windows-x86_64.tar.gz", "/output"]

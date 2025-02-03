@@ -56,7 +56,7 @@ jobs:
     needs: [check-changes]
     steps:
       - name: Restore cache artifacts 
-        id: cache-downloads-restore
+        id: cached-downloads
         uses: actions/cache/restore@v4
         with:
           path: downloads
@@ -79,8 +79,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create-release.outputs.upload_url }}
-          asset_path: downloads/ffmpeg-linux-x86_64-7.1.tar.gz
-          asset_name: ffmpeg-linux-x86_64-7.1-${{ needs.check-changes.outputs.version }}.tar.gz
+          asset_path: downloads/ffmpeg-7.1-linux-x86_64.tar.gz
+          asset_name: ffmpeg-7.1-linux-x86_64-${{ needs.check-changes.outputs.version }}.tar.gz
           asset_content_type: application/gzip
 
       - name: Upload Linux Aarch64 Release Asset
@@ -89,8 +89,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create-release.outputs.upload_url }}
-          asset_path: downloads/ffmpeg-linux-aarch64-7.1.tar.gz
-          asset_name: ffmpeg-linux-aarch64-7.1-${{ needs.check-changes.outputs.version }}.tar.gz
+          asset_path: downloads/ffmpeg-7.1-linux-aarch64.tar.gz
+          asset_name: ffmpeg-7.1-linux-aarch64-${{ needs.check-changes.outputs.version }}.tar.gz
           asset_content_type: application/gzip
 
       - name: Upload Windows x86_64 Release Asset
@@ -99,8 +99,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create-release.outputs.upload_url }}
-          asset_path: downloads/ffmpeg-windows-x86_64-7.1.tar.gz
-          asset_name: ffmpeg-windows-x86_64-7.1-${{ needs.check-changes.outputs.version }}.tar.gz
+          asset_path: downloads/ffmpeg-7.1-windows-x86_64.tar.gz
+          asset_name: ffmpeg-7.1-windows-x86_64-${{ needs.check-changes.outputs.version }}.tar.gz
           asset_content_type: application/gzip
 
       # - name: Upload Windows aram64 Release Asset
@@ -109,8 +109,8 @@ jobs:
         #   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         # with:
         #   upload_url: ${{ steps.create-release.outputs.upload_url }}
-        #   asset_path: downloads/ffmpeg-windows-aram64-7.1.tar.gz
-        #   asset_name: ffmpeg-windows-aram64-7.1-${{ needs.check-changes.outputs.version }}.tar.gz
+        #   asset_path: downloads/ffmpeg-7.1-windows-aram64.tar.gz
+        #   asset_name: ffmpeg-7.1-windows-aram64-${{ needs.check-changes.outputs.version }}.tar.gz
         #   asset_content_type: application/gzip
 
       - name: Upload Darwin x86_64 Release Asset
@@ -119,8 +119,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create-release.outputs.upload_url }}
-          asset_path: downloads/ffmpeg-darwin-x86_64-7.1.tar.gz
-          asset_name: ffmpeg-darwin-x86_64-7.1-${{ needs.check-changes.outputs.version }}.tar.gz
+          asset_path: downloads/ffmpeg-7.1-darwin-x86_64.tar.gz
+          asset_name: ffmpeg-7.1-darwin-x86_64-${{ needs.check-changes.outputs.version }}.tar.gz
           asset_content_type: application/gzip
 
       - name: Upload Darwin arm64 Release Asset
@@ -129,6 +129,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create-release.outputs.upload_url }}
-          asset_path: downloads/ffmpeg-darwin-arm64-7.1.tar.gz
-          asset_name: ffmpeg-darwin-arm64-7.1-${{ needs.check-changes.outputs.version }}.tar.gz
+          asset_path: downloads/ffmpeg-7.1-darwin-arm64.tar.gz
+          asset_name: ffmpeg-7.1-darwin-arm64-${{ needs.check-changes.outputs.version }}.tar.gz
           asset_content_type: application/gzip

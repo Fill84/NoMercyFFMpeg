@@ -778,18 +778,18 @@ RUN mkdir -p /ffmpeg/darwin/${ARCH} /output \
 # cleanup
 RUN rm -rf ${PREFIX} /build
 
-RUN mkdir -p /build/darwin /output \
-    && tar -czf /build/ffmpeg-darwin-${ARCH}-7.1.tar.gz \
+RUN mkdir -p /output \
+    && tar -czf /build/ffmpeg-7.1-darwin-${ARCH}.tar.gz \
     -C /ffmpeg/darwin/${ARCH} . \
-    && cp /build/ffmpeg-darwin-${ARCH}-7.1.tar.gz /output
+    && cp /build/ffmpeg-7.1-darwin-${ARCH}.tar.gz /output
 
 RUN apt-get autoremove -y && apt-get autoclean -y && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-RUN cp /ffmpeg/darwin /build/darwin -r
+RUN cp /ffmpeg/darwin/${ARCH} /build/darwin -r
 
 FROM debian AS final
 
 COPY --from=darwin /build /build
 
-CMD ["cp", "/build/ffmpeg-darwin-arm64-7.1.tar.gz", "/output"]
+CMD ["cp", "/build/ffmpeg-7.1-darwin-arm64.tar.gz", "/output"]

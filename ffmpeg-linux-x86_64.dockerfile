@@ -900,26 +900,26 @@ RUN cd /build/ffmpeg \
     make -j$(nproc) && make install \
     && rm -rf /build/ffmpeg
 
-RUN mkdir -p /ffmpeg/linux \
-    && cp ${PREFIX}/bin/ffplay /ffmpeg/linux \
-    && cp ${PREFIX}/bin/ffmpeg /ffmpeg/linux \
-    && cp ${PREFIX}/bin/ffprobe /ffmpeg/linux
+RUN mkdir -p /ffmpeg/linux/${ARCH} \
+    && cp ${PREFIX}/bin/ffplay /ffmpeg/linux/${ARCH} \
+    && cp ${PREFIX}/bin/ffmpeg /ffmpeg/linux/${ARCH} \
+    && cp ${PREFIX}/bin/ffprobe /ffmpeg/linux/${ARCH}
 
 # cleanup
 RUN rm -rf ${PREFIX} /build
 
-RUN mkdir -p /build/linux /output \
-    && tar -czf /build/ffmpeg-linux-x86_64-7.1.tar.gz \
-    -C /ffmpeg/linux . \
-    && cp /build/ffmpeg-linux-x86_64-7.1.tar.gz /output
+RUN mkdir -p /output \
+    && tar -czf /build/ffmpeg-7.1-linux-${ARCH}.tar.gz \
+    -C /ffmpeg/linux/${ARCH} . \
+    && cp /build/ffmpeg-7.1-linux-${ARCH}.tar.gz /output
 
 RUN apt-get autoremove -y && apt-get autoclean -y && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-RUN cp /ffmpeg/linux /build/linux -r
+RUN cp /ffmpeg/linux/${ARCH} /build/linux -r
 
 FROM debian AS final
 
 COPY --from=linux /build /build
 
-CMD ["cp", "/build/ffmpeg-linux-x86_64-7.1.tar.gz", "/output"]
+CMD ["cp", "/build/ffmpeg-7.1-linux-x86_64.tar.gz", "/output"]

@@ -824,23 +824,23 @@ RUN cd /build/ffmpeg \
     || (cat ffbuild/config.log ; false) && \
     make -j$(nproc) && make install
 
-RUN mkdir -p /ffmpeg/aarch64 \
-    && cp ${PREFIX}/bin/ffplay /ffmpeg/aarch64 \
-    && cp ${PREFIX}/bin/ffmpeg /ffmpeg/aarch64 \
-    && cp ${PREFIX}/bin/ffprobe /ffmpeg/aarch64
+RUN mkdir -p /ffmpeg/linux/${ARCH} \
+    && cp ${PREFIX}/bin/ffplay /ffmpeg/linux/${ARCH} \
+    && cp ${PREFIX}/bin/ffmpeg /ffmpeg/linux/${ARCH} \
+    && cp ${PREFIX}/bin/ffprobe /ffmpeg/linux/${ARCH}
 
 # cleanup
 RUN rm -rf ${PREFIX} /build
 
-RUN mkdir -p /build/aarch64 /output \
-    && tar -czf /build/ffmpeg-linux-aarch64-7.1.tar.gz \
-    -C /ffmpeg/aarch64 . \
-    && cp /build/ffmpeg-linux-aarch64-7.1.tar.gz /output
+RUN mkdir -p /output \
+    && tar -czf /build/ffmpeg-7.1-linux-${ARCH}.tar.gz \
+    -C /ffmpeg/linux/${ARCH} . \
+    && cp /build/ffmpeg-7.1-linux-${ARCH}.tar.gz /output
 
 RUN apt-get autoremove -y && apt-get autoclean -y && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-RUN cp /ffmpeg/aarch64 /build/aarch64 -r
+RUN cp /ffmpeg/linux/${ARCH} /build/linux -r
 
 FROM debian AS final
 
