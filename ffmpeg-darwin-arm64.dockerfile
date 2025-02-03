@@ -778,7 +778,7 @@ RUN mkdir -p /ffmpeg/darwin/${ARCH} /output \
 # cleanup
 RUN rm -rf ${PREFIX} /build
 
-RUN mkdir -p /output \
+RUN mkdir -p /build/darwin /output \
     && tar -czf /build/ffmpeg-7.1-darwin-${ARCH}.tar.gz \
     -C /ffmpeg/darwin/${ARCH} . \
     && cp /build/ffmpeg-7.1-darwin-${ARCH}.tar.gz /output

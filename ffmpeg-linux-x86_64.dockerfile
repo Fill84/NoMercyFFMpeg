@@ -908,7 +908,7 @@ RUN mkdir -p /ffmpeg/linux/${ARCH} \
 # cleanup
 RUN rm -rf ${PREFIX} /build
 
-RUN mkdir -p /output \
+RUN mkdir -p /build/linux /output \
     && tar -czf /build/ffmpeg-7.1-linux-${ARCH}.tar.gz \
     -C /ffmpeg/linux/${ARCH} . \
     && cp /build/ffmpeg-7.1-linux-${ARCH}.tar.gz /output

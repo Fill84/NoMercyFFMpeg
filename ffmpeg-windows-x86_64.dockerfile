@@ -742,7 +742,7 @@ RUN mkdir -p /ffmpeg/windows/${ARCH} \
 # cleanup
 RUN rm -rf ${PREFIX} /build
 
-RUN mkdir -p /output \
+RUN mkdir -p /build/windows /output \
     && tar -czf /build/ffmpeg-7.1-windows-${ARCH}.tar.gz \
     -C /ffmpeg/windows/${ARCH} . \
     && cp /build/ffmpeg-7.1-windows-${ARCH}.tar.gz /output
