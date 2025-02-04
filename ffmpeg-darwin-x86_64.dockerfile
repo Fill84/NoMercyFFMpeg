@@ -26,11 +26,7 @@ ENV OSX_FRAMEWORKS=${SDK_PATH}/System/Library/Frameworks
 RUN git clone https://github.com/tpoechtrager/osxcross.git /build/osxcross && cd /build/osxcross \
     && wget -nc https://github.com/joseluisq/macosx-sdks/releases/download/${SDK_VERSION}/MacOSX${SDK_VERSION}.sdk.tar.xz \
     && mv MacOSX${SDK_VERSION}.sdk.tar.xz tarballs/MacOSX${SDK_VERSION}.sdk.tar.xz \
-    && git clone https://github.com/llvm/llvm-project.git /build/llvm-project \
-    && mkdir -p ${SDK_PATH}/usr/include/c++/v1 \
-    && cp -r /build/llvm-project/libcxx/include/* ${SDK_PATH}/usr/include/c++/v1/ \
-    && cp -r /build/llvm-project/libcxxabi/include/* ${SDK_PATH}/usr/include/c++/v1/ \
-    && UNATTENDED=1 SDK_VERSION=${SDK_VERSION} MACOSX_DEPLOYMENT_TARGET=${MACOSX_DEPLOYMENT_TARGET} TARGET_DIR=${PREFIX}/osxcross ./build.sh -Wno-dev
+    && UNATTENDED=1 SDK_VERSION=${SDK_VERSION} OSX_VERSION_MIN=${MACOSX_DEPLOYMENT_TARGET%.0} MACOSX_DEPLOYMENT_TARGET=${MACOSX_DEPLOYMENT_TARGET} TARGET_DIR=${PREFIX}/osxcross ./build.sh
 
 RUN echo "MACOSX_DEPLOYMENT_TARGET=${MACOSX_DEPLOYMENT_TARGET}" > ${PREFIX}/osxcross/bin/cc_target \
     && cp ${PREFIX}/osxcross/bin/cc_target ${SDK_PATH}/usr/bin/cc_target
@@ -170,7 +166,6 @@ ENV CXXFLAGS="${CXXFLAGS} -fno-strict-aliasing"
 # openssl
 RUN cd /build/openssl \
     && ./Configure threads zlib no-shared enable-camellia enable-ec enable-srp --prefix=${PREFIX} darwin64-${ARCH}-cc --libdir=${PREFIX}/lib \
-    --cross-compile-prefix='' \
     && sed -i -e "/^CFLAGS=/s|=.*|=${CFLAGS}|" -e "/^LDFLAGS=/s|=[[:space:]]*$|=${LDFLAGS}|" Makefile \
     && make -j$(nproc) build_sw && make install_sw
 
@@ -457,25 +452,26 @@ RUN cd /build/libtheora \
     && make -j$(nproc) && make install \
     && rm -rf /build/libtheora
 
-# CPUInfo (needed for SVT-AV1)
-RUN git clone https://github.com/pytorch/cpuinfo.git /build/cpuinfo \
-    && cd /build/cpuinfo \
-    && mkdir -p build && cd build \
-    && cmake -S .. -B . \
-    ${CMAKE_COMMON_ARG} \
-    -DCMAKE_SYSTEM_PROCESSOR=${ARCH} -Wno-dev\
-    && make -j$(nproc) && make install \
-    \
-    # libsvtav1
-    && cd /build/libsvtav1 \
+# # CPUInfo (needed for SVT-AV1)
+# RUN git clone https://github.com/pytorch/cpuinfo.git /build/cpuinfo \
+#     && cd /build/cpuinfo \
+#     && mkdir -p build && cd build \
+#     && cmake -S .. -B . \
+#     ${CMAKE_COMMON_ARG} \
+#     -DCMAKE_SYSTEM_PROCESSOR=${ARCH} -Wno-dev\
+#     && make -j$(nproc) && make install \
+#     \
+# libsvtav1
+RUN cd /build/libsvtav1 \
     && mkdir -p build && cd build \
     && cmake -S .. -B . \
     ${CMAKE_COMMON_ARG} \
     -DBUILD_APPS=OFF -DBUILD_EXAMPLES=OFF -DENABLE_AVX512=ON \
     -DCPUINFO_ARCHITECTURE=${ARCH} \
     -DCMAKE_SYSTEM_PROCESSOR=${ARCH} -Wno-dev \
+    -DUSE_EXTERNAL_CPUINFO=OFF \
     && make -j$(nproc) && make install \
-    && echo "Libs.private: -lstdc++ -lcpuinfo" >> ${PREFIX}/lib/pkgconfig/svt-av1.pc \
+    # && echo "Libs.private: -lcpuinfo" >> ${PREFIX}/lib/pkgconfig/svt-av1.pc \
     && rm -rf /build/libsvtav1
 
 # libvpx
@@ -637,8 +633,8 @@ RUN wget https://download.osgeo.org/libtiff/tiff-4.6.0.tar.gz \
     && ./configure --host=${CROSS_PREFIX%-} --prefix=${PREFIX} \
     --enable-static --disable-shared \
     && make -j$(nproc) && make install \
-    && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/libtiff-4.pc && \
-    rm -rf /build/tiff-4.6.0
+    && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/libtiff-4.pc \
+    && rm -rf /build/tiff-4.6.0
 
 # leptonica
 RUN cd /build/leptonica \
@@ -659,7 +655,7 @@ RUN cd /build/leptonica \
     --without-libtiff \
     --host=${CROSS_PREFIX%-} \
     && make -j$(nproc) && make install \
-    && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/lept.pc \
+    && echo "Libs.private: -lstdc++ -lz" >> ${PREFIX}/lib/pkgconfig/lept.pc \
     && cp ${PREFIX}/lib/pkgconfig/lept.pc ${PREFIX}/lib/pkgconfig/liblept.pc \
     && rm -rf /build/leptonica && cd /build \
     \
@@ -694,32 +690,33 @@ RUN cd /build/leptonica \
     && cp ${PREFIX}/lib/pkgconfig/tesseract.pc ${PREFIX}/lib/pkgconfig/libtesseract.pc \
     && rm -rf /build/libtesseract
 
-# # libsamplerate
-# RUN git clone --branch 0.2.2 https://github.com/libsndfile/libsamplerate.git /build/libsamplerate \
-#     && mkdir -p /build/libsamplerate/build && cd /build/libsamplerate/build \
-#     && cmake -S .. -B . \
-#     ${CMAKE_COMMON_ARG} \
-#     -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTING=OFF -DLIBSAMPLERATE_EXAMPLES=OFF -DLIBSAMPLERATE_INSTALL=ON \
-#     && make -j$(nproc) && make install \
-#     && rm -rf /build/libsamplerate && cd /build \
-#     \    
-#     # sdl2
-#     && cd /build/sdl2 \
-#     && mkdir -p build && cd build \
-#     && cmake -GNinja -S .. -B . \
-#     ${CMAKE_COMMON_ARG} \
-#     -DSDL_SHARED=OFF \
-#     -DSDL_STATIC=ON \
-#     -DSDL_STATIC_PIC=ON \
-#     -DSDL_TEST=OFF \
-#     -DSDL_VIDEO=ON \
-#     -DCMAKE_C_STANDARD=17 \
-#     -DCMAKE_C_FLAGS="-std=c17" \
-#     && ninja -j$(nproc) && ninja install \
-#     && sed -ri -e 's/\-Wl,\-\-no\-undefined.*//' -e 's/ \-l\/.+?\.a//g' ${PREFIX}/lib/pkgconfig/sdl2.pc \
-#     && sed -ri -e 's/ -lSDL2//g' -e 's/Libs: /Libs: -lSDL2 /' ${PREFIX}/lib/pkgconfig/sdl2.pc \
-#     && echo 'Requires: samplerate' >> ${PREFIX}/lib/pkgconfig/sdl2.pc \
-#     && rm -rf /build/sdl2 && cd /build
+# libsamplerate
+RUN git clone --branch 0.2.2 https://github.com/libsndfile/libsamplerate.git /build/libsamplerate \
+    && mkdir -p /build/libsamplerate/build && cd /build/libsamplerate/build \
+    && cmake -S .. -B . \
+    ${CMAKE_COMMON_ARG} \
+    -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTING=OFF -DLIBSAMPLERATE_EXAMPLES=OFF -DLIBSAMPLERATE_INSTALL=ON \
+    && make -j$(nproc) && make install \
+    && rm -rf /build/libsamplerate && cd /build \
+    \
+    # sdl2
+    && cd /build/sdl2 \
+    && mkdir -p build && cd build \
+    && cmake -S .. -B . \
+    ${CMAKE_COMMON_ARG} \
+    -DSDL_SHARED=OFF \
+    -DSDL_STATIC=ON \
+    -DSDL_STATIC_PIC=ON \
+    -DSDL_X11=OFF \
+    -DSDL_PULSEAUDIO=OFF \
+    -DSDL_JOYSTICK=OFF \
+    -DSDL_HAPTIC=OFF \
+    -DWITH_SYSROOT=${SDK_PATH} \
+    && make -j$(nproc) && make install \
+    && sed -ri -e 's/\-Wl,\-\-no\-undefined.*//' -e 's/ \-l\/.+?\.a//g' ${PREFIX}/lib/pkgconfig/sdl2.pc \
+    && sed -ri -e 's/ -lSDL2//g' -e 's/Libs: /Libs: -lSDL2 /' ${PREFIX}/lib/pkgconfig/sdl2.pc \
+    && echo 'Requires: samplerate' >> ${PREFIX}/lib/pkgconfig/sdl2.pc \
+    && rm -rf /build/sdl2 && cd /build
 
 # ffmpeg
 RUN cd /build/ffmpeg \
@@ -732,7 +729,7 @@ RUN cd /build/ffmpeg \
     --disable-shared \
     --disable-videotoolbox \
     --enable-cross-compile \
-    # --enable-ffplay \
+    --enable-ffplay \
     --enable-static \
     --enable-gpl \
     --enable-version3 \
@@ -780,7 +777,7 @@ RUN cd /build/ffmpeg \
     # --enable-cuda \
     # --enable-cuda-nvcc \
     # --enable-cuvid \
-    # --enable-sdl2 \
+    --enable-sdl2 \
     --enable-runtime-cpudetect \
     --cc=${CC} \
     --cxx=${CXX} \
@@ -792,7 +789,7 @@ RUN cd /build/ffmpeg \
     make -j$(nproc) && make install
 
 RUN mkdir -p /ffmpeg/darwin/${ARCH} \
-    # && cp ${PREFIX}/bin/ffplay /ffmpeg/darwin/${ARCH} \
+    && cp ${PREFIX}/bin/ffplay /ffmpeg/darwin/${ARCH} \
     && cp ${PREFIX}/bin/ffmpeg /ffmpeg/darwin/${ARCH} \
     && cp ${PREFIX}/bin/ffprobe /ffmpeg/darwin/${ARCH}
 

@@ -677,8 +677,8 @@ RUN wget https://download.osgeo.org/libtiff/tiff-4.6.0.tar.gz \
     --enable-static --disable-shared \
     --host=${CROSS_PREFIX%-} \
     && make -j$(nproc) && make install \
-    && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/libtiff-4.pc && \
-    rm -rf /build/tiff-4.6.0
+    && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/libtiff-4.pc \
+    && rm -rf /build/tiff-4.6.0
 
 # leptonica
 RUN cd /build/leptonica \
@@ -735,7 +735,7 @@ RUN git clone --branch 0.2.2 https://github.com/libsndfile/libsamplerate.git /bu
     -DBUILD_TESTING=OFF -DLIBSAMPLERATE_EXAMPLES=OFF -DLIBSAMPLERATE_INSTALL=ON \
     && make -j$(nproc) && make install \
     && rm -rf /build/libsamplerate && cd /build \
-    \    
+    \
     # sdl2
     && cd /build/sdl2 \
     && mkdir -p build && cd build \
@@ -846,4 +846,4 @@ FROM debian AS final
 
 COPY --from=aarch64 /build /build
 
-CMD ["cp", "/build/ffmpeg-linux-aarch64-7.1.tar.gz", "/output"]
+CMD ["cp", "/build/ffmpeg-7.1-linux-aarch64.tar.gz", "/output"]

@@ -592,8 +592,8 @@ RUN wget https://download.osgeo.org/libtiff/tiff-4.6.0.tar.gz \
     --host=${CROSS_PREFIX%-} \
     && make -j$(nproc) && make install \
     && sed -i 's/^Libs: \(.*\)/Libs: \1 -lz/' ${PREFIX}/lib/pkgconfig/libtiff-4.pc \
-    && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/libtiff-4.pc && \
-    rm -rf /build/tiff-4.6.0
+    && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/libtiff-4.pc \
+    && rm -rf /build/tiff-4.6.0
 
 # leptonica
 RUN cd /build/leptonica \
@@ -650,7 +650,7 @@ RUN git clone --branch 0.2.2 https://github.com/libsndfile/libsamplerate.git /bu
     -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTING=OFF -DLIBSAMPLERATE_EXAMPLES=OFF -DLIBSAMPLERATE_INSTALL=ON \
     && make -j$(nproc) && make install \
     && rm -rf /build/libsamplerate && cd /build \
-    \    
+    \
     # sdl2
     && cd /build/sdl2 \
     && mkdir -p build && cd build \
@@ -659,6 +659,8 @@ RUN git clone --branch 0.2.2 https://github.com/libsndfile/libsamplerate.git /bu
     -DSDL_SHARED=OFF \
     -DSDL_STATIC=ON \
     -DSDL_STATIC_PIC=ON \
+    -DSDL_PULSEAUDIO=OFF \
+    -DSDL_PULSEAUDIO_SHARED=OFF \
     && make -j$(nproc) && make install \
     && sed -ri -e 's/\-Wl,\-\-no\-undefined.*//' -e 's/ \-mwindows//g' -e 's/ \-lSDL2main//g' -e 's/ \-Dmain=SDL_main//g' ${PREFIX}/lib/pkgconfig/sdl2.pc \
     && sed -ri -e 's/ -lSDL2//g' -e 's/Libs: /Libs: -lSDL2 /' ${PREFIX}/lib/pkgconfig/sdl2.pc \

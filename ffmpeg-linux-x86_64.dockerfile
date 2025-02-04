@@ -655,8 +655,8 @@ RUN wget https://download.osgeo.org/libtiff/tiff-4.6.0.tar.gz \
     && ./configure --host=${CROSS_PREFIX%-} --prefix=${PREFIX} \
     --enable-static --disable-shared \
     && make -j$(nproc) && make install \
-    && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/libtiff-4.pc && \
-    rm -rf /build/tiff-4.6.0
+    && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/libtiff-4.pc \
+    && rm -rf /build/tiff-4.6.0
 
 # leptonica
 RUN cd /build/leptonica \

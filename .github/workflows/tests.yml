@@ -25,12 +25,18 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Restore cache artifacts 
-        id: cached-downloads
-        uses: actions/cache/restore@v4
+      # - name: Restore cache artifacts 
+      #   id: cached-downloads
+      #   uses: actions/cache/restore@v4
+      #   with:
+      #     path: downloads
+      #     key: downloads
+      
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
         with:
+          name: downloads
           path: downloads
-          key: downloads
 
       - name: Check release version
         id: version-check

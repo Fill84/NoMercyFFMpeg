@@ -26,11 +26,7 @@ ENV OSX_FRAMEWORKS=${SDK_PATH}/System/Library/Frameworks
 RUN git clone https://github.com/tpoechtrager/osxcross.git /build/osxcross && cd /build/osxcross \
     && wget -nc https://github.com/joseluisq/macosx-sdks/releases/download/${SDK_VERSION}/MacOSX${SDK_VERSION}.sdk.tar.xz \
     && mv MacOSX${SDK_VERSION}.sdk.tar.xz tarballs/MacOSX${SDK_VERSION}.sdk.tar.xz \
-    && git clone https://github.com/llvm/llvm-project.git /build/llvm-project \
-    && mkdir -p ${SDK_PATH}/usr/include/c++/v1 \
-    && cp -r /build/llvm-project/libcxx/include/* ${SDK_PATH}/usr/include/c++/v1/ \
-    && cp -r /build/llvm-project/libcxxabi/include/* ${SDK_PATH}/usr/include/c++/v1/ \
-    && UNATTENDED=1 SDK_VERSION=${SDK_VERSION} MACOSX_DEPLOYMENT_TARGET=${MACOSX_DEPLOYMENT_TARGET} TARGET_DIR=${PREFIX}/osxcross ./build.sh -Wno-dev
+    && UNATTENDED=1 SDK_VERSION=${SDK_VERSION} OSX_VERSION_MIN=${MACOSX_DEPLOYMENT_TARGET%.0} MACOSX_DEPLOYMENT_TARGET=${MACOSX_DEPLOYMENT_TARGET} TARGET_DIR=${PREFIX}/osxcross ./build.sh
 
 RUN echo "MACOSX_DEPLOYMENT_TARGET=${MACOSX_DEPLOYMENT_TARGET}" > ${PREFIX}/osxcross/bin/cc_target \
     && cp ${PREFIX}/osxcross/bin/cc_target ${SDK_PATH}/usr/bin/cc_target
@@ -169,7 +165,6 @@ ENV CXXFLAGS="${CXXFLAGS} -fno-strict-aliasing"
 # openssl
 RUN cd /build/openssl \
     && ./Configure threads zlib no-shared enable-camellia enable-ec enable-srp --prefix=${PREFIX} darwin64-arm64-cc --libdir=${PREFIX}/lib \
-    --cross-compile-prefix='' \
     && sed -i -e "/^CFLAGS=/s|=.*|=${CFLAGS}|" -e "/^LDFLAGS=/s|=[[:space:]]*$|=${LDFLAGS}|" Makefile \
     && make -j$(nproc) build_sw && make install_sw
 
@@ -511,7 +506,6 @@ RUN cp -r /build/x265/build/linux /build/x265/build/windows \
     && ${CROSS_PREFIX}libtool -static -o libx265.a libx265_main.a libx265_main10.a libx265_main12.a \
     && ${RANLIB} libx265.a \
     && make install \
-    && echo "Libs.private: -lstdc++" >> "${PREFIX}/lib/pkgconfig/x265.pc" \
     && rm -rf /build/x265
 
 # xavs2
@@ -628,8 +622,8 @@ RUN wget https://download.osgeo.org/libtiff/tiff-4.6.0.tar.gz \
     && ./configure --host=${CROSS_PREFIX%-} --prefix=${PREFIX} \
     --enable-static --disable-shared \
     && make -j$(nproc) && make install \
-    && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/libtiff-4.pc && \
-    rm -rf /build/tiff-4.6.0    
+    && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/libtiff-4.pc \
+    && rm -rf /build/tiff-4.6.0
 
 # leptonica
 RUN cd /build/leptonica \
@@ -685,7 +679,7 @@ RUN git clone --branch 0.2.2 https://github.com/libsndfile/libsamplerate.git /bu
     -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTING=OFF -DLIBSAMPLERATE_EXAMPLES=OFF -DLIBSAMPLERATE_INSTALL=ON \
     && make -j$(nproc) && make install \
     && rm -rf /build/libsamplerate && cd /build \
-    \    
+    \
     # sdl2
     && cd /build/sdl2 \
     && mkdir -p build && cd build \
@@ -694,6 +688,11 @@ RUN git clone --branch 0.2.2 https://github.com/libsndfile/libsamplerate.git /bu
     -DSDL_SHARED=OFF \
     -DSDL_STATIC=ON \
     -DSDL_STATIC_PIC=ON \
+    -DSDL_X11=OFF \
+    -DSDL_PULSEAUDIO=OFF \
+    -DSDL_JOYSTICK=OFF \
+    -DSDL_HAPTIC=OFF \
+    -DWITH_SYSROOT=${SDK_PATH} \
     && make -j$(nproc) && make install \
     && sed -ri -e 's/\-Wl,\-\-no\-undefined.*//' -e 's/ \-l\/.+?\.a//g' ${PREFIX}/lib/pkgconfig/sdl2.pc \
     && sed -ri -e 's/ -lSDL2//g' -e 's/Libs: /Libs: -lSDL2 /' ${PREFIX}/lib/pkgconfig/sdl2.pc \
@@ -711,7 +710,7 @@ RUN cd /build/ffmpeg \
     --disable-shared \
     --disable-videotoolbox \
     --enable-cross-compile \
-    # --enable-ffplay \
+    --enable-ffplay \
     --enable-static \
     --enable-gpl \
     --enable-version3 \
@@ -759,19 +758,19 @@ RUN cd /build/ffmpeg \
     # --enable-cuda \
     # --enable-cuda-nvcc \
     # --enable-cuvid \
-    # --enable-sdl2 \
+    --enable-sdl2 \
     --enable-runtime-cpudetect \
     --cc=${CC} \
     --cxx=${CXX} \
     --extra-version="NoMercy-MediaServer" \
     --extra-cflags="-arch ${ARCH} -mmacosx-version-min=${MACOSX_DEPLOYMENT_TARGET} -isysroot ${SDK_PATH} -F${OSX_FRAMEWORKS} -stdlib=libc++ -isysroot ${SDK_PATH} -mmacosx-version-min=${MACOSX_DEPLOYMENT_TARGET} -I${PREFIX}/include" \
     --extra-ldflags="-arch ${ARCH} -mmacosx-version-min=${MACOSX_DEPLOYMENT_TARGET} -isysroot ${SDK_PATH} -F${OSX_FRAMEWORKS} -stdlib=libc++ -isysroot ${SDK_PATH} -mmacosx-version-min=${MACOSX_DEPLOYMENT_TARGET} -L${PREFIX}/lib" \
-    --extra-libs="-lpthread -lm -lsharpyuv" \
+    --extra-libs="-lpthread -lm" \
     || (cat ffbuild/config.log ; false) && \
     make -j$(nproc) && make install
 
 RUN mkdir -p /ffmpeg/darwin/${ARCH} /output \
-    # && cp ${PREFIX}/bin/ffplay /ffmpeg/darwin/${ARCH} \
+    && cp ${PREFIX}/bin/ffplay /ffmpeg/darwin/${ARCH} \
     && cp ${PREFIX}/bin/ffmpeg /ffmpeg/darwin/${ARCH} \
     && cp ${PREFIX}/bin/ffprobe /ffmpeg/darwin/${ARCH}
 
