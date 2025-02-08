@@ -69,6 +69,8 @@ jobs:
           else
             CHANGED=false
             git diff --name-only HEAD^ HEAD | grep -q ".github/workflows/main.yml" && CHANGED=true
+            git diff --name-only HEAD^ HEAD | grep -q ".github/workflows/test.yml" && CHANGED=true
+            git diff --name-only HEAD^ HEAD | grep -q ".github/workflows/release.yml" && CHANGED=true
           fi
           echo "changed=$CHANGED" >> $GITHUB_OUTPUT
 
@@ -488,15 +490,15 @@ jobs:
           # docker cp darwin-arm64-container:/build/darwin/arm64 downloads/darwin/arm64 || echo "Directory not found in container."
           docker rm darwin-arm64-container
 
-      # - name: Cache artifacts 
-      #   id: cached-downloads
-      #   uses: actions/cache/save@v4
-      #   with:
-      #     path: downloads
-      #     key: downloads
-      
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+      - name: Cache artifacts 
+        id: cached-downloads
+        uses: actions/cache/save@v4
         with:
-          name: downloads
           path: downloads
+          key: downloads
+      
+      # - name: Upload artifacts
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: downloads
+      #     path: downloads

@@ -102,7 +102,15 @@ ENV OBJCOPY=${SDK_PATH}/usr/bin/${CROSS_PREFIX}objcopy
 ENV OTOOL=${SDK_PATH}/usr/bin/${CROSS_PREFIX}otool
 
 # iconv
-RUN cd /build/iconv \
+# libxml2
+# zlib
+# fftw3
+# libfreetype
+# fribidi
+# libogg
+RUN \
+    # iconv
+    cd /build/iconv \
     && ./configure --prefix=${PREFIX} --enable-extra-encodings --enable-static --disable-shared --with-pic \
     --host=${CROSS_PREFIX%-} \
     && make -j$(nproc) && make install \
@@ -157,17 +165,15 @@ RUN cd /build/iconv \
     && make -j$(nproc) && make install \
     && rm -rf /build/libogg
 
+# openssl
 ENV OLD_CFLAGS=${CFLAGS}
 ENV OLD_CXXFLAGS=${CXXFLAGS}
 ENV CFLAGS="${CFLAGS} -fno-strict-aliasing"
 ENV CXXFLAGS="${CXXFLAGS} -fno-strict-aliasing"
-
-# openssl
 RUN cd /build/openssl \
     && ./Configure threads zlib no-shared enable-camellia enable-ec enable-srp --prefix=${PREFIX} darwin64-arm64-cc --libdir=${PREFIX}/lib \
     && sed -i -e "/^CFLAGS=/s|=.*|=${CFLAGS}|" -e "/^LDFLAGS=/s|=[[:space:]]*$|=${LDFLAGS}|" Makefile \
     && make -j$(nproc) build_sw && make install_sw
-
 ENV CFLAGS=${OLD_CFLAGS}
 ENV CXXFLAGS=${OLD_CXXFLAGS}
 
@@ -254,7 +260,12 @@ RUN cd /build/libass \
     && rm -rf /build/libass
 
 # libgpg-error
-RUN cd /build/libgpg-error \
+# libgcrypt
+# libbdplus
+# libaacs
+RUN \
+    # libgpg-error
+    cd /build/libgpg-error \
     && cp src/syscfg/lock-obj-pub.${ARCH%64}-apple-darwin.h src/syscfg/lock-obj-pub.darwin24.1.h \
     && ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared --with-pic --disable-doc  \
     --host=${CROSS_PREFIX%-} \
@@ -305,7 +316,6 @@ RUN cd /build/libgpg-error \
 
 # libbluray
 ENV EXTRA_LIBS="-L${PREFIX}/lib -laacs -lbdplus"
-
 RUN cd /build/libbluray \
     && sed -i 's/dec_init/libbluray_dec_init/g' src/libbluray/disc/dec.c \ 
     && sed -i 's/dec_init/libbluray_dec_init/g' src/libbluray/disc/dec.h \ 
@@ -324,11 +334,13 @@ RUN cd /build/libbluray \
     && echo "Libs.private: -laacs -lbdplus -lstdc++" >> ${PREFIX}/lib/pkgconfig/libbluray.pc \
     && export EXTRA_LIBS="" \
     && rm -rf /build/libbluray
-
 ENV EXTRA_LIBS=""
 
 # libcdio
-RUN cd /build/libcdio \
+# libcdio-paranoia
+RUN \
+    # libcdio
+    cd /build/libcdio \
     && touch src/cd-drive.1 src/cd-info.1 src/cd-read.1 src/iso-info.1 src/iso-read.1 \
     && ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
     --host=${CROSS_PREFIX%-} \
@@ -391,7 +403,6 @@ RUN cd /build/twolame \
     && make -j$(nproc) && make install \
     && sed -i 's/Cflags:/Cflags: -DLIBTWOLAME_STATIC/' ${PREFIX}/lib/pkgconfig/twolame.pc \
     && rm -rf /build/twolame
-
 ENV CFLAGS="${CFLAGS} -DLIBTWOLAME_STATIC"
 
 # mp3lame
@@ -482,10 +493,11 @@ RUN cd /build/x264 \
     && make -j$(nproc) && make install \
     && rm -rf /build/x264
 
-ENV CMAKE_X265_ARG="-DCMAKE_INSTALL_PREFIX=${PREFIX} -DCMAKE_SYSTEM_NAME=Darwin -DCMAKE_OSX_SYSROOT=${SDK_PATH} -DCMAKE_OSX_DEPLOYMENT_TARGET=${MACOSX_DEPLOYMENT_TARGET} -DCMAKE_C_COMPILER=${CC} -DCMAKE_CXX_COMPILER=${CXX} -DCMAKE_BUILD_TYPE=Release -DENABLE_SHARED=OFF -DENABLE_CLI=OFF -DCMAKE_ASM_NASM_FLAGS=-w-macro-params-legacy"
 # x265
-# build x265 12bit
-RUN cp -r /build/x265/build/linux /build/x265/build/windows \
+ENV CMAKE_X265_ARG="-DCMAKE_INSTALL_PREFIX=${PREFIX} -DCMAKE_SYSTEM_NAME=Darwin -DCMAKE_OSX_SYSROOT=${SDK_PATH} -DCMAKE_OSX_DEPLOYMENT_TARGET=${MACOSX_DEPLOYMENT_TARGET} -DCMAKE_C_COMPILER=${CC} -DCMAKE_CXX_COMPILER=${CXX} -DCMAKE_BUILD_TYPE=Release -DENABLE_SHARED=OFF -DENABLE_CLI=OFF -DCMAKE_ASM_NASM_FLAGS=-w-macro-params-legacy"
+RUN \
+    # build x265 12bit
+    cp -r /build/x265/build/linux /build/x265/build/windows \
     && cd /build/x265 \
     && rm -rf build/windows/12bit build/windows/10bit build/windows/8bit \
     && mkdir -p build/windows/12bit build/windows/10bit build/windows/8bit \
@@ -518,10 +530,9 @@ RUN cp -r /build/libxavs2/build/linux /build/libxavs2/build/darwin \
     && make -j$(nproc) && make install \
     && rm -rf /build/libxavs2
 
+# xvid
 ENV OLD_CFLAGS=${CFLAGS}
 ENV CFLAGS="${CFLAGS} -fstrength-reduce -ffast-math"
-
-# xvid
 RUN cd /build/xvidcore \
     && cd build/generic \
     && CFLAGS=${CFLAGS} \
@@ -533,11 +544,16 @@ RUN cd /build/xvidcore \
     CXX=${CXX} \
     && make -j$(nproc) && make install \
     && rm -rf /build/xvidcore
-
 ENV CFLAGS=${OLD_CFLAGS}
 
 # libwebp
-RUN cd /build/libwebp \
+# openjpeg
+# zimg
+# ffnvcodec
+# cuda
+RUN \
+    # libwebp
+    cd /build/libwebp \
     && ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
     --enable-libwebpmux --enable-libwebpextras --enable-libwebpdemux --enable-libwebpdecoder \
     --disable-sdl --disable-gl --disable-png --disable-jpeg --disable-tiff --disable-gif \
@@ -602,21 +618,23 @@ RUN cd /build/frei0r \
 RUN cd /build/amf \
     && mv amf/public/include ${PREFIX}/include/AMF
 
+# libjpeg-turbo
 ENV OLD_CMAKE_COMMON_ARG=${CMAKE_COMMON_ARG}
 ENV CMAKE_COMMON_ARG="-DCMAKE_INSTALL_PREFIX=${PREFIX} -DCMAKE_SYSTEM_NAME=Darwin -DCMAKE_OSX_ARCHITECTURES=${ARCH} -DCMAKE_OSX_DEPLOYMENT_TARGET=${MACOSX_DEPLOYMENT_TARGET} -DCMAKE_OSX_SYSROOT=${SDK_PATH} -DCMAKE_C_COMPILER=${CC} -DCMAKE_CXX_COMPILER=${CXX} -DENABLE_SHARED=OFF -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_SYSTEM_PROCESSOR=${ARCH} -DCMAKE_ASM_NASM_FLAGS=-w-macro-params-legacy"
-# Build libjpeg-turbo
-RUN wget https://github.com/libjpeg-turbo/libjpeg-turbo/archive/refs/tags/3.1.0.tar.gz -O libjpeg-turbo-3.1.0.tar.gz \
+# libtiff
+RUN \
+    # libjpeg-turbo
+    wget https://github.com/libjpeg-turbo/libjpeg-turbo/archive/refs/tags/3.1.0.tar.gz -O libjpeg-turbo-3.1.0.tar.gz \
     && tar xzf libjpeg-turbo-3.1.0.tar.gz \
     && cd libjpeg-turbo-3.1.0 \
     && mkdir build && cd build \
     && cmake -S .. -B . \
     ${CMAKE_COMMON_ARG} \
     && make -j$(nproc) && make install \
-    && rm -rf /build/libjpeg-turbo-3.1.0
-ENV CMAKE_COMMON_ARG=${OLD_CMAKE_COMMON_ARG}
-
-# Build libtiff
-RUN wget https://download.osgeo.org/libtiff/tiff-4.6.0.tar.gz \
+    && rm -rf /build/libjpeg-turbo-3.1.0 \
+    \
+    # libtiff
+    && wget https://download.osgeo.org/libtiff/tiff-4.6.0.tar.gz \
     && tar xzf tiff-4.6.0.tar.gz \
     && cd tiff-4.6.0 \
     && ./configure --host=${CROSS_PREFIX%-} --prefix=${PREFIX} \
@@ -624,9 +642,13 @@ RUN wget https://download.osgeo.org/libtiff/tiff-4.6.0.tar.gz \
     && make -j$(nproc) && make install \
     && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/libtiff-4.pc \
     && rm -rf /build/tiff-4.6.0
+ENV CMAKE_COMMON_ARG=${OLD_CMAKE_COMMON_ARG}
 
+# libtesseract (tesseract-ocr)
 # leptonica
-RUN cd /build/leptonica \
+RUN \
+    # leptonica
+    cd /build/leptonica \
     && ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
     --disable-programs \
     --without-giflib \
@@ -671,8 +693,11 @@ RUN cd /build/leptonica \
     && cp ${PREFIX}/lib/pkgconfig/tesseract.pc ${PREFIX}/lib/pkgconfig/libtesseract.pc \
     && rm -rf /build/libtesseract
 
+# sdl2
 # libsamplerate
-RUN git clone --branch 0.2.2 https://github.com/libsndfile/libsamplerate.git /build/libsamplerate \
+RUN \
+    # libsamplerate
+    git clone --branch 0.2.2 https://github.com/libsndfile/libsamplerate.git /build/libsamplerate \
     && mkdir -p /build/libsamplerate/build && cd /build/libsamplerate/build \
     && cmake -S .. -B . \
     ${CMAKE_COMMON_ARG} \
@@ -769,23 +794,29 @@ RUN cd /build/ffmpeg \
     || (cat ffbuild/config.log ; false) && \
     make -j$(nproc) && make install
 
+# copy ffmpeg binaries
+# cleanup
+# create tarball
+# cleanup
 RUN mkdir -p /ffmpeg/darwin/${ARCH} /output \
     && cp ${PREFIX}/bin/ffplay /ffmpeg/darwin/${ARCH} \
     && cp ${PREFIX}/bin/ffmpeg /ffmpeg/darwin/${ARCH} \
-    && cp ${PREFIX}/bin/ffprobe /ffmpeg/darwin/${ARCH}
-
-# cleanup
-RUN rm -rf ${PREFIX} /build
-
-RUN mkdir -p /build/darwin /output \
+    && cp ${PREFIX}/bin/ffprobe /ffmpeg/darwin/${ARCH} \
+    \
+    # cleanup
+    && rm -rf ${PREFIX} /build \
+    \
+    && mkdir -p /build/darwin /output \
+    # create tarball
     && tar -czf /build/ffmpeg-7.1-darwin-${ARCH}.tar.gz \
     -C /ffmpeg/darwin/${ARCH} . \
-    && cp /build/ffmpeg-7.1-darwin-${ARCH}.tar.gz /output
-
-RUN apt-get autoremove -y && apt-get autoclean -y && apt-get clean -y \
-    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-
-RUN cp /ffmpeg/darwin/${ARCH} /build/darwin -r
+    && cp /build/ffmpeg-7.1-darwin-${ARCH}.tar.gz /output \
+    \
+    # cleanup
+    && apt-get autoremove -y && apt-get autoclean -y && apt-get clean -y \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
+    \
+    && cp /ffmpeg/darwin/${ARCH} /build/darwin -r
 
 FROM debian AS final
 

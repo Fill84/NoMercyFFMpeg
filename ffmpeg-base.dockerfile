@@ -28,6 +28,7 @@ ENV ffmpeg_version=7.1 \
     libXfixed_version=6.0.1 \
     libdrm_version=2.4.124 \
     harfbuzz_version=10.1.0 \
+    vulkan_headers_version=1.4.307 \
     libudfread_version=1.1.2 \
     libvorbis_version=1.3.7 \
     libvmaf_version=3.0.0 \
@@ -65,7 +66,10 @@ ENV ffmpeg_version=7.1 \
     nvcodec_version=12.2.72.0 \
     leptonica_version=1.85.0 \
     libtesseract_version=5.5.0 \
-    sdl2_version=2.30.10
+    sdl2_version=2.30.10 \
+    shaderc_version=2024.4 \
+    spirv_cross_checkout=5e7db829a37787e096a7bfbdbdf317cd6cbe5897 \
+    libplacebo_version=7.349.0
 
 # Dependencies for building ffmpeg
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -177,6 +181,9 @@ RUN git clone --branch libdrm-${libdrm_version} https://gitlab.freedesktop.org/m
 # Download harfbuzz
 RUN git clone --branch ${harfbuzz_version} https://github.com/harfbuzz/harfbuzz.git harfbuzz
 
+# Download vulkan-headers
+RUN git clone --branch v${vulkan_headers_version} https://github.com/KhronosGroup/Vulkan-Headers.git vulkan-headers
+
 # Download libudfread
 RUN git clone --branch ${libudfread_version} https://code.videolan.org/videolan/libudfread libudfread
 
@@ -191,6 +198,9 @@ RUN git clone --branch v${avisynth_version} https://github.com/AviSynth/AviSynth
 
 # Download chromaprint
 RUN git clone --branch v${chromaprint_version} https://github.com/acoustid/chromaprint.git chromaprint
+
+# Download shaderc
+RUN git clone --branch v${shaderc_version} https://github.com/google/shaderc.git
 
 # Download libass
 RUN git clone --branch ${libass_version} https://github.com/libass/libass.git libass
@@ -306,6 +316,13 @@ RUN git clone --branch ${libtesseract_version} https://github.com/tesseract-ocr/
 
 # Download SDL2
 RUN git clone --branch release-${sdl2_version} https://github.com/libsdl-org/SDL.git sdl2
+
+# Download spirv-cross
+RUN git clone https://github.com/KhronosGroup/SPIRV-Cross.git spirv-cross && \
+    cd spirv-cross && git checkout ${spirv_cross_checkout} && cd ..
+
+# Download libplacebo
+RUN git clone --branch release https://code.videolan.org/videolan/libplacebo.git libplacebo
 
 # Download ffmpeg
 RUN wget -O ffmpeg.tar.bz2 https://ffmpeg.org/releases/ffmpeg-${ffmpeg_version}.tar.bz2 \

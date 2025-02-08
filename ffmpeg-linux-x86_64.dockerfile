@@ -60,7 +60,15 @@ RUN echo "[binaries]" > /build/cross_file.txt && \
 ENV CMAKE_COMMON_ARG="-DCMAKE_INSTALL_PREFIX=${PREFIX} -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_SYSTEM_PROCESSOR=${ARCH} -DCMAKE_C_COMPILER=${CC} -DCMAKE_CXX_COMPILER=${CXX} -DENABLE_SHARED=OFF -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=Release"
 
 # iconv
-RUN cd /build/iconv \
+# libxml2
+# zlib
+# fftw3
+# libfreetype
+# fribidi
+# libogg
+RUN \
+    # iconv
+    cd /build/iconv \
     && ./configure --prefix=${PREFIX} --enable-extra-encodings --enable-static --disable-shared --with-pic \
     --host=${CROSS_PREFIX%-} \
     && make -j$(nproc) && make install \
@@ -110,19 +118,17 @@ RUN cd /build/iconv \
     && make -j$(nproc) && make install \
     && rm -rf /build/libogg
 
+# openssl
 ENV OLD_CFLAGS=${CFLAGS}
 ENV OLD_CXXFLAGS=${CXXFLAGS}
 ENV CFLAGS="${CFLAGS} -fno-strict-aliasing"
 ENV CXXFLAGS="${CXXFLAGS} -fno-strict-aliasing"
-
-# openssl
 RUN cd /build/openssl \
     && ./Configure threads zlib no-shared enable-camellia enable-ec enable-srp --prefix=${PREFIX} linux-x86_64 --libdir=${PREFIX}/lib \
     --cross-compile-prefix='' \
     && sed -i -e "/^CFLAGS=/s|=.*|=${CFLAGS}|" -e "/^LDFLAGS=/s|=[[:space:]]*$|=${LDFLAGS}|" Makefile \
     && make -j$(nproc) build_sw && make install_sw \
     && rm -rf /build/openssl
-
 ENV CFLAGS=${OLD_CFLAGS}
 ENV CXXFLAGS=${OLD_CXXFLAGS}
 
@@ -134,7 +140,16 @@ RUN cd /build/fontconfig \
     && rm -rf /build/fontconfig
 
 # libpciaccess
-RUN cd /build/libpciaccess \
+# xcbproto
+# xproto
+# xtrans
+# libxcb
+# libx11
+# libxfixes
+# libdrm
+RUN \
+    # libpciaccess
+    cd /build/libpciaccess \
     && meson build --prefix=${PREFIX} --buildtype=release -Ddefault_library=static \
     --cross-file=../cross_file.txt \
     && ninja -j$(nproc) -C build && ninja -C build install \
@@ -293,7 +308,12 @@ RUN cd /build/libva \
     && rm -rf /build/libva
 
 # libgpg-error
-RUN cd /build/libgpg-error \
+# libgcrypt
+# libbdplus
+# libaacs
+RUN \
+    # libgpg-error
+    cd /build/libgpg-error \
     && ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared --with-pic --disable-doc  \
     --host=${CROSS_PREFIX%-} \
     && ./configure --prefix=${PREFIX} --enable-static --disable-shared --with-pic --disable-doc  \
@@ -342,7 +362,6 @@ RUN cd /build/libgpg-error \
 
 # libbluray
 ENV EXTRA_LIBS="-L${PREFIX}/lib -laacs -lbdplus"
-
 RUN cd /build/libbluray \
     && sed -i 's/dec_init/libbluray_dec_init/g' src/libbluray/disc/dec.c \ 
     && sed -i 's/dec_init/libbluray_dec_init/g' src/libbluray/disc/dec.h \ 
@@ -361,11 +380,14 @@ RUN cd /build/libbluray \
     && echo "Libs.private: -laacs -lbdplus -lstdc++" >> ${PREFIX}/lib/pkgconfig/libbluray.pc \
     && export EXTRA_LIBS="" \
     && rm -rf /build/libbluray
-
 ENV EXTRA_LIBS=""
 
+# libcdio
 # libcddb
-RUN cd /build/libcddb \
+# libcdio-paranoia
+RUN \
+    # libcddb
+    cd /build/libcddb \
     && ./configure --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
     --host=${CROSS_PREFIX%-} \
     && make -j$(nproc) && make install \
@@ -436,7 +458,6 @@ RUN cd /build/twolame \
     && make -j$(nproc) && make install \
     && sed -i 's/Cflags:/Cflags: -DLIBTWOLAME_STATIC/' ${PREFIX}/lib/pkgconfig/twolame.pc \
     && rm -rf /build/twolame
-
 ENV CFLAGS="${CFLAGS} -DLIBTWOLAME_STATIC"
 
 # mp3lame
@@ -516,10 +537,11 @@ RUN cd /build/x264 \
     && make -j$(nproc) && make install \
     && rm -rf /build/x264
 
-ENV CMAKE_X265_ARG="${CMAKE_COMMON_ARG} -DCMAKE_ASM_NASM_FLAGS=-w-macro-params-legacy"
 # x265
-# build x265 12bit
-RUN cd /build/x265 \
+ENV CMAKE_X265_ARG="${CMAKE_COMMON_ARG} -DCMAKE_ASM_NASM_FLAGS=-w-macro-params-legacy"
+RUN \
+    # build x265 12bit
+    cd /build/x265 \
     && rm -rf build/linux/12bit build/linux/10bit build/linux/8bit \
     && mkdir -p build/linux/12bit build/linux/10bit build/linux/8bit \
     && cd build/linux/12bit \
@@ -557,10 +579,9 @@ RUN cd /build/libxavs2/build/linux \
     && make -j$(nproc) && make install \
     && rm -rf /build/libxavs2
 
+# xvid
 ENV OLD_CFLAGS=${CFLAGS}
 ENV CFLAGS="${CFLAGS} -fstrength-reduce -ffast-math"
-
-# xvid
 RUN cd /build/xvidcore \
     && cd build/generic \
     && CFLAGS=${CFLAGS} \
@@ -572,11 +593,16 @@ RUN cd /build/xvidcore \
     CXX=${CXX} \
     && make -j$(nproc) && make install \
     && rm -rf /build/xvidcore
-
 ENV CFLAGS=${OLD_CFLAGS}
 
 # libwebp
-RUN cd /build/libwebp \
+# openjpeg
+# zimg
+# ffnvcodec
+# cuda
+RUN \
+    # libwebp
+    cd /build/libwebp \
     && ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
     --enable-libwebpmux --enable-libwebpextras --enable-libwebpdemux --enable-libwebpdecoder \
     --disable-sdl --disable-gl --disable-png --disable-jpeg --disable-tiff --disable-gif \
@@ -619,6 +645,7 @@ RUN cd /build/frei0r \
     ${CMAKE_COMMON_ARG} \
     # && make -j$(nproc) && make install \
     && cp frei0r.pc ${PREFIX}/lib/pkgconfig/frei0r.pc \
+    && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/frei0r.pc \
     && cp ../include/frei0r.h ${PREFIX}/include \
     && rm -rf /build/frei0r
 
@@ -638,7 +665,7 @@ RUN cd /build/libvpl \
 RUN cd /build/amf \
     && mv amf/public/include ${PREFIX}/include/AMF
 
-# Build libjpeg-turbo
+# libjpeg-turbo
 RUN wget https://github.com/libjpeg-turbo/libjpeg-turbo/archive/refs/tags/3.0.2.tar.gz -O libjpeg-turbo-3.0.2.tar.gz \
     && tar xzf libjpeg-turbo-3.0.2.tar.gz \
     && cd libjpeg-turbo-3.0.2 \
@@ -648,7 +675,7 @@ RUN wget https://github.com/libjpeg-turbo/libjpeg-turbo/archive/refs/tags/3.0.2.
     && make -j$(nproc) && make install \
     && rm -rf /build/libjpeg-turbo-3.0.2
 
-# Build libtiff
+# libtiff
 RUN wget https://download.osgeo.org/libtiff/tiff-4.6.0.tar.gz \
     && tar xzf tiff-4.6.0.tar.gz \
     && cd tiff-4.6.0 \
@@ -658,8 +685,11 @@ RUN wget https://download.osgeo.org/libtiff/tiff-4.6.0.tar.gz \
     && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/libtiff-4.pc \
     && rm -rf /build/tiff-4.6.0
 
+# libtesseract (tesseract-ocr)
 # leptonica
-RUN cd /build/leptonica \
+RUN \
+    # leptonica
+    cd /build/leptonica \
     && ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
     --disable-programs \
     --without-giflib \
@@ -704,8 +734,19 @@ RUN cd /build/leptonica \
     && cp ${PREFIX}/lib/pkgconfig/tesseract.pc ${PREFIX}/lib/pkgconfig/libtesseract.pc \
     && rm -rf /build/libtesseract
 
+# sdl2
 # xxf86vm
-RUN git clone --branch libXxf86vm-1.1.6 https://gitlab.freedesktop.org/xorg/lib/libxxf86vm.git /build/libxxf86vm \
+# xrender
+# xscrnsaver
+# xrandr
+# xi
+# xinerama
+# xcursor
+# libsamplerate
+# libpulse
+RUN \
+    # xxf86vm
+    git clone --branch libXxf86vm-1.1.6 https://gitlab.freedesktop.org/xorg/lib/libxxf86vm.git /build/libxxf86vm \
     && cd /build/libxxf86vm \
     && ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared --with-pic \
     --host=${CROSS_PREFIX%-} \
@@ -832,6 +873,100 @@ RUN git clone --branch libXxf86vm-1.1.6 https://gitlab.freedesktop.org/xorg/lib/
     && echo 'Requires: samplerate' >> ${PREFIX}/lib/pkgconfig/sdl2.pc \
     && rm -rf /build/sdl2 && cd /build
 
+# vulkan-headers
+# shaderc
+# spirv-cross
+# libplacebo
+RUN cd /build/vulkan-headers \
+    && find . -type f -name '*' -exec sed -i 's/-lshaderc_shared/-lshaderc_combined/' {} + \
+    && mkdir build && cd build \
+    && cmake -GNinja -S .. -B . \
+    ${CMAKE_COMMON_ARG} \
+    -DBUILD_TESTING=OFF \
+    && ninja -j$(nproc) && ninja install \
+    && rm -rf /build/vulkan-headers \
+    && echo "prefix=${PREFIX}" > ${PREFIX}/lib/pkgconfig/vulkan.pc \
+    && echo "exec_prefix=\${prefix}" >> ${PREFIX}/lib/pkgconfig/vulkan.pc \
+    && echo "libdir=\${prefix}/lib" >> ${PREFIX}/lib/pkgconfig/vulkan.pc \
+    && echo "includedir=\${prefix}/include" >> ${PREFIX}/lib/pkgconfig/vulkan.pc \
+    && echo "" >> ${PREFIX}/lib/pkgconfig/vulkan.pc \
+    && echo "Name: Vulkan" >> ${PREFIX}/lib/pkgconfig/vulkan.pc \
+    && echo "Description: Vulkan Headers" >> ${PREFIX}/lib/pkgconfig/vulkan.pc \
+    && echo "Version: 1.4.307" >> ${PREFIX}/lib/pkgconfig/vulkan.pc \
+    && echo "" >> ${PREFIX}/lib/pkgconfig/vulkan.pc \
+    && echo "Libs: -L\${libdir} -lvulkan" >> ${PREFIX}/lib/pkgconfig/vulkan.pc \
+    && echo "Cflags: -I\${includedir}" >> ${PREFIX}/lib/pkgconfig/vulkan.pc \
+    \
+    # shaderc
+    && cd /build/shaderc \
+    && ./utils/git-sync-deps \
+    && find . -type f -name '*' -exec sed -i 's/-lshaderc_shared/-lshaderc_combined/' {} + \
+    && mkdir -p build && cd build \
+    && cmake -GNinja -S .. -B . \
+    ${CMAKE_COMMON_ARG} \
+    -DSHADERC_SKIP_TESTS=ON -DSHADERC_SKIP_EXAMPLES=ON -DSHADERC_SKIP_COPYRIGHT_CHECK=ON \
+    -DENABLE_EXCEPTIONS=ON -DENABLE_CTEST=OFF -DENABLE_GLSLANG_BINARIES=OFF -DSPIRV_SKIP_EXECUTABLES=ON \
+    -DSPIRV_TOOLS_BUILD_STATIC=ON -DBUILD_SHARED_LIBS=OFF \
+    -DSHADERC_SKIP_TESTS=ON -DSHADERC_ENABLE_SHARED_CRT=ON \
+    && ninja -j$(nproc) && ninja install \
+    && cp libshaderc_util/libshaderc_util.a ${PREFIX}/lib \
+    && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/shaderc.pc \
+    && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/shaderc_static.pc \
+    && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/shaderc_combined.pc \
+    && rm -rf /build/shaderc \
+    \
+    # spirv-cross
+    && cd /build/spirv-cross \
+    && VER_MAJ="$(grep 'set(spirv-cross-abi-major' CMakeLists.txt | sed -re 's/.* ([0-9]+)\)/\1/')" \
+    VER_MIN="$(grep 'set(spirv-cross-abi-minor' CMakeLists.txt | sed -re 's/.* ([0-9]+)\)/\1/')" \
+    VER_PCH="$(grep 'set(spirv-cross-abi-patch' CMakeLists.txt | sed -re 's/.* ([0-9]+)\)/\1/')" \
+    VER_FULL="$VER_MAJ.$VER_MIN.$VER_PCH" \
+    && find . -type f -name '*' -exec sed -i 's/-lshaderc_shared/-lshaderc_combined/' {} + \
+    && mkdir -p build && cd build \
+    && cmake -S .. -B . \
+    ${CMAKE_COMMON_ARG} \
+    -DSPIRV_CROSS_SHARED=OFF -DSPIRV_CROSS_STATIC=ON -DSPIRV_CROSS_CLI=OFF -DSPIRV_CROSS_ENABLE_TESTS=OFF -DSPIRV_CROSS_FORCE_PIC=ON -DSPIRV_CROSS_ENABLE_CPP=OFF \
+    && make -j$(nproc) && make install \
+    && echo "prefix=${PREFIX}" > ${PREFIX}/lib/pkgconfig/spirv-cross.pc \
+    && echo "exec_prefix=\${prefix}" >> ${PREFIX}/lib/pkgconfig/spirv-cross.pc \
+    && echo "libdir=\${prefix}/lib" >> ${PREFIX}/lib/pkgconfig/spirv-cross.pc \
+    && echo "sharedlibdir=\${prefix}/lib" >> ${PREFIX}/lib/pkgconfig/spirv-cross.pc \
+    && echo "includedir=\${prefix}/include/spirv_cross" >> ${PREFIX}/lib/pkgconfig/spirv-cross.pc \
+    && echo "" >> ${PREFIX}/lib/pkgconfig/spirv-cross.pc \
+    && echo "Name: spirv-cross-c-shared" >> ${PREFIX}/lib/pkgconfig/spirv-cross.pc \
+    && echo "Description: C API for SPIRV-Cross" >> ${PREFIX}/lib/pkgconfig/spirv-cross.pc \
+    && echo "Version: ${VER_FULL}" >> ${PREFIX}/lib/pkgconfig/spirv-cross.pc \
+    && echo "" >> ${PREFIX}/lib/pkgconfig/spirv-cross.pc \
+    && echo "Requires:" >> ${PREFIX}/lib/pkgconfig/spirv-cross.pc \
+    && echo "Libs: -L\${libdir} -L\${sharedlibdir} -lspirv-cross-c -lspirv-cross-glsl -lspirv-cross-hlsl -lspirv-cross-reflect -lspirv-cross-msl -lspirv-cross-util -lspirv-cross-core -lstdc++" >> ${PREFIX}/lib/pkgconfig/spirv-cross.pc \
+    && echo "Cflags: -I\${includedir}" >> ${PREFIX}/lib/pkgconfig/spirv-cross.pc \
+    && cp ${PREFIX}/lib/pkgconfig/spirv-cross.pc ${PREFIX}/lib/pkgconfig/spirv-cross-c-shared.pc \
+    && rm -rf /build/spirv-cross \
+    \
+    # libplacebo
+    && cd /build/libplacebo \
+    && git submodule update --init --recursive \
+    && sed -i 's/DPL_EXPORT/DPL_STATIC/' src/meson.build \
+    && find . -type f -name '*' -exec sed -i 's/-lshaderc_shared/-lshaderc_combined/' {} + \
+    && mkdir -p build && cd build \
+    && meson --prefix=${PREFIX} \
+    --buildtype=release \
+    --default-library=static \
+    -Dvulkan=enabled \
+    -Dvk-proc-addr=disabled \
+    -Dvulkan-registry=${PREFIX}/share/vulkan/registry/vk.xml \
+    -Dshaderc=enabled \
+    -Dglslang=disabled \
+    -Ddemos=false \
+    -Dtests=false \
+    -Dbench=false \
+    -Dfuzz=false \
+    --cross-file=../../cross_file.txt .. \
+    && ninja -j$(nproc) && ninja install \
+    && echo "Libs.private: -lstdc++" >> ${PREFIX}/lib/pkgconfig/libplacebo.pc \
+    && sed -i 's/-lshaderc_shared/-lshaderc_combined/' ${PREFIX}/lib/pkgconfig/libplacebo.pc \
+    && rm -rf /build/libplacebo
+
 # ffmpeg
 RUN cd /build/ffmpeg \
     && ./configure --pkg-config-flags=--static \
@@ -891,6 +1026,9 @@ RUN cd /build/ffmpeg \
     --enable-cuda-nvcc \
     --enable-cuvid \
     --enable-sdl2 \
+    --enable-vulkan \
+    --enable-libshaderc \
+    --enable-libplacebo \
     --enable-runtime-cpudetect \
     --extra-version="NoMercy-MediaServer" \
     --extra-cflags="-static -static-libgcc -static-libstdc++ -I${PREFIX}/include" \
@@ -900,26 +1038,34 @@ RUN cd /build/ffmpeg \
     make -j$(nproc) && make install \
     && rm -rf /build/ffmpeg
 
+# copy ffmpeg binaries
+# cleanup
+# create tarball
+# cleanup
 RUN mkdir -p /ffmpeg/linux/${ARCH} \
     && cp ${PREFIX}/bin/ffplay /ffmpeg/linux/${ARCH} \
     && cp ${PREFIX}/bin/ffmpeg /ffmpeg/linux/${ARCH} \
-    && cp ${PREFIX}/bin/ffprobe /ffmpeg/linux/${ARCH}
-
-# cleanup
-RUN rm -rf ${PREFIX} /build
-
-RUN mkdir -p /build/linux /output \
+    && cp ${PREFIX}/bin/ffprobe /ffmpeg/linux/${ARCH} \
+    \
+    # cleanup
+    && rm -rf ${PREFIX} /build \
+    \
+    && mkdir -p /build/linux /output \
+    # create tarball
     && tar -czf /build/ffmpeg-7.1-linux-${ARCH}.tar.gz \
     -C /ffmpeg/linux/${ARCH} . \
-    && cp /build/ffmpeg-7.1-linux-${ARCH}.tar.gz /output
+    && cp /build/ffmpeg-7.1-linux-${ARCH}.tar.gz /output \
+    \
+    # cleanup
+    && apt-get autoremove -y && apt-get autoclean -y && apt-get clean -y \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
+    \
+    && cp /ffmpeg/linux/${ARCH} /build/linux -r
 
-RUN apt-get autoremove -y && apt-get autoclean -y && apt-get clean -y \
-    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-
-RUN cp /ffmpeg/linux/${ARCH} /build/linux -r
-
+# final stage
 FROM debian AS final
 
+# copy ffmpeg binaries
 COPY --from=linux /build /build
 
 CMD ["cp", "/build/ffmpeg-7.1-linux-x86_64.tar.gz", "/output"]
