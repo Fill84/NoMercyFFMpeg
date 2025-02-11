@@ -55,18 +55,11 @@ jobs:
     runs-on: ubuntu-latest
     needs: [check-changes]
     steps:
-      - name: Restore cache artifacts 
-        id: cached-downloads
-        uses: actions/cache/restore@v4
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
         with:
+          name: downloads
           path: downloads
-          key: downloads
-
-      # - name: Download artifacts
-      #   uses: actions/download-artifact@v4
-      #   with:
-      #     name: downloads
-      #     path: downloads
           
       - name: Create Release
         id: create-release
@@ -105,18 +98,18 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create-release.outputs.upload_url }}
-          asset_path: /home/runner/work/NoMercyFFMpeg/NoMercyFFMpeg/ffmpeg-7.1-windows-x86_64.tar.gz
-          asset_name: ffmpeg-7.1-windows-x86_64-${{ needs.check-changes.outputs.version }}.tar.gz
+          asset_path: /home/runner/work/NoMercyFFMpeg/NoMercyFFMpeg/ffmpeg-7.1-windows-x86_64.zip
+          asset_name: ffmpeg-7.1-windows-x86_64-${{ needs.check-changes.outputs.version }}.zip
           asset_content_type: application/gzip
 
-      # - name: Upload Windows aram64 Release Asset
+      # - name: Upload Windows aarch64 Release Asset
         # uses: actions/upload-release-asset@v1
         # env:
         #   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         # with:
         #   upload_url: ${{ steps.create-release.outputs.upload_url }}
-        #   asset_path: /home/runner/work/NoMercyFFMpeg/NoMercyFFMpeg/ffmpeg-7.1-windows-aram64.tar.gz
-        #   asset_name: ffmpeg-7.1-windows-aram64-${{ needs.check-changes.outputs.version }}.tar.gz
+        #   asset_path: /home/runner/work/NoMercyFFMpeg/NoMercyFFMpeg/ffmpeg-7.1-windows-aarch64.tar.gz
+        #   asset_name: ffmpeg-7.1-windows-aarch64-${{ needs.check-changes.outputs.version }}.tar.gz
         #   asset_content_type: application/gzip
 
       - name: Upload Darwin x86_64 Release Asset
