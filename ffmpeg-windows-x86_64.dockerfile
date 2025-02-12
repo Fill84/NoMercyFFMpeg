@@ -166,4 +166,8 @@ RUN \
     && echo "📦 FFmpeg build completed" \
     && echo "------------------------------------------------------------"
 
+FROM alpine:latest AS final
+
+COPY --from=windows /output/ffmpeg-7.1-windows-x86_64.zip /build/ffmpeg-7.1-windows-x86_64.zip
+
 CMD ["cp", "/build/ffmpeg-7.1-windows-x86_64.zip", "/output"]

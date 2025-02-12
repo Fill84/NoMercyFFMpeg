@@ -150,4 +150,8 @@ RUN \
     && echo "📦 FFmpeg build completed" \
     && echo "------------------------------------------------------------"
 
+FROM alpine:latest AS final
+
+COPY --from=linux /output/ffmpeg-7.1-linux-x86_64.tar.gz /build/ffmpeg-7.1-linux-x86_64.tar.gz
+
 CMD ["cp", "/build/ffmpeg-7.1-linux-x86_64.tar.gz", "/output"]

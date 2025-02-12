@@ -1,5 +1,5 @@
 # Create an Aarch64 ffmpeg build
-FROM nomercyentertainment/ffmpeg-base AS aarch64
+FROM nomercyentertainment/ffmpeg-base AS linux
 
 LABEL maintainer="Phillippe Pelzer"
 LABEL version="1.0.1"
@@ -159,7 +159,10 @@ RUN \
     \
     && echo "------------------------------------------------------------" \
     && echo "📦 FFmpeg build completed" \
-    && echo "------------------------------------------------------------" \
-    && ls -la /build
+    && echo "------------------------------------------------------------"
+
+FROM alpine:latest AS final
+
+COPY --from=linux /build/ffmpeg-7.1-linux-aarch64.tar.gz /build/ffmpeg-7.1-linux-aarch64.tar.gz
 
 CMD ["cp", "/build/ffmpeg-7.1-linux-aarch64.tar.gz", "/output"]

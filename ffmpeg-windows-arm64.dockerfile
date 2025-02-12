@@ -36,7 +36,7 @@ RUN echo "------------------------------------------------------------" \
     && cd mingw-woarm64-build \
     && find . -type f -exec sed -i 's|sudo ||g' {} + \
     && echo "🔧 Start building Windows-on-ARM" \
-    && TOOLCHAIN_PATH=${PREFIX}/aarch64-w64-mingw32 ./build.sh \
+    && TOOLCHAIN_PATH=${PREFIX}/aarch64-w64-mingw32 ./build.sh >/dev/null 2>&1 \
     && echo "✅ Windows-on-ARM installed successfully" \
     && echo "------------------------------------------------------------"
 
@@ -184,5 +184,9 @@ RUN \
     && echo "------------------------------------------------------------" \
     && echo "📦 FFmpeg build completed" \
     && echo "------------------------------------------------------------"
+
+FROM alpine:latest AS final
+
+COPY --from=windows /output/ffmpeg-7.1-windows-aarch64.zip /build/ffmpeg-7.1-windows-aarch64.zip
 
 CMD ["cp", "/build/ffmpeg-7.1-windows-aarch64.zip", "/output"]

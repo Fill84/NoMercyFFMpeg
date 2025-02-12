@@ -15,7 +15,7 @@ sleep 1
 echo ""
 echo "🧮 ${total_count} scripts found"
 echo "------------------------------------------------------------"
-echo "🔧 Start building FFmpeg components"
+echo "🚧 Start building FFmpeg components"
 echo "------------------------------------------------------------"
 
 mkdir -p /logs
@@ -34,13 +34,14 @@ for i in $(ls /scripts); do
     name="${name^^}"   # Uppercase
     width=40
     padding=$((width - ${#name}))
-    printf "🛠️  Building %s %${padding}s[%02d/%02d]\n" "$name" "" "$current_count" "$total_count"
+    printf "🛠️ Building %s %${padding}s[%02d/%02d]\n" "$name" "" "$current_count" "$total_count"
     start_time=$(date +%s)
     /scripts/$i >/dev/null 2>&1
-    if [ $? -eq 255 ]; then
+    result=$?
+    if [ ${result} -eq 255 ]; then # This is skipped
         echo "➖ ${name} was skipped"
         skipped_count=$((skipped_count + 1))
-    elif [ $? -ne 0 ]; then
+    elif [ ${result} -eq 0 ]; then # This is success
         end_time=$(($(date +%s) - ${start_time}))
         end_time_string=$(printf "%02d%s" $end_time "s")
         if [ $end_time -gt 60 ]; then
@@ -48,9 +49,9 @@ for i in $(ls /scripts); do
             end_time_string=$(printf "%02d%s" $end_time "m")
         fi
         padding2=$((padding - ${#end_time_string} - 12))
-        printf "✅ %s was built successfully %${padding2}s [%s]\n" "$name" "" "$end_time_string"
+        printf "✅ %s was built successfully %${padding2}s [ %s ]\n" "$name" "" "$end_time_string"
         success_count=$((success_count + 1))
-    else
+    else # This is failure
         end_time=$(($(date +%s) - ${start_time}))
         end_time_string=$(printf "%02d%s" $end_time "s")
         if [ $end_time -gt 60 ]; then
@@ -58,7 +59,8 @@ for i in $(ls /scripts); do
             end_time_string=$(printf "%02d%s" $end_time "m")
         fi
         padding2=$((padding - ${#end_time_string} - 12))
-        printf "❌ %s build failed %${padding2}s [%s]\n" "$name" "" "$end_time_string"
+        # echo "printing error log: $(cat /ffmpeg_build.log)"
+        printf "❌ %s build failed %${padding2}s [ %s ]\n" "$name" "" "$end_time_string"
         failed_count=$((failed_count + 1))
     fi
     total_time=$((total_time + end_time))
