@@ -168,7 +168,6 @@ RUN FFMPEG_ENABLES=$(cat /build/enable.txt) export FFMPEG_ENABLES \
     --enable-runtime-cpudetect \
     --cc=${CC} \
     --cxx=${CXX} \
-    --sysroot=${SDK_PATH} \
     --extra-version="NoMercy-MediaServer" \
     --extra-cflags="-arch ${ARCH} -mmacosx-version-min=${MACOSX_DEPLOYMENT_TARGET}" \
     --extra-ldflags="-arch ${ARCH} -mmacosx-version-min=${MACOSX_DEPLOYMENT_TARGET}" \
