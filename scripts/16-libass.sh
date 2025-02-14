@@ -6,6 +6,10 @@ if [[ "${ARCH}" == "x86_64" && "${TARGET_OS}" == "linux" ]]; then
     CONFIG=""
 fi
 
+if [[ ${TARGET_OS} == "darwin" ]]; then
+    CONFIG="--disable-iconv --host=${CROSS_PREFIX%-}"
+fi
+
 cd /build/libass
 ./autogen.sh --prefix="${PREFIX}" --enable-static --disable-shared --with-pic ${CONFIG}
 ./configure --prefix="${PREFIX}" --enable-static --disable-shared --with-pic ${CONFIG} | tee /ffmpeg_build.log

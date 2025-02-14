@@ -30,7 +30,13 @@ jobs:
         with:
           name: downloads
           path: downloads
-
+          
+      - name: Unzip artifacts
+        run: |
+          cd downloads
+          unzip downloads.zip  # Or the actual name of your zip file if different
+          rm downloads.zip  # Optional: Remove the zip file after extraction
+          
       - name: Check release version
         id: version-check
         run: |

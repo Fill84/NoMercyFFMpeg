@@ -2,6 +2,11 @@
 
 cd /build/lame
 autoreconf -i
+
+if [[ ${ARCH} == "arm64" && ${TARGET_OS} == "darwin" ]]; then
+    CROSS_PREFIX=aarch64-apple-darwin-
+fi
+
 ./configure --prefix=${PREFIX} --enable-static --disable-shared --enable-nasm --disable-gtktest --disable-cpml --disable-frontend --disable-decode \
     --host=${CROSS_PREFIX%-} | tee /ffmpeg_build.log
 

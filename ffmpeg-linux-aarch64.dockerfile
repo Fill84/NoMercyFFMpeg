@@ -5,35 +5,38 @@ LABEL maintainer="Phillippe Pelzer"
 LABEL version="1.0.1"
 LABEL description="FFmpeg for Linux Aarch64"
 
+ARG DEBUG=0
+ENV DEBUG=${DEBUG}
+
 ENV DEBIAN_FRONTEND=noninteractive \
     NVIDIA_VISIBLE_DEVICES=all \
     NVIDIA_DRIVER_CAPABILITIES=compute,utility,video
 
 # Update and install dependencies
-RUN echo "------------------------------------------------------------" \
+RUN echo "------------------------------------------------------" \
     && echo "📦 Start FFmpeg for Linux aarch64 build" \
-    && echo "------------------------------------------------------------" \
+    && echo "------------------------------------------------------" \
     && echo "🔧 Start downloading and installing dependencies" \
-    && echo "------------------------------------------------------------"\
+    && echo "------------------------------------------------------"\
     && echo "🔄 Checking for updates" \
     && apt-get update >/dev/null 2>&1 \
     && echo "✅ Updating completed successfully" \
-    && echo "------------------------------------------------------------" \
+    && echo "------------------------------------------------------" \
     && echo "🔧 Installing dependencies" \
     && apt-get install -y --no-install-recommends \
     gcc-aarch64-linux-gnu g++-aarch64-linux-gnu libgit2-dev >/dev/null 2>&1 \
     && apt-get upgrade -y >/dev/null 2>&1 && apt-get autoremove -y >/dev/null 2>&1 && apt-get autoclean -y >/dev/null 2>&1 && apt-get clean -y >/dev/null 2>&1 \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
     && echo "✅ Installations completed successfully" \
-    && echo "------------------------------------------------------------"
+    && echo "------------------------------------------------------"
 
 # Install Rust and Cargo
-RUN echo "------------------------------------------------------------" \
+RUN echo "------------------------------------------------------" \
     && echo "🔄 Start installing Rust and Cargo" \
     && rustup target add aarch64-unknown-linux-gnu >/dev/null 2>&1 \
     && cargo install cargo-c >/dev/null 2>&1 \
     && echo "✅ Installations completed successfully" \
-    && echo "------------------------------------------------------------"
+    && echo "------------------------------------------------------"
 
 RUN cd /build
 
@@ -84,23 +87,27 @@ ENV CMAKE_COMMON_ARG="-DCMAKE_INSTALL_PREFIX=${PREFIX} -DCMAKE_SYSTEM_NAME=Linux
 # Create the build directory
 RUN mkdir -p ${PREFIX}
 
-ENV FFMPEG_ENABLES=""
+ENV FFMPEG_ENABLES="" \
+    FFMPEG_CFLAGS="" \
+    FFMPEG_LDFLAGS=""
 
 # Copy the build scripts
 COPY ./scripts /scripts
 
-RUN touch /build/enable.txt /build/cflags.txt
-RUN mv /scripts/init /init
-RUN chmod +x /init/init.sh && /init/init.sh || (echo "❌ FFmpeg build failed" ; exit 1) 
-
-RUN echo "------------------------------------------------------------" \
-    && echo "🔧 Start building FFmpeg" \
-    && echo "------------------------------------------------------------"
+RUN touch /build/enable.txt /build/cflags.txt /build/ldflags.txt \
+    && chmod +x /scripts/init/init.sh \
+    && /scripts/init/init.sh \
+    || (echo "❌ FFmpeg build failed" ; exit 1) 
 
 # ffmpeg
 RUN FFMPEG_ENABLES=$(cat /build/enable.txt) export FFMPEG_ENABLES \
     && CFLAGS="${CFLAGS} $(cat /build/cflags.txt)" export CFLAGS \
+    && LDFLAGS="${LDFLAGS} $(cat /build/ldflags.txt)" export LDFLAGS \
+    && echo "------------------------------------------------------" \
+    && echo "🚧 Start building FFmpeg" \
+    && echo "------------------------------------------------------" \
     && cd /build/ffmpeg \
+    && echo "🔧 Configure FFmpeg                              [1/2]" \
     && ./configure --pkg-config-flags=--static \
     --arch=${ARCH} \
     --target-os=${TARGET_OS} \
@@ -117,28 +124,30 @@ RUN FFMPEG_ENABLES=$(cat /build/enable.txt) export FFMPEG_ENABLES \
     ${FFMPEG_ENABLES} \
     --enable-runtime-cpudetect \
     --extra-version="NoMercy-MediaServer" \
-    --extra-cflags="-static -static-libgcc -static-libstdc++ -I${PREFIX}/include" \
-    --extra-ldflags="-static -static-libgcc -static-libstdc++ -L${PREFIX}/lib" \
+    --extra-cflags="-static -static-libgcc -static-libstdc++" \
+    --extra-ldflags="-static -static-libgcc -static-libstdc++" \
     --extra-libs="-lpthread -lm" >/ffmpeg_build.log 2>&1 \
-    || (cat ffbuild/config.log ; echo "❌ FFmpeg build failed" ; false) \
-    && echo "🛠️  Building FFmpeg [1/1]" \
+    || (cat "/ffmpeg_build.log" ; echo "❌ FFmpeg build failed" ; false) \
+    && echo "🛠️ Building FFmpeg                               [2/2]" \
     && make -j$(nproc) >/ffmpeg_build.log 2>&1 || (cat "/ffmpeg_build.log" ; echo "❌ FFmpeg build failed" ; exit 1) && make install >/dev/null 2>&1 \
     && rm -rf /build/ffmpeg \
-    && echo "✅ FFmpeg was built successfully"
+    && echo "------------------------------------------------------" \
+    && echo "✅ FFmpeg was built successfully" \
+    && echo "------------------------------------------------------"
 
 # copy ffmpeg binaries
 # cleanup
 # create tarball
 # cleanup
 RUN \
-    echo "------------------------------------------------------------" \
+    echo "------------------------------------------------------" \
     && echo "🔧 Copying FFmpeg binaries" \
     && mkdir -p /ffmpeg/${TARGET_OS}/${ARCH} \
     && cp ${PREFIX}/bin/ffplay /ffmpeg/${TARGET_OS}/${ARCH} \
     && cp ${PREFIX}/bin/ffmpeg /ffmpeg/${TARGET_OS}/${ARCH} \
     && cp ${PREFIX}/bin/ffprobe /ffmpeg/${TARGET_OS}/${ARCH} \
     && echo "✅ FFmpeg binaries copied successfully" \
-    && echo "------------------------------------------------------------" \
+    && echo "------------------------------------------------------" \
     \
     # cleanup
     && rm -rf ${PREFIX} /build \
@@ -157,9 +166,9 @@ RUN \
     \
     && cp /ffmpeg/${TARGET_OS}/${ARCH} /build/${TARGET_OS} -r \
     \
-    && echo "------------------------------------------------------------" \
+    && echo "------------------------------------------------------" \
     && echo "📦 FFmpeg build completed" \
-    && echo "------------------------------------------------------------"
+    && echo "------------------------------------------------------"
 
 FROM alpine:latest AS final
 

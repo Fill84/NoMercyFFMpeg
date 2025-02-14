@@ -2,22 +2,25 @@
 
 EXTRA_FLAGS=""
 
-if [[ "${ARCH}" == "x86_64" && "${TARGET_OS}" == "windows" ]]; then
+if [[ "${TARGET_OS}" == "windows" ]]; then
+    if [[ "${ARCH}" == "aarch64" ]]; then
+        EXTRA_FLAGS="--disable-asm"
+    fi
     cp -r /build/libdavs2/build/linux /build/libdavs2/build/windows
     cd /build/libdavs2/build/windows
-elif [[ "${ARCH}" == "aarch64" && "${TARGET_OS}" == "linux" ]]; then
-    cp -r /build/libdavs2/build/linux /build/libdavs2/build/aarch64
-    cd /build/libdavs2/build/aarch64
-    EXTRA_FLAGS="--disable-asm"
-elif [[ "${ARCH}" == "arm64" && "${TARGET_OS}" == "darwin" ]]; then
-    cp -r /build/libdavs2/build/linux /build/libdavs2/build/darwin-arm64
-    cd /build/libdavs2/build/darwin-arm64
-    CROSS_PREFIX="aarch64-apple-darwin24.1-"
-elif [[ "${ARCH}" == "x86_64" && "${TARGET_OS}" == "darwin" ]]; then
-    cp -r /build/libdavs2/build/linux /build/libdavs2/build/darwin-x86_64
-    cd /build/libdavs2/build/darwin-x86_64
-else
+elif [[ "${TARGET_OS}" == "darwin" ]]; then
+    if [[ "${ARCH}" == "arm64" ]]; then
+        CROSS_PREFIX="aarch64-apple-darwin24.1-"
+    fi
+    cp -r /build/libdavs2/build/linux /build/libdavs2/build/darwin-${ARCH}
+    cd /build/libdavs2/build/darwin-${ARCH}
+elif [[ "${TARGET_OS}" == "linux" ]]; then
     cd /build/libdavs2/build/linux
+    if [[ "${ARCH}" == "aarch64" ]]; then
+        cp -r /build/libdavs2/build/linux /build/libdavs2/build/aarch64
+        cd /build/libdavs2/build/aarch64
+        EXTRA_FLAGS="--disable-asm"
+    fi
 fi
 
 if [[ "${TARGET_OS}" != "darwin" ]]; then

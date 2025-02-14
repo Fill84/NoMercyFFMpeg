@@ -5,35 +5,38 @@ LABEL maintainer="Phillippe Pelzer"
 LABEL version="1.0.1"
 LABEL description="FFmpeg for Darwin arm64"
 
+ARG DEBUG=0
+ENV DEBUG=${DEBUG}
+
 ENV DEBIAN_FRONTEND=noninteractive \
     NVIDIA_VISIBLE_DEVICES=all \
     NVIDIA_DRIVER_CAPABILITIES=compute,utility,video
 
 # Update and install dependencies
-RUN echo "------------------------------------------------------------" \
+RUN echo "------------------------------------------------------" \
     && echo "📦 Start FFmpeg for Darwin arm64 build" \
-    && echo "------------------------------------------------------------" \
+    && echo "------------------------------------------------------" \
     && echo "🔧 Start downloading and installing dependencies" \
-    && echo "------------------------------------------------------------"\
+    && echo "------------------------------------------------------"\
     && echo "🔄 Checking for updates" \
     && apt-get update >/dev/null 2>&1 \
     && echo "✅ Updating completed successfully" \
-    && echo "------------------------------------------------------------" \
+    && echo "------------------------------------------------------" \
     && echo "🔧 Installing dependencies" \
     && apt-get install -y --no-install-recommends \
     clang patch liblzma-dev libxml2-dev xz-utils bzip2 cpio zlib1g-dev libgit2-dev >/dev/null 2>&1 \
     && apt-get upgrade -y >/dev/null 2>&1 && apt-get autoremove -y >/dev/null 2>&1 && apt-get autoclean -y >/dev/null 2>&1 && apt-get clean -y >/dev/null 2>&1 \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
     && echo "✅ Installations completed successfully" \
-    && echo "------------------------------------------------------------"
+    && echo "------------------------------------------------------"
 
 # Install Rust and Cargo
-RUN echo "------------------------------------------------------------" \
+RUN echo "------------------------------------------------------" \
     && echo "🔄 Start installing Rust and Cargo" \
     && rustup target add aarch64-apple-darwin >/dev/null 2>&1  \
     && cargo install cargo-c >/dev/null 2>&1 \
     && echo "✅ Installations completed successfully" \
-    && echo "------------------------------------------------------------"
+    && echo "------------------------------------------------------"
 
 ENV PREFIX=/ffmpeg_build/darwin
 ENV MACOSX_DEPLOYMENT_TARGET=10.15.0
@@ -41,14 +44,14 @@ ENV SDK_VERSION=15.1
 ENV SDK_PATH=${PREFIX}/osxcross/SDK/MacOSX${SDK_VERSION}.sdk
 ENV OSX_FRAMEWORKS=${SDK_PATH}/System/Library/Frameworks
 
-RUN echo "------------------------------------------------------------" \
+RUN echo "------------------------------------------------------" \
     && echo "🔧 Start building macOS SDK" \
     && git clone https://github.com/tpoechtrager/osxcross.git /build/osxcross >/dev/null 2>&1 && cd /build/osxcross \
     && wget -nc https://github.com/joseluisq/macosx-sdks/releases/download/${SDK_VERSION}/MacOSX${SDK_VERSION}.sdk.tar.xz >/dev/null 2>&1 \
     && mv MacOSX${SDK_VERSION}.sdk.tar.xz tarballs/MacOSX${SDK_VERSION}.sdk.tar.xz \
     && UNATTENDED=1 SDK_VERSION=${SDK_VERSION} OSX_VERSION_MIN=${MACOSX_DEPLOYMENT_TARGET%.0} MACOSX_DEPLOYMENT_TARGET=${MACOSX_DEPLOYMENT_TARGET} TARGET_DIR=${PREFIX}/osxcross ./build.sh >/dev/null 2>&1 \
     && echo "✅ macOS SDK build completed successfully" \
-    && echo "------------------------------------------------------------" \
+    && echo "------------------------------------------------------" \
     && echo "MACOSX_DEPLOYMENT_TARGET=${MACOSX_DEPLOYMENT_TARGET}" > ${PREFIX}/osxcross/bin/cc_target \
     && cp ${PREFIX}/osxcross/bin/cc_target ${SDK_PATH}/usr/bin/cc_target
 
@@ -71,9 +74,9 @@ ENV NM=${CROSS_PREFIX}nm
 ENV PKG_CONFIG=pkg-config
 ENV PKG_CONFIG_PATH=${PREFIX}/lib/pkgconfig
 ENV PATH="${PREFIX}/bin:${SDK_PATH}/usr/bin:${PREFIX}/osxcross/bin:${PATH}"
-ENV CFLAGS="-arch ${ARCH} -mmacosx-version-min=${MACOSX_DEPLOYMENT_TARGET} -isysroot ${SDK_PATH} -F${OSX_FRAMEWORKS} -stdlib=libc++ -I${PREFIX}/include -O2 -pipe -fPIC -DPIC -pthread"
-ENV CXXFLAGS="-arch ${ARCH} -mmacosx-version-min=${MACOSX_DEPLOYMENT_TARGET} -isysroot ${SDK_PATH} -F${OSX_FRAMEWORKS} -stdlib=libc++ -I${PREFIX}/include -O2 -pipe -fPIC -DPIC -pthread"
-ENV LDFLAGS="-arch ${ARCH} -mmacosx-version-min=${MACOSX_DEPLOYMENT_TARGET} -isysroot ${SDK_PATH} -F${OSX_FRAMEWORKS} -stdlib=libc++ -L${PREFIX}/lib -Wl,-dead_strip_dylibs -pthread"
+ENV CFLAGS="-arch ${ARCH} -mmacosx-version-min=${MACOSX_DEPLOYMENT_TARGET} -isysroot ${SDK_PATH} -F${OSX_FRAMEWORKS} -I${SDK_PATH}/usr/include -stdlib=libc++ -I${PREFIX}/include -O2 -pipe -fPIC -DPIC -pthread"
+ENV CXXFLAGS="-arch ${ARCH} -mmacosx-version-min=${MACOSX_DEPLOYMENT_TARGET} -isysroot ${SDK_PATH} -F${OSX_FRAMEWORKS} -I${SDK_PATH}/usr/include -stdlib=libc++ -I${PREFIX}/include -O2 -pipe -fPIC -DPIC -pthread"
+ENV LDFLAGS="-arch ${ARCH} -mmacosx-version-min=${MACOSX_DEPLOYMENT_TARGET} -isysroot ${SDK_PATH} -F${OSX_FRAMEWORKS} -framework CoreFoundation -framework CoreVideo -framework IOSurface -framework VideoToolbox -framework OpenCL -framework Accelerate -framework DiskArbitration -framework IOKit -L${SDK_PATH}/usr/lib -stdlib=libc++ -L${PREFIX}/lib -Wl,-dead_strip_dylibs -pthread"
 
 ENV CARGO_TARGET_X86_64_APPLE_DARWIN_LINKER=${CC}
 
@@ -98,10 +101,10 @@ RUN echo "[constants]" > /build/cross_file.txt && \
     echo "endian = 'little'" >> /build/cross_file.txt && \
     echo "" >> /build/cross_file.txt && \
     echo "[properties]" >> /build/cross_file.txt && \
-    echo "c_args = ['-arch', '${ARCH}', '-mmacosx-version-min=${MACOSX_DEPLOYMENT_TARGET}', '-isysroot', '${SDK_PATH}', '-F${OSX_FRAMEWORKS}', '-stdlib=libc++', '-I${PREFIX}/include', '-O2', '-pipe', '-fPIC', '-DPIC', '-pthread']" >> /build/cross_file.txt && \
-    echo "cpp_args = ['-arch', '${ARCH}', '-mmacosx-version-min=${MACOSX_DEPLOYMENT_TARGET}', '-isysroot', '${SDK_PATH}', '-F${OSX_FRAMEWORKS}', '-stdlib=libc++', '-I${PREFIX}/include', '-O2', '-pipe', '-fPIC', '-DPIC', '-pthread']" >> /build/cross_file.txt && \
-    echo "c_link_args = ['-arch', '${ARCH}', '-mmacosx-version-min=${MACOSX_DEPLOYMENT_TARGET}', '-isysroot', '${SDK_PATH}', '-F${OSX_FRAMEWORKS}', '-stdlib=libc++', '-L${PREFIX}/lib', '-Wl,-dead_strip_dylibs', '-pthread']" >> /build/cross_file.txt && \
-    echo "cpp_link_args = ['-arch', '${ARCH}', '-mmacosx-version-min=${MACOSX_DEPLOYMENT_TARGET}', '-isysroot', '${SDK_PATH}', '-F${OSX_FRAMEWORKS}', '-stdlib=libc++', '-L${PREFIX}/lib', '-Wl,-dead_strip_dylibs', '-pthread']" >> /build/cross_file.txt
+    echo "c_args = ['-arch', '${ARCH}', '-mmacosx-version-min=${MACOSX_DEPLOYMENT_TARGET}', '-isysroot', '${SDK_PATH}', '-F${OSX_FRAMEWORKS}', '-I${SDK_PATH}/usr/include', '-stdlib=libc++', '-I${PREFIX}/include', '-O2', '-pipe', '-fPIC', '-DPIC', '-pthread']" >> /build/cross_file.txt && \
+    echo "cpp_args = ['-arch', '${ARCH}', '-mmacosx-version-min=${MACOSX_DEPLOYMENT_TARGET}', '-isysroot', '${SDK_PATH}', '-F${OSX_FRAMEWORKS}', '-I${SDK_PATH}/usr/include', '-stdlib=libc++', '-I${PREFIX}/include', '-O2', '-pipe', '-fPIC', '-DPIC', '-pthread']" >> /build/cross_file.txt && \
+    echo "c_link_args = ['-arch', '${ARCH}', '-mmacosx-version-min=${MACOSX_DEPLOYMENT_TARGET}', '-isysroot', '${SDK_PATH}', '-F${OSX_FRAMEWORKS} -framework CoreFoundation -framework CoreVideo -framework IOSurface -framework VideoToolbox -framework OpenCL -framework Accelerate -framework DiskArbitration -framework IOKit', '-L${SDK_PATH}/usr/lib', '-stdlib=libc++', '-L${PREFIX}/lib', '-Wl,-dead_strip_dylibs', '-pthread']" >> /build/cross_file.txt && \
+    echo "cpp_link_args = ['-arch', '${ARCH}', '-mmacosx-version-min=${MACOSX_DEPLOYMENT_TARGET}', '-isysroot', '${SDK_PATH}', '-F${OSX_FRAMEWORKS} -framework CoreFoundation -framework CoreVideo -framework IOSurface -framework VideoToolbox -framework OpenCL -framework Accelerate -framework DiskArbitration -framework IOKit', '-L${SDK_PATH}/usr/lib', '-stdlib=libc++', '-L${PREFIX}/lib', '-Wl,-dead_strip_dylibs', '-pthread']" >> /build/cross_file.txt
 
 # CMake common arguments for static build
 ENV CMAKE_COMMON_ARG="-DCMAKE_INSTALL_PREFIX=${PREFIX} -DCMAKE_SYSTEM_NAME=Darwin -DCMAKE_OSX_ARCHITECTURES=${ARCH} -DCMAKE_OSX_DEPLOYMENT_TARGET=${MACOSX_DEPLOYMENT_TARGET} -DCMAKE_OSX_SYSROOT=${SDK_PATH} -DCMAKE_C_COMPILER=${CC} -DCMAKE_CXX_COMPILER=${CXX} -DENABLE_SHARED=OFF -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=Release"
@@ -126,23 +129,28 @@ ENV OTOOL=${SDK_PATH}/usr/bin/${CROSS_PREFIX}otool
 # Create the build directory
 RUN mkdir -p ${PREFIX}
 
-ENV FFMPEG_ENABLES=""
+ENV FFMPEG_ENABLES="" \
+    FFMPEG_CFLAGS="" \
+    FFMPEG_LDFLAGS=""
 
 # Copy the build scripts
 COPY ./scripts /scripts
 
-RUN touch /build/enable.txt /build/cflags.txt
-RUN mv /scripts/init /init
-RUN chmod +x /init/init.sh && /init/init.sh || (echo "❌ FFmpeg build failed" ; exit 1) 
-
-RUN echo "------------------------------------------------------------" \
-    && echo "🔧 Start building FFmpeg" \
-    && echo "------------------------------------------------------------"
+RUN touch /build/enable.txt /build/cflags.txt /build/ldflags.txt \
+    && chmod +x /scripts/init/init.sh \
+    && /scripts/init/init.sh \
+    || (echo "❌ FFmpeg build failed" ; exit 1)
 
 # ffmpeg
 RUN FFMPEG_ENABLES=$(cat /build/enable.txt) export FFMPEG_ENABLES \
     && CFLAGS="${CFLAGS} $(cat /build/cflags.txt)" export CFLAGS \
+    && LDFLAGS="${LDFLAGS} $(cat /build/ldflags.txt)" export LDFLAGS \
+    && MACOSX_DEPLOYMENT_TARGET=${MACOSX_DEPLOYMENT_TARGET%.0} export MACOSX_DEPLOYMENT_TARGET \
+    && echo "------------------------------------------------------" \
+    && echo "🚧 Start building FFmpeg" \
+    && echo "------------------------------------------------------" \
     && cd /build/ffmpeg \
+    && echo "🔧 Configure FFmpeg                              [1/2]" \
     && ./configure --pkg-config-flags=--static \
     --arch=${ARCH} \
     --target-os=darwin \
@@ -150,7 +158,6 @@ RUN FFMPEG_ENABLES=$(cat /build/enable.txt) export FFMPEG_ENABLES \
     --pkg-config=pkg-config \
     --prefix=${PREFIX} \
     --enable-cross-compile \
-    --disable-videotoolbox \
     --disable-shared \
     --enable-ffplay \
     --enable-static \
@@ -159,34 +166,34 @@ RUN FFMPEG_ENABLES=$(cat /build/enable.txt) export FFMPEG_ENABLES \
     --enable-nonfree \
     ${FFMPEG_ENABLES} \
     --enable-runtime-cpudetect \
-    --sysroot=${SDK_PATH} \
     --cc=${CC} \
     --cxx=${CXX} \
+    --sysroot=${SDK_PATH} \
     --extra-version="NoMercy-MediaServer" \
-    --extra-cflags="-arch ${ARCH} -mmacosx-version-min=${MACOSX_DEPLOYMENT_TARGET} -isysroot ${SDK_PATH} -F${OSX_FRAMEWORKS} -stdlib=libc++ -isysroot ${SDK_PATH} -mmacosx-version-min=${MACOSX_DEPLOYMENT_TARGET} -I${PREFIX}/include" \
-    --extra-ldflags="-arch ${ARCH} -mmacosx-version-min=${MACOSX_DEPLOYMENT_TARGET} -isysroot ${SDK_PATH} -F${OSX_FRAMEWORKS} -stdlib=libc++ -isysroot ${SDK_PATH} -mmacosx-version-min=${MACOSX_DEPLOYMENT_TARGET} -L${PREFIX}/lib" \
+    --extra-cflags="-arch ${ARCH} -mmacosx-version-min=${MACOSX_DEPLOYMENT_TARGET}" \
+    --extra-ldflags="-arch ${ARCH} -mmacosx-version-min=${MACOSX_DEPLOYMENT_TARGET}" \
     --extra-libs="-lpthread -lm" >/ffmpeg_build.log 2>&1 \
     || (cat "/ffmpeg_build.log" ; echo "❌ FFmpeg build failed" ; false) \
-    && echo "------------------------------------------------------------" \
-    && echo "🛠️  Building FFmpeg [1/1]" \
+    && echo "🛠️ Building FFmpeg                               [2/2]" \
     && make -j$(nproc) >/ffmpeg_build.log 2>&1 || (cat "/ffmpeg_build.log" ; echo "❌ FFmpeg build failed" ; exit 1) && make install >/dev/null 2>&1 \
     && rm -rf /build/ffmpeg \
+    && echo "------------------------------------------------------" \
     && echo "✅ FFmpeg was built successfully" \
-    && echo "------------------------------------------------------------" 
+    && echo "------------------------------------------------------" 
 
 # copy ffmpeg binaries
 # cleanup
 # create zipfile
 # cleanup
 RUN \
-    echo "------------------------------------------------------------" \
+    echo "------------------------------------------------------" \
     && echo "🔧 Copying FFmpeg binaries" \
     && mkdir -p /ffmpeg/${TARGET_OS}/${ARCH} \
     && cp ${PREFIX}/bin/ffplay /ffmpeg/${TARGET_OS}/${ARCH} \
     && cp ${PREFIX}/bin/ffmpeg /ffmpeg/${TARGET_OS}/${ARCH} \
     && cp ${PREFIX}/bin/ffprobe /ffmpeg/${TARGET_OS}/${ARCH} \
     && echo "✅ FFmpeg binaries copied successfully" \
-    && echo "------------------------------------------------------------" \
+    && echo "------------------------------------------------------" \
     \
     # cleanup
     && rm -rf ${PREFIX} /build \
@@ -205,9 +212,9 @@ RUN \
     \
     && cp /ffmpeg/${TARGET_OS}/${ARCH} /build/${TARGET_OS} -r \
     \
-    && echo "------------------------------------------------------------" \
+    && echo "------------------------------------------------------" \
     && echo "📦 FFmpeg build completed" \
-    && echo "------------------------------------------------------------"
+    && echo "------------------------------------------------------"
 
 FROM alpine:latest AS final
 
