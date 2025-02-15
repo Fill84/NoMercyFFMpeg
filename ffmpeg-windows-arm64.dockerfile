@@ -14,6 +14,18 @@ ENV DEBIAN_FRONTEND=noninteractive \
 
 # Update and install dependencies
 RUN echo "------------------------------------------------------" \
+    && echo "       _   _       __  __                      " \
+    && echo "      | \ | | ___ |  \/  | ___ _ __ ___ _   _  " \
+    && echo "      |  \| |/ _ \| |\/| |/ _ \ '__/ __| | | | " \
+    && echo "      | |\  | (_) | |  | |  __/ | | (__| |_| | " \
+    && echo "      |_| \_|\___/|_|  |_|\___|_|  \___|\__, | " \
+    && echo "        _____ _____ __  __ ____  _____ _|___/  " \
+    && echo "       |  ___|  ___|  \/  |  _ \| ____/ ___|   " \
+    && echo "       | |_  | |_  | |\/| | |_) |  _|| |  _    " \
+    && echo "       |  _| |  _| | |  | |  __/| |__| |_| |   " \
+    && echo "       |_|   |_|   |_|  |_|_|   |_____\____|   " \
+    && echo "" \
+    && echo "------------------------------------------------------" \
     && echo "📦 Start FFmpeg for Windows arm64 build" \
     && echo "------------------------------------------------------" \
     && echo "🔧 Start downloading and installing dependencies" \
@@ -46,7 +58,7 @@ RUN echo "------------------------------------------------------" \
 # Install Rust and Cargo
 RUN echo "------------------------------------------------------" \
     && echo "🔄 Start installing Rust and Cargo" \
-    && rustup target add aarch64-pc-windows-msvc \
+    && rustup target add aarch64-pc-windows-msvc >/dev/null 2>&1 \
     && cargo install cargo-c >/dev/null 2>&1 \
     && echo "✅ Installations completed successfully" \
     && echo "------------------------------------------------------"

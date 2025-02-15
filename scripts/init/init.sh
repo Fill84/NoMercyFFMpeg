@@ -117,7 +117,7 @@ for i in /scripts/*.sh; do
         success_count=$((success_count + 1))
     else # This is failure
         if [[ ${DEBUG} == "true" ]]; then
-            cat /ffmpeg_build.log
+            echo "Error log: $(cat /ffmpeg_build.log)"
             exit 1
         fi
         end_time=$(($(date +%s) - ${start_time}))
