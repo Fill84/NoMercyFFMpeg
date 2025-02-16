@@ -56,15 +56,16 @@ jobs:
     needs: [check-changes]
     steps:
       - name: Download Build Artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v3
         with:
           name: build-artifacts
+          path: downloads/
           
       - name: Unzip artifacts
         run: |
-          cd downloads
           unzip downloads.zip  # Or the actual name of your zip file if different
           rm downloads.zip  # Optional: Remove the zip file after extraction
+          cd downloads
           
       - name: Create Release
         id: create-release
