@@ -320,7 +320,7 @@ jobs:
 
           # Exit with failure if any tests failed
           if ($script:FAILED_TESTS -gt 0) {
-            throw "Some tests failed."
+            Write-Host "Some tests failed."
             exit 1
           }
           exit 0
@@ -331,11 +331,16 @@ jobs:
     continue-on-error: false
     if: success()
     steps:
-      
-      - name: Cache artifacts 
-        id: cached-downloads
-        uses: actions/cache/save@v4
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
         with:
-          path: downloads
-          key: downloads
+          name: build-artifacts
+          path: downloads/
+
+      # - name: Cache artifacts 
+      #   id: cached-downloads
+      #   uses: actions/cache/save@v4
+      #   with:
+      #     path: downloads
+      #     key: downloads
         
