@@ -63,6 +63,15 @@ jobs:
         arch: [x86_64, arm64]
     continue-on-error: true
     steps:
+
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: downloads/
+
       - name: Unpack ffmpeg binary
         shell: bash
         run: |
@@ -185,6 +194,15 @@ jobs:
         arch: [x86_64] #, arm64]
     continue-on-error: true
     steps:
+
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: downloads/
+          
       - name: Unpack ffmpeg binary
         shell: bash
         run: |
