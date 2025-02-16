@@ -1,11 +1,11 @@
 name: Test
 
 on:
-  # workflow_run:
-  #   workflows:
-  #     - Build
-  #   types:
-  #     - completed
+  workflow_run:
+    workflows:
+      - Build
+    types:
+      - completed
   workflow_dispatch:
     inputs:
       force_test:
@@ -30,6 +30,9 @@ jobs:
         with:
           name: build-artifacts
           path: downloads/
+
+      - name: Log Downloaded Files
+        run: ls -la downloads
           
       # - name: Unzip artifacts
       #   run: |
