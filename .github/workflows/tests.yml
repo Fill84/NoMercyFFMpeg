@@ -25,17 +25,17 @@ jobs:
         with:
           fetch-depth: 0
 
-      # - name: Download Build Artifacts
-      #   uses: actions/download-artifact@v4
-      #   with:
-      #     name: build-artifacts
-      #     path: downloads/
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+          path: downloads/
           
-      - name: Unzip artifacts
-        run: |
-          unzip downloads.zip  # Or the actual name of your zip file if different
-          rm downloads.zip  # Optional: Remove the zip file after extraction
-          cd downloads
+      # - name: Unzip artifacts
+      #   run: |
+      #     unzip downloads.zip  # Or the actual name of your zip file if different
+      #     rm downloads.zip  # Optional: Remove the zip file after extraction
+      #     cd downloads
           
       - name: Check release version
         id: version-check
