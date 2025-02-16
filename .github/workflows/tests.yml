@@ -29,6 +29,8 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: build-artifacts
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           path: downloads/
 
       - name: Log Downloaded Files
