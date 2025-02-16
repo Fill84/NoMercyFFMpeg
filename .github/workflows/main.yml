@@ -424,7 +424,7 @@ jobs:
           cache-from: type=registry,ref=nomercyentertainment/ffmpeg-darwin-arm64:buildcache
           cache-to: type=registry,ref=nomercyentertainment/ffmpeg-darwin-arm64:buildcache,mode=max
 
-  export-artifacts:
+  extract-artifacts:
     runs-on: ubuntu-latest
     needs: [build-linux-x86_64, build-linux-aarch64, build-windows-x86_64, build-darwin-x86_64, build-darwin-arm64, check-changes] #, build-windows-arm64
     if: needs.check-changes.outputs.base-changed || needs.check-changes.outputs.linux-x86_64-changed || needs.check-changes.outputs.linux-aarch64-changed || needs.check-changes.outputs.windows-x86_64-changed || needs.check-changes.outputs.darwin-x86_64-changed || needs.check-changes.outputs.darwin-arm64-changed || needs.check-changes.outputs.workflow-changed  || github.event.inputs.force_rebuild
@@ -436,7 +436,7 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Export Linux x86_64 Artifact
+      - name: Extract Linux x86_64 Artifact
         run: |
           mkdir -p downloads/linux-x86_64
           docker pull nomercyentertainment/ffmpeg-linux-x86_64:latest
@@ -445,7 +445,7 @@ jobs:
           # docker cp linux-x86_64-container:/build/linux-x86_64 downloads/linux-x86_64 || echo "Directory not found in container."
           docker rm linux-x86_64-container
           
-      - name: Export Linux Aarch64 Artifact
+      - name: Extract Linux Aarch64 Artifact
         run: |
           mkdir -p downloads/aarch64
           docker pull nomercyentertainment/ffmpeg-linux-aarch64:latest
@@ -454,7 +454,7 @@ jobs:
           # docker cp linux-aarch64-container:/build/aarch64 downloads/aarch64 || echo "Directory not found in container."
           docker rm linux-aarch64-container
 
-      - name: Export Windows x86_64 Artifact
+      - name: Extract Windows x86_64 Artifact
         run: |
           mkdir -p downloads/windows-x86_64
           docker pull nomercyentertainment/ffmpeg-windows-x86_64:latest
@@ -463,7 +463,7 @@ jobs:
           # docker cp windows-x86_64-container:/build/windows downloads/windows-x86_64 || echo "Directory not found in container."
           docker rm windows-x86_64-container
 
-      # - name: Export Windows arm64 Artifact
+      # - name: Extract Windows arm64 Artifact
         # run: |
         #   mkdir -p downloads/windows-arm64
         #   docker pull nomercyentertainment/ffmpeg-windows-arm64:latest
@@ -472,7 +472,7 @@ jobs:
         #   docker cp windows-arm64-container:/build/windows downloads/windows-arm64 || echo "Directory not found in container."
         #   docker rm windows-arm64-container
 
-      - name: Export Darwin x86_64 Artifact
+      - name: Extract Darwin x86_64 Artifact
         run: |
           mkdir -p downloads/darwin/x86_64
           docker pull nomercyentertainment/ffmpeg-darwin-x86_64:latest
@@ -481,7 +481,7 @@ jobs:
           # docker cp darwin-x86_64-container:/build/darwin/x86_64 downloads/darwin/x86_64 || echo "Directory not found in container."
           docker rm darwin-x86_64-container
 
-      - name: Export Darwin arm64 Artifact
+      - name: Extract Darwin arm64 Artifact
         run: |
           mkdir -p downloads/darwin/arm64
           docker pull nomercyentertainment/ffmpeg-darwin-arm64:latest
@@ -490,8 +490,339 @@ jobs:
           # docker cp darwin-arm64-container:/build/darwin/arm64 downloads/darwin/arm64 || echo "Directory not found in container."
           docker rm darwin-arm64-container
       
-      - name: Upload Build Artifacts
-        uses: actions/upload-artifact@v4
+      # - name: Upload Build Artifacts
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: build-artifacts
+      #     path: downloads/
+
+  platform-tests-unix:
+    needs: [check-changes, extract-artifacts]
+    runs-on: ${{ matrix.os }}
+    outputs:
+      version: ${{ needs.check-changes.outputs.version }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        arch: [x86_64, arm64]
+    continue-on-error: true
+    steps:
+      - name: Unpack ffmpeg binary
+        shell: bash
+        run: |
+          if [ "${{ matrix.os }}" == "ubuntu-latest" ] && [ "${{ matrix.arch }}" == "x86_64" ]; then
+            FILE_NAME="downloads/ffmpeg-7.1-linux-${{ matrix.arch }}.tar.gz"
+          elif [ "${{ matrix.os }}" == "ubuntu-latest" ] && [ "${{ matrix.arch }}" == "arm64" ]; then
+            FILE_NAME="downloads/ffmpeg-7.1-linux-aarch64.tar.gz"
+          elif [ "${{ matrix.os }}" == "macos-latest" ]; then
+            FILE_NAME="downloads/ffmpeg-7.1-darwin-${{ matrix.arch }}.tar.gz"
+          fi
+
+          tar -xvf $FILE_NAME
+
+          chmod +x ${{ github.workspace }}/ffmpeg ${{ github.workspace }}/ffprobe
+          
+      - name: Run Tests
+        id: tests
+        shell: bash
+        run: |
+          TOTAL_TESTS=0
+          PASSED_TESTS=0
+          FAILED_TESTS=0
+
+          mkdir -p test_files
+          dd if=/dev/urandom of=test_files/test.raw bs=1M count=1
+
+          check_command() {
+              command -v $1 >/dev/null 2>&1 || { echo "Required command $1 not found. Aborting."; exit 1; }
+          }
+
+          run_test() {
+            local name=$1
+            local command=$2
+            local expected_output=$3
+
+            TOTAL_TESTS=$((TOTAL_TESTS + 1))
+            echo "Testing $name... "
+
+            if eval "${{ github.workspace }}/ffmpeg $command" 2>&1 | grep -q "$expected_output"; then
+              PASSED_TESTS=$((PASSED_TESTS + 1))
+              echo "✅ PASSED"
+            else
+              FAILED_TESTS=$((FAILED_TESTS + 1))
+              echo "❌ FAILED"
+            fi
+          }
+
+          # Check for required commands
+          check_command ./ffmpeg
+          check_command ./ffprobe
+          # check_command ./ffplay
+
+          # Basic tests
+          run_test "ffmpeg version" "-version" "7.1"
+
+          # Video codecs
+          run_test "libx264" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx264 test_files/test_h264.mp4" "encoder.*libx264"
+          run_test "libx265" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx265 test_files/test_h265.mp4" "encoder.*libx265"
+          run_test "libvpx" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libvpx-vp9 test_files/test_vp9.webm" "encoder.*libvpx-vp9"
+          run_test "libaom" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libaom-av1 test_files/test_av1.mkv" "encoder.*libaom-av1"
+          run_test "libtheora" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libtheora test_files/test_theora.ogv" "encoder.*libtheora"
+
+          # Audio codecs
+          run_test "libfdk_aac" "-y -f lavfi -i anullsrc=duration=1 -c:a libfdk_aac test_files/test_aac.m4a" "encoder.*libfdk_aac"
+          run_test "libopus" "-y -f lavfi -i anullsrc=duration=1 -c:a libopus test_files/test_opus.opus" "encoder.*libopus"
+          run_test "libmp3lame" "-y -f lavfi -i anullsrc=duration=1 -c:a libmp3lame test_files/test_mp3.mp3" "encoder.*libmp3lame"
+
+          # Image codecs
+          run_test "libwebp" "-y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libwebp test_files/test.webp" "encoder.*libwebp"
+          run_test "libopenjpeg" "-y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libopenjpeg test_files/test.jp2" "encoder.*openjpeg"
+
+          # Subtitle codecs
+          run_test "libass" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -vf ass=test_files/test.ass test_files/test_ass.mp4" "ass"
+          run_test "libfribidi" "-filters 2>&1 | grep fribidi" "fribidi"
+
+          # Hardware acceleration
+          run_test "NVENC" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v h264_nvenc test_files/test_nvenc.mp4" "encoder.*h264_nvenc"
+          run_test "HEVC" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v h264_hevc test_files/test_hevc.mp4" "encoder.*h264_hevc"
+          run_test "VAAPI" "-y -vaapi_device /dev/dri/renderD128 -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -vf 'format=nv12,hwupload' -c:v h264_vaapi test_files/test_vaapi.mp4 2>&1" "vaapi"
+          run_test "VPL" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v h264_vpl test_files/test_vpl.mp4" "encoder.*h264_vpl"
+          run_test "AMF" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v h264_amf test_files/test_amf.mp4" "encoder.*h264_amf"
+          run_test "AMF_HEVC" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v hevc_amf test_files/test_amf_hevc.mp4" "encoder.*hevc_amf"
+
+          # Additional format tests
+          run_test "libbluray" "-h 2>&1 | grep bluray" "bluray"
+          run_test "libcdio" "-h 2>&1 | grep cdio" "cdio"
+          run_test "libsrt" "-h 2>&1 | grep srt" "srt"
+          run_test "libxml2" "-h 2>&1 | grep xml" "xml"
+
+          # AV1 codec tests
+          run_test "libdav1d" "-h decoder 2>&1 | grep dav1d" "dav1d"
+          run_test "librav1e" "-h encoder 2>&1 | grep rav1e" "rav1e"
+
+          # Cleanup
+          rm -rf test_files
+
+          # Print summary
+          echo "----------------------------------------"
+          echo "Test Summary:"
+          echo "Total tests: $TOTAL_TESTS"
+          echo "Passed tests: $PASSED_TESTS"
+          echo "Failed tests: $FAILED_TESTS"
+          echo "----------------------------------------"
+
+          # Exit with failure if any tests failed
+          if [ "$FAILED_TESTS" -gt 0 ]; then
+            printf "Some tests failed." >&2
+            exit 1
+          fi
+          exit 0
+
+  platform-tests-windows:
+    needs: [check-changes, extract-artifacts]
+    runs-on: ${{ matrix.os }}
+    outputs:
+      version: ${{ needs.check-changes.outputs.version }}
+    strategy:
+      matrix:
+        os: [windows-latest]
+        arch: [x86_64] #, arm64]
+    continue-on-error: true
+    steps:
+      - name: Unpack ffmpeg binary
+        shell: bash
+        run: |
+          FILE_NAME="downloads/ffmpeg-7.1-windows-${{ matrix.arch }}.zip"
+          unzip -o $FILE_NAME
+
+      - name: Run Tests
+        id: tests
+        shell: pwsh
+        run: |
+          $script:TOTAL_TESTS = 0
+          $script:PASSED_TESTS = 0
+          $script:FAILED_TESTS = 0
+
+          mkdir -p test_files
+
+          # Create test files
+          New-Item -ItemType Directory -Path test_files -Force | Out-Null
+
+          # Create a 1MB random file
+          $randomBytes = New-Object Byte[] 1048576
+          (New-Object Random).NextBytes($randomBytes)
+          [System.IO.File]::WriteAllBytes("test_files/test.raw", $randomBytes)
+
+          function check_command {
+              param (
+                  [string]$Command
+              )
+              if (-not (Test-Path $Command -PathType Leaf)) {
+                  Write-Host "Required command $Command not found. Aborting." -ForegroundColor Red
+                  exit 1
+              }
+          }
+
+          function run_test {
+            param (
+              [string]$Name,
+              [string]$Command,
+              [string]$ExpectedOutput
+            )
+
+            $script:TOTAL_TESTS++
+            Write-Host -NoNewline "Testing $Name... "
+
+            try {
+              $script:output = Invoke-Expression "${{ github.workspace }}/ffmpeg.exe $Command 2>&1" | Out-String
+              if ($script:output -cmatch $ExpectedOutput) {
+                Write-Host "✅ PASSED"
+                $script:PASSED_TESTS++
+              } else {
+                Write-Host "❌ FAILED"
+                $script:FAILED_TESTS++
+              }
+            } catch {
+              Write-Host "❌ FAILED (Error)"
+              $script:FAILED_TESTS++
+            }
+          }
+
+          # Check for required commands
+          check_command ./ffmpeg.exe
+          check_command ./ffprobe.exe
+          # check_command ./ffplay.exe
+
+          # Basic tests
+          run_test "ffmpeg version" "-version" "7.1"
+
+          # Video codecs
+          run_test "libx264" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx264 test_files/test_h264.mp4" "encoder.*libx264"
+          run_test "libx265" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx265 test_files/test_h265.mp4" "encoder.*libx265"
+          run_test "libvpx" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libvpx-vp9 test_files/test_vp9.webm" "encoder.*libvpx-vp9"
+          run_test "libaom" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libaom-av1 test_files/test_av1.mkv" "encoder.*libaom-av1"
+          run_test "libtheora" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libtheora test_files/test_theora.ogv" "encoder.*libtheora"
+
+          # Audio codecs
+          run_test "libfdk_aac" "-y -f lavfi -i anullsrc=duration=1 -c:a libfdk_aac test_files/test_aac.m4a" "encoder.*libfdk_aac"
+          run_test "libopus" "-y -f lavfi -i anullsrc=duration=1 -c:a libopus test_files/test_opus.opus" "encoder.*libopus"
+          run_test "libmp3lame" "-y -f lavfi -i anullsrc=duration=1 -c:a libmp3lame test_files/test_mp3.mp3" "encoder.*libmp3lame"
+
+          # Image codecs
+          run_test "libwebp" "-y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libwebp test_files/test.webp" "encoder.*libwebp"
+          run_test "libopenjpeg" "-y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libopenjpeg test_files/test.jp2" "encoder.*openjpeg"
+
+          # Subtitle codecs
+          run_test "libass" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -vf ass=test_files/test.ass test_files/test_ass.mp4" "ass"
+          run_test "libfribidi" "-filters 2>&1 | grep fribidi" "fribidi"
+
+          # Hardware acceleration
+          run_test "NVENC" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v h264_nvenc test_files/test_nvenc.mp4" "encoder.*h264_nvenc"
+          run_test "VAAPI" "-y -vaapi_device /dev/dri/renderD128 -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -vf 'format=nv12,hwupload' -c:v h264_vaapi test_files/test_vaapi.mp4 2>&1" "vaapi"
+          run_test "VPL" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v h264_vpl test_files/test_vpl.mp4" "encoder.*h264_vpl"
+          run_test "AMF" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v h264_amf test_files/test_amf.mp4" "encoder.*h264_amf"
+          run_test "AMF_HEVC" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v hevc_amf test_files/test_amf_hevc.mp4" "encoder.*hevc_amf"
+
+          # Additional format tests
+          run_test "libbluray" "-h 2>&1 | grep bluray" "bluray"
+          run_test "libcdio" "-h 2>&1 | grep cdio" "cdio"
+          run_test "libsrt" "-h 2>&1 | grep srt" "srt"
+          run_test "libxml2" "-h 2>&1 | grep xml" "xml"
+
+          # AV1 codec tests
+          run_test "libdav1d" "-h decoder 2>&1 | grep dav1d" "dav1d"
+          run_test "librav1e" "-h encoder 2>&1 | grep rav1e" "rav1e"
+
+          # Cleanup
+          Remove-Item -Path test_files -Recurse -Force
+
+          # Print summary
+          Write-Host "----------------------------------------"
+          Write-Host "Test Summary:"
+          Write-Host "Total tests: $script:TOTAL_TESTS"
+          Write-Host "Passed tests: $script:PASSED_TESTS"
+          Write-Host "Failed tests: $script:FAILED_TESTS"
+          Write-Host "----------------------------------------"
+
+          # Exit with failure if any tests failed
+          if ($script:FAILED_TESTS -gt 0) {
+            throw "Some tests failed."
+            exit 1
+          }
+          exit 0
+
+  release:
+    needs: [check-changes, extract-artifacts, platform-tests-unix, platform-tests-windows]
+    runs-on: ubuntu-latest
+    if: needs.check-changes.outputs.base-changed || needs.check-changes.outputs.linux-x86_64-changed || needs.check-changes.outputs.linux-aarch64-changed || needs.check-changes.outputs.windows-x86_64-changed || needs.check-changes.outputs.darwin-x86_64-changed || needs.check-changes.outputs.darwin-arm64-changed || needs.check-changes.outputs.workflow-changed || github.event.inputs.force_rebuild
+    steps:
+      - name: Create Release
+        id: create-release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          name: build-artifacts
-          path: downloads/
+          tag_name: ${{ needs.check-changes.outputs.version }}
+          release_name: ${{ needs.check-changes.outputs.version }}
+          draft: false
+          prerelease: false
+          
+      - name: Upload Linux x86_64 Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create-release.outputs.upload_url }}
+          asset_path: dowmloads/ffmpeg-7.1-linux-x86_64.tar.gz
+          asset_name: ffmpeg-7.1-linux-x86_64-${{ needs.check-changes.outputs.version }}.tar.gz
+          asset_content_type: application/gzip
+
+      - name: Upload Linux Aarch64 Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create-release.outputs.upload_url }}
+          asset_path: dowmloads/ffmpeg-7.1-linux-aarch64.tar.gz
+          asset_name: ffmpeg-7.1-linux-aarch64-${{ needs.check-changes.outputs.version }}.tar.gz
+          asset_content_type: application/gzip
+
+      - name: Upload Windows x86_64 Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create-release.outputs.upload_url }}
+          asset_path: dowmloads/ffmpeg-7.1-windows-x86_64.zip
+          asset_name: ffmpeg-7.1-windows-x86_64-${{ needs.check-changes.outputs.version }}.zip
+          asset_content_type: application/gzip
+
+      # - name: Upload Windows aarch64 Release Asset
+        # uses: actions/upload-release-asset@v1
+        # env:
+        #   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # with:
+        #   upload_url: ${{ steps.create-release.outputs.upload_url }}
+        #   asset_path: dowmloads/ffmpeg-7.1-windows-aarch64.tar.gz
+        #   asset_name: ffmpeg-7.1-windows-aarch64-${{ needs.check-changes.outputs.version }}.tar.gz
+        #   asset_content_type: application/gzip
+
+      - name: Upload Darwin x86_64 Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create-release.outputs.upload_url }}
+          asset_path: dowmloads/ffmpeg-7.1-darwin-x86_64.tar.gz
+          asset_name: ffmpeg-7.1-darwin-x86_64-${{ needs.check-changes.outputs.version }}.tar.gz
+          asset_content_type: application/gzip
+
+      - name: Upload Darwin arm64 Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create-release.outputs.upload_url }}
+          asset_path: dowmloads/ffmpeg-7.1-darwin-arm64.tar.gz
+          asset_name: ffmpeg-7.1-darwin-arm64-${{ needs.check-changes.outputs.version }}.tar.gz
+          asset_content_type: application/gzip

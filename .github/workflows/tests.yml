@@ -1,11 +1,11 @@
 name: Test
 
 on:
-  workflow_run:
-    workflows:
-      - Build
-    types:
-      - completed
+  # workflow_run:
+  #   workflows:
+  #     - Build
+  #   types:
+  #     - completed
   workflow_dispatch:
     inputs:
       force_test:
