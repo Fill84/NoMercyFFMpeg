@@ -55,11 +55,10 @@ jobs:
     runs-on: ubuntu-latest
     needs: [check-changes]
     steps:
-      - name: Download artifacts
+      - name: Download Build Artifacts
         uses: actions/download-artifact@v4
         with:
-          name: downloads
-          path: downloads
+          name: build-artifacts
           
       - name: Unzip artifacts
         run: |

@@ -490,8 +490,8 @@ jobs:
           # docker cp darwin-arm64-container:/build/darwin/arm64 downloads/darwin/arm64 || echo "Directory not found in container."
           docker rm darwin-arm64-container
       
-      - name: Upload artifacts
+      - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: downloads
-          path: downloads
+          name: build-artifacts
+          path: downloads/

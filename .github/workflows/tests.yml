@@ -25,11 +25,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Download artifacts
+      - name: Download Build Artifacts
         uses: actions/download-artifact@v4
         with:
-          name: downloads
-          path: downloads
+          name: build-artifacts
           
       - name: Unzip artifacts
         run: |
