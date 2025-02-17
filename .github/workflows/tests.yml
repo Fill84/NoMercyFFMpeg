@@ -1,4 +1,4 @@
-name: Test and Release
+name: Test
 
 on:
   workflow_run:
@@ -184,7 +184,7 @@ jobs:
           # Exit with failure if any tests failed
           if [ "$FAILED_TESTS" -gt 0 ]; then
             printf "Some tests failed." >&2
-            exit 1
+            exit ${FAILED_TESTS}
           fi
           exit 0
 
@@ -196,7 +196,7 @@ jobs:
         os: [windows-latest]
         arch: [x86_64] #, arm64]
     continue-on-error: true
-    steps:      
+    steps:
       - name: Download Build Artifacts
         uses: actions/download-artifact@v4
         with:
@@ -323,84 +323,84 @@ jobs:
           # Exit with failure if any tests failed
           if ($script:FAILED_TESTS -gt 0) {
             Write-Host "Some tests failed."
-            exit 1
+            exit $script:FAILED_TESTS
           }
           exit 0
 
-  create-release:
-    runs-on: ubuntu-latest
-    needs: [check-build, platform-tests-unix, platform-tests-windows]
-    continue-on-error: false
-    if: success()
-    steps:
-      - name: Create Release
-        id: create-release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ needs.check-build.outputs.version }}
-          release_name: ${{ needs.check-build.outputs.version }}
-          draft: false
-          prerelease: false
+  # create-release:
+  #   runs-on: ubuntu-latest
+  #   needs: [check-build, platform-tests-unix, platform-tests-windows]
+  #   continue-on-error: false
+  #   if: success()
+  #   steps:
+  #     - name: Create Release
+  #       id: create-release
+  #       uses: actions/create-release@v1
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #       with:
+  #         tag_name: ${{ needs.check-build.outputs.version }}
+  #         release_name: ${{ needs.check-build.outputs.version }}
+  #         draft: false
+  #         prerelease: false
           
-      - name: Upload Linux x86_64 Release Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create-release.outputs.upload_url }}
-          asset_path: dowmloads/ffmpeg-7.1-linux-x86_64.tar.gz
-          asset_name: ffmpeg-7.1-linux-x86_64-${{ needs.check-build.outputs.version }}.tar.gz
-          asset_content_type: application/gzip
+  #     - name: Upload Linux x86_64 Release Asset
+  #       uses: actions/upload-release-asset@v1
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #       with:
+  #         upload_url: ${{ steps.create-release.outputs.upload_url }}
+  #         asset_path: downloads/ffmpeg-7.1-linux-x86_64.tar.gz
+  #         asset_name: ffmpeg-7.1-linux-x86_64-${{ needs.check-build.outputs.version }}.tar.gz
+  #         asset_content_type: application/gzip
 
-      - name: Upload Linux Aarch64 Release Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create-release.outputs.upload_url }}
-          asset_path: dowmloads/ffmpeg-7.1-linux-aarch64.tar.gz
-          asset_name: ffmpeg-7.1-linux-aarch64-${{ needs.check-build.outputs.version }}.tar.gz
-          asset_content_type: application/gzip
+  #     - name: Upload Linux Aarch64 Release Asset
+  #       uses: actions/upload-release-asset@v1
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #       with:
+  #         upload_url: ${{ steps.create-release.outputs.upload_url }}
+  #         asset_path: downloads/ffmpeg-7.1-linux-aarch64.tar.gz
+  #         asset_name: ffmpeg-7.1-linux-aarch64-${{ needs.check-build.outputs.version }}.tar.gz
+  #         asset_content_type: application/gzip
 
-      - name: Upload Windows x86_64 Release Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create-release.outputs.upload_url }}
-          asset_path: dowmloads/ffmpeg-7.1-windows-x86_64.zip
-          asset_name: ffmpeg-7.1-windows-x86_64-${{ needs.check-build.outputs.version }}.zip
-          asset_content_type: application/gzip
+  #     - name: Upload Windows x86_64 Release Asset
+  #       uses: actions/upload-release-asset@v1
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #       with:
+  #         upload_url: ${{ steps.create-release.outputs.upload_url }}
+  #         asset_path: downloads/ffmpeg-7.1-windows-x86_64.zip
+  #         asset_name: ffmpeg-7.1-windows-x86_64-${{ needs.check-build.outputs.version }}.zip
+  #         asset_content_type: application/gzip
 
-      # - name: Upload Windows aarch64 Release Asset
-        # uses: actions/upload-release-asset@v1
-        # env:
-        #   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        # with:
-        #   upload_url: ${{ steps.create-release.outputs.upload_url }}
-        #   asset_path: dowmloads/ffmpeg-7.1-windows-aarch64.zip
-        #   asset_name: ffmpeg-7.1-windows-aarch64-${{ needs.check-build.outputs.version }}.zip
-        #   asset_content_type: application/gzip
+  #     # - name: Upload Windows aarch64 Release Asset
+  #       # uses: actions/upload-release-asset@v1
+  #       # env:
+  #       #   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #       # with:
+  #       #   upload_url: ${{ steps.create-release.outputs.upload_url }}
+  #       #   asset_path: downloads/ffmpeg-7.1-windows-aarch64.zip
+  #       #   asset_name: ffmpeg-7.1-windows-aarch64-${{ needs.check-build.outputs.version }}.zip
+  #       #   asset_content_type: application/gzip
 
-      - name: Upload Darwin x86_64 Release Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create-release.outputs.upload_url }}
-          asset_path: dowmloads/ffmpeg-7.1-darwin-x86_64.tar.gz
-          asset_name: ffmpeg-7.1-darwin-x86_64-${{ needs.check-build.outputs.version }}.tar.gz
-          asset_content_type: application/gzip
+  #     - name: Upload Darwin x86_64 Release Asset
+  #       uses: actions/upload-release-asset@v1
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #       with:
+  #         upload_url: ${{ steps.create-release.outputs.upload_url }}
+  #         asset_path: downloads/ffmpeg-7.1-darwin-x86_64.tar.gz
+  #         asset_name: ffmpeg-7.1-darwin-x86_64-${{ needs.check-build.outputs.version }}.tar.gz
+  #         asset_content_type: application/gzip
 
-      - name: Upload Darwin arm64 Release Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create-release.outputs.upload_url }}
-          asset_path: dowmloads/ffmpeg-7.1-darwin-arm64.tar.gz
-          asset_name: ffmpeg-7.1-darwin-arm64-${{ needs.check-build.outputs.version }}.tar.gz
-          asset_content_type: application/gzip
+  #     - name: Upload Darwin arm64 Release Asset
+  #       uses: actions/upload-release-asset@v1
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #       with:
+  #         upload_url: ${{ steps.create-release.outputs.upload_url }}
+  #         asset_path: downloads/ffmpeg-7.1-darwin-arm64.tar.gz
+  #         asset_name: ffmpeg-7.1-darwin-arm64-${{ needs.check-build.outputs.version }}.tar.gz
+  #         asset_content_type: application/gzip
         
