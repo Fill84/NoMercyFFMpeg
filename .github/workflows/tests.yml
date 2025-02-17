@@ -301,7 +301,7 @@ jobs:
           }
           exit 0
 
-  create-release:
+  prepare-release:
     runs-on: ubuntu-latest
     needs: [check-build, platform-tests-unix, platform-tests-windows]
     continue-on-error: false
