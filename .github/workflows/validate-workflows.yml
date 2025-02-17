@@ -39,11 +39,11 @@ jobs:
           # Check if all assets are present
           ASSETS=$(echo $RELEASE | jq -r '.assets[].name')
           REQUIRED_ASSETS=(
-            "ffmpeg-linux-x86_64-7.1"
-            "ffmpeg-linux-aarch64-7.1"
-            "ffmpeg-windows-x86_64-7.1"
-            "ffmpeg-darwin-x86_64-7.1"
-            "ffmpeg-darwin-arm64-7.1"
+            "ffmpeg-7.1-linux-x86_64"
+            "ffmpeg-7.1-linux-aarch64"
+            "ffmpeg-7.1-windows-x86_64"
+            "ffmpeg-7.1-darwin-x86_64"
+            "ffmpeg-7.1-darwin-arm64"
           )
 
           for asset in "${REQUIRED_ASSETS[@]}"; do
