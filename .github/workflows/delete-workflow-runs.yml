@@ -25,6 +25,6 @@ jobs:
         uses: Mattraks/delete-workflow-runs@v2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          repository: ${{ github.repository }}
-          retain_days: ${{ fromJson(github.event.inputs.retain_days) }}
-          keep_minimum_runs: ${{ fromJson(github.event.inputs.keep_minimum_runs) }}
+          repository: ${{ github.repository }}          
+          retain_days: ${{ fromJson(github.event.inputs.retain_days || 30) }}
+          keep_minimum_runs: ${{ fromJson(github.event.inputs.keep_minimum_runs || 6) }}
