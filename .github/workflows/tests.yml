@@ -93,29 +93,29 @@ jobs:
               [[ ! -f "$SAMPLE_IMAGE" ]] && ((TOTAL_COUNT++))
 
               if [[ ! -f $SampleVideo ]]; then
-                  Start_Time=$(data +%s)
-                  $Current_Count=$(($Current_Count + 1))
+                  Start_Time=$(date +%s)
+                  $Current_Count=$((Current_Count + 1))
                   text_with_padding "📹 Generating sample video" "[$Current_Count/$Total_Count]"
                   eval "${{ github.workspace }}/ffmpeg -hide_banner -f lavfi -i testsrc=duration=10:size=1280x720:rate=30 -c:v libx264 -crf 23 $SampleVideo" 2>&1
-                  End_Time=$(data +%s)
+                  End_Time=$(date +%s)
                   text_with_padding "✅ Sample video generated" "[ $(($Start_Time - $End_Time))s ]" 1
               fi
               
               if [[ ! -f $SampleAudio ]]; then
-                  Start_Time=$(data +%s)
-                  $Current_Count=$(($Current_Count + 1))
+                  Start_Time=$(date +%s)
+                  $Current_Count=$((Current_Count + 1))
                   text_with_padding "🔊 Generating sample audio" "[$Current_Count/$Total_Count]"
                   eval "${{ github.workspace }}/ffmpeg -hide_banner -f lavfi -i sine=frequency=1000:duration=10 -c:a pcm_s16le $SampleAudio" 2>&1
-                  End_Time=$(data +%s)
+                  End_Time=$(date +%s)
                   text_with_padding "✅ Sample audio generated" "[ $(($Start_Time - $End_Time))s ]" 1
               fi
 
               if [[ ! -f $SampleImage ]]; then
-                  Start_Time=$(data +%s)
-                  $Current_Count=$(($Current_Count + 1))
+                  Start_Time=$(date +%s)
+                  $Current_Count=$((Current_Count + 1))
                   text_with_padding "🖼️ Generating sample image" "[$Current_Count/$Total_Count]" -1
                   eval "${{ github.workspace }}/ffmpeg -hide_banner -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 $SampleImage" 2>&1
-                  End_Time=$(data +%s)
+                  End_Time=$(date +%s)
                   text_with_padding "✅ Sample image generated" "[ $(($Start_Time - $End_Time))s ]" 1
               fi
           }
