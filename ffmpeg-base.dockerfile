@@ -53,7 +53,7 @@ ENV ffmpeg_version=7.1 \
     libtheora_version=1.1.1 \
     libvpx_version=1.15.0 \
     x264_version=stable \
-    x265_version=master \
+    x265_version=4.0 \
     xavs2_version=1.4 \
     xvid_version=1.3.7 \
     libwebp_version=1.4.0 \
@@ -73,16 +73,16 @@ ENV ffmpeg_version=7.1 \
 
 # Dependencies for building ffmpeg
 RUN echo "------------------------------------------------------" \
-    && echo "       _   _       __  __                      " \
-    && echo "      | \ | | ___ |  \/  | ___ _ __ ___ _   _  " \
-    && echo "      |  \| |/ _ \| |\/| |/ _ \ '__/ __| | | | " \
-    && echo "      | |\  | (_) | |  | |  __/ | | (__| |_| | " \
-    && echo "      |_| \_|\___/|_|  |_|\___|_|  \___|\__, | " \
-    && echo "        _____ _____ __  __ ____  _____ _|___/  " \
-    && echo "       |  ___|  ___|  \/  |  _ \| ____/ ___|   " \
-    && echo "       | |_  | |_  | |\/| | |_) |  _|| |  _    " \
-    && echo "       |  _| |  _| | |  | |  __/| |__| |_| |   " \
-    && echo "       |_|   |_|   |_|  |_|_|   |_____\____|   " \
+    && echo "        _   _       __  __                      " \
+    && echo "       | \ | | ___ |  \/  | ___ _ __ ___ _   _  " \
+    && echo "       |  \| |/ _ \| |\/| |/ _ \ '__/ __| | | | " \
+    && echo "       | |\  | (_) | |  | |  __/ | | (__| |_| | " \
+    && echo "       |_| \_|\___/|_|  |_|\___|_|  \___|\__, | " \
+    && echo "         _____ _____ __  __ ____  _____ _|___/  " \
+    && echo "        |  ___|  ___|  \/  |  _ \| ____/ ___|   " \
+    && echo "        | |_  | |_  | |\/| | |_) |  _|| |  _    " \
+    && echo "        |  _| |  _| | |  | |  __/| |__| |_| |   " \
+    && echo "        |_|   |_|   |_|  |_|_|   |_____\____|   " \
     && echo "" \
     && echo "------------------------------------------------------" \
     && echo "📦 Start base build" \
@@ -547,8 +547,7 @@ RUN \
 RUN \
     echo "------------------------------------------------------" \
     && echo "🔄 Start downloading x265" \
-    && wget -O x265.tar.bz2 https://bitbucket.org/multicoreware/x265_git/get/${x265_version}.tar.bz2 >/dev/null 2>&1 \
-    && tar xjf x265.tar.bz2 >/dev/null 2>&1 && rm x265.tar.bz2 && mv multicoreware-x265_git-* x265 \
+    && git clone --branch Release_${x265_version} https://bitbucket.org/multicoreware/x265_git.git x265 >/dev/null 2>&1 \
     && echo "✅ Download completed successfully" \
     && echo "------------------------------------------------------"
 

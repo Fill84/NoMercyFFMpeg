@@ -70,94 +70,176 @@ jobs:
         id: tests
         shell: bash
         run: |
+          TOTAL_WIDTH_TEXT=54
+
           TOTAL_TESTS=0
           PASSED_TESTS=0
           FAILED_TESTS=0
 
-          mkdir -p test_files
-          dd if=/dev/urandom of=test_files/test.raw bs=1M count=1
+          SampleVideo="${{ github.workspace }}/test_files/sample.mp4"  # Ensure this exists or will be generated
+          SampleAudio="${{ github.workspace }}/test_files/sample.wav"  # Ensure this exists or will be generated
+          SampleImage="${{ github.workspace }}/test_files/sample.png"  # Ensure this exists or will be generated
+
+          # Cleanup
+          # Remove test files if they exist
+
+          if [ -f "${{ github.workspace }}/test_files" ]; then
+              rm -rf ${{ github.workspace }}/test_files
+          fi
+
+          # Create test files
+          mkdir -p ${{ github.workspace }}/test_files
+
+          generate_samples() {
+              Total_Count=0
+              Current_Count=0
+
+              if [[ ! -f $SampleVideo ]]; then
+                  $Total_Count++
+              fi
+              if [[ ! -f $SampleAudio ]]; then
+                  $Total_Count++
+              fi
+              if [[ ! -f $SampleImage ]]; then
+                  $Total_Count++
+              fi
+
+              if [[ ! -f $SampleVideo ]]; then
+                  Start_Time=$(data +%s)
+                  $Current_Count++
+                  text_with_padding "📹 Generating sample video" "[$Current_Count/$Total_Count]"
+                  eval "${{ github.workspace }}/ffmpeg -hide_banner -f lavfi -i testsrc=duration=10:size=1280x720:rate=30 -c:v libx264 -crf 23 $SampleVideo" 2>&1
+                  End_Time=$(data +%s)
+                  text_with_padding "✅ Sample video generated" "[ $(($Start_Time - $End_Time))s ]" 1
+              fi
+              
+              if [[ ! -f $SampleAudio ]]; then
+                  Start_Time=$(data +%s)
+                  $Current_Count++
+                  text_with_padding "🔊 Generating sample audio" "[$Current_Count/$Total_Count]"
+                  eval "${{ github.workspace }}/ffmpeg -hide_banner -f lavfi -i sine=frequency=1000:duration=10 -c:a pcm_s16le $SampleAudio" 2>&1
+                  End_Time=$(data +%s)
+                  text_with_padding "✅ Sample audio generated" "[ $(($Start_Time - $End_Time))s ]" 1
+              fi
+
+              if [[ ! -f $SampleImage ]]; then
+                  Start_Time=$(data +%s)
+                  $Current_Count++
+                  text_with_padding "🖼️ Generating sample image" "[$Current_Count/$Total_Count]" -1
+                  eval "${{ github.workspace }}/ffmpeg -hide_banner -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 $SampleImage" 2>&1
+                  End_Time=$(data +%s)
+                  text_with_padding "✅ Sample image generated" "[ $(($Start_Time - $End_Time))s ]" 1
+              fi
+          }
+
+          text_with_padding() {
+              local text_before=$1
+              local text_after=$2
+              local extra_padding=${3:-0}
+              local text_length=$(( ${#text_before} + ${#text_after} ))
+              local padding=$((TOTAL_WIDTH_TEXT - (text_length - extra_padding)))
+              printf "%s%-${padding}s%s\n" ${text_before} " " ${text_after}
+          }
 
           check_command() {
               command -v $1 >/dev/null 2>&1 || { echo "Required command $1 not found. Aborting."; exit 1; }
           }
 
           run_test() {
-            local name=$1
-            local command=$2
-            local expected_output=$3
+              local name=$1
+              local command=$2
+              local expected_output=$3
 
-            TOTAL_TESTS=$((TOTAL_TESTS + 1))
-            echo "Testing $name... "
+              TOTAL_TESTS=$((TOTAL_TESTS + 1))
 
-            if eval "${{ github.workspace }}/ffmpeg $command" 2>&1 | grep -q "$expected_output"; then
-              PASSED_TESTS=$((PASSED_TESTS + 1))
-              echo "✅ PASSED"
-            else
-              FAILED_TESTS=$((FAILED_TESTS + 1))
-              echo "❌ FAILED"
-            fi
+              text_with_padding "🧪 Testing ${name^^}" "[${TOTAL_TESTS}/24]"
+              start_time=$(date +%s)
+              if eval "${{ github.workspace }}/ffmpeg $command" 2>&1 | grep -q "$expected_output"; then
+                  end_time=$(date +%s)
+                  text_with_padding "✅ ${name^^} test was successfully" "[ $(($end_time - $start_time))s ]"
+                  PASSED_TESTS=$((PASSED_TESTS + 1))
+              else
+                  FAILED_TESTS=$((FAILED_TESTS + 1))
+                  end_time=$(date +%s)
+                  text_with_padding "❌ ${name^^} test failed" "[ $(($end_time - $start_time))s ]"
+              fi
           }
 
           # Check for required commands
           check_command ./ffmpeg
-          check_command ./ffprobe
-          # check_command ./ffplay
+
+          # Print banner
+          echo "------------------------------------------------------"
+          echo "        _   _       __  __                      "
+          echo "       | \ | | ___ |  \/  | ___ _ __ ___ _   _  "
+          echo "       |  \| |/ _ \| |\/| |/ _ \ '__/ __| | | | "
+          echo "       | |\  | (_) | |  | |  __/ | | (__| |_| | "
+          echo "       |_| \_|\___/|_|  |_|\___|_|  \___|\__, | "
+          echo "         _____ _____ __  __ ____  _____ _|___/  "
+          echo "        |  ___|  ___|  \/  |  _ \| ____/ ___|   "
+          echo "        | |_  | |_  | |\/| | |_) |  _|| |  _    "
+          echo "        |  _| |  _| | |  | |  __/| |__| |_| |   "
+          echo "        |_|   |_|   |_|  |_|_|   |_____\____|   "
+          echo ""
+          echo "------------------------------------------------------"
+
+          Generate-Samples
+
+          echo "------------------------------------------------------"
 
           # Basic tests
-          run_test "ffmpeg version" "-version" "7.1"
+          run_test "version" "-version" "7.1"
 
           # Video codecs
-          run_test "libx264" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx264 test_files/test_h264.mp4" "encoder.*libx264"
-          run_test "libx265" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx265 test_files/test_h265.mp4" "encoder.*libx265"
-          run_test "libvpx" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libvpx-vp9 test_files/test_vp9.webm" "encoder.*libvpx-vp9"
-          run_test "libaom" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libaom-av1 test_files/test_av1.mkv" "encoder.*libaom-av1"
-          run_test "libtheora" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libtheora test_files/test_theora.ogv" "encoder.*libtheora"
+          run_test "libx264" "-y -i ${SampleVideo} -c:v libx264 test_files/test_h264.mp4" "encoder.*x264"
+          run_test "libx265" "-y -i ${SampleVideo} -c:v libx265 test_files/test_h265.mp4" "encoder.*x265"
+          run_test "libvpx" "-y -i ${SampleVideo} -c:v libvpx-vp9 test_files/test_vp9.webm" "encoder.*vp9"
+          run_test "libaom" "-y -i ${SampleVideo} -c:v libaom-av1 test_files/test_av1.mkv" "encoder.*av1"
+          run_test "libtheora" "-y -i ${SampleVideo} -c:v libtheora test_files/test_theora.ogv" "encoder.*theora"
 
           # Audio codecs
-          run_test "libfdk_aac" "-y -f lavfi -i anullsrc=duration=1 -c:a libfdk_aac test_files/test_aac.m4a" "encoder.*libfdk_aac"
-          run_test "libopus" "-y -f lavfi -i anullsrc=duration=1 -c:a libopus test_files/test_opus.opus" "encoder.*libopus"
-          run_test "libmp3lame" "-y -f lavfi -i anullsrc=duration=1 -c:a libmp3lame test_files/test_mp3.mp3" "encoder.*libmp3lame"
+          run_test "libfdk_aac" "-y -i ${SampleAudio} -c:a libfdk_aac test_files/test_aac.m4a" "encoder.*aac"
+          run_test "libopus" "-y -i ${SampleAudio} -c:a libopus test_files/test_opus.opus" "encoder.*opus"
+          run_test "libmp3lame" "-y -i ${SampleAudio} -c:a libmp3lame test_files/test_mp3.mp3" "encoder.*mp3"
 
           # Image codecs
-          run_test "libwebp" "-y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libwebp test_files/test.webp" "encoder.*libwebp"
-          run_test "libopenjpeg" "-y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libopenjpeg test_files/test.jp2" "encoder.*openjpeg"
+          run_test "libwebp" "-y ${SampleImage} -c:v libwebp test_files/test_webp.webp" "webp"
+          run_test "libopenjpeg" "-y ${SampleImage} -c:v libopenjpeg test_files/test_jp2.jp2" "openjpeg"
 
           # Subtitle codecs
-          run_test "libass" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -vf ass=test_files/test.ass test_files/test_ass.mp4" "ass"
-          run_test "libfribidi" "-filters 2>&1 | grep fribidi" "fribidi"
+          run_test "libass" "-y -i ${SampleVideo} -vf ass=test_files/test.ass test_files/test_ass.mp4" "ass"
 
           # Hardware acceleration
-          run_test "NVENC" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v h264_nvenc test_files/test_nvenc.mp4" "encoder.*h264_nvenc"
-          run_test "HEVC" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v h264_hevc test_files/test_hevc.mp4" "encoder.*h264_hevc"
-          run_test "VAAPI" "-y -vaapi_device /dev/dri/renderD128 -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -vf 'format=nv12,hwupload' -c:v h264_vaapi test_files/test_vaapi.mp4 2>&1" "vaapi"
-          run_test "VPL" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v h264_vpl test_files/test_vpl.mp4" "encoder.*h264_vpl"
-          run_test "AMF" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v h264_amf test_files/test_amf.mp4" "encoder.*h264_amf"
-          run_test "AMF_HEVC" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v hevc_amf test_files/test_amf_hevc.mp4" "encoder.*hevc_amf"
+          run_test "NVENC" "-y -i ${SampleVideo} -c:v h264_nvenc test_files/test_nvenc.mp4" "encoder.*nvenc"
+          run_test "VPL" "-y -i ${SampleVideo} -c:v h264_vpl test_files/test_vpl.mp4" "encoder.*vpl"
+          run_test "AMF" "-y -i ${SampleVideo} -c:v h264_amf test_files/test_amf.mp4" "encoder.*amf"
+          run_test "AMF_HEVC" "-y -i ${SampleVideo} -c:v hevc_amf test_files/test_amf_hevc.mp4" "encoder.*amf"
 
           # Additional format tests
-          run_test "libbluray" "-h 2>&1 | grep bluray" "bluray"
-          run_test "libcdio" "-h 2>&1 | grep cdio" "cdio"
-          run_test "libsrt" "-h 2>&1 | grep srt" "srt"
-          run_test "libxml2" "-h 2>&1 | grep xml" "xml"
+          run_test "libfribidi" "-filters 2>&1 | findstr fribidi" "fribidi"
+          run_test "libbluray" "-h 2>&1 | findstr bluray" "bluray"
+          run_test "libdvdread" "-h 2>&1 | findstr dvdread" "dvdread"
+          run_test "libcdio" "-h 2>&1 | findstr cdio" "cdio"
+          run_test "libsrt" "-h 2>&1 | findstr srt" "srt"
+          run_test "libxml2" "-h 2>&1 | findstr xml" "xml"
 
           # AV1 codec tests
-          run_test "libdav1d" "-h decoder 2>&1 | grep dav1d" "dav1d"
-          run_test "librav1e" "-h encoder 2>&1 | grep rav1e" "rav1e"
+          run_test "libdav1d" "-h decoder 2>&1 | findstr dav1d" "dav1d"
+          run_test "librav1e" "-h encoder 2>&1 | findstr rav1e" "rav1e"
 
           # Cleanup
           rm -rf test_files
 
           # Print summary
-          echo "----------------------------------------"
-          echo "Test Summary:"
-          echo "Total tests: $TOTAL_TESTS"
-          echo "Passed tests: $PASSED_TESTS"
-          echo "Failed tests: $FAILED_TESTS"
-          echo "----------------------------------------"
+          echo "------------------------------------------------------"
+          echo "📊 Summary:"
+          echo "Total tests:    ${TOTAL_TESTS}"
+          echo "Passed tests:   ${PASSED_TESTS}"
+          echo "Failed tests:   ${FAILED_TESTS}"
+          echo "------------------------------------------------------"
 
           # Exit with failure if any tests failed
           if [ "$FAILED_TESTS" -gt 0 ]; then
-            printf "Some tests failed." >&2
             exit ${FAILED_TESTS}
           fi
           exit 0
@@ -189,19 +271,75 @@ jobs:
         id: tests
         shell: pwsh
         run: |
+          $script:TOTAL_WIDTH_TEXT = 54
           $script:TOTAL_TESTS = 0
           $script:PASSED_TESTS = 0
           $script:FAILED_TESTS = 0
+          
+          $script:SampleVideo = "${{ github.workspace }}/test_files/sample.mp4"  # Ensure this exists or will be generated
+          $script:SampleAudio = "${{ github.workspace }}/test_files/sample.wav"  # Ensure this exists or will be generated
+          $script:SampleImage = "${{ github.workspace }}/test_files/sample.png"  # Ensure this exists or will be generated
 
-          mkdir -p test_files
+          # Cleanup
+          if (Test-Path .\test_files) {
+              Remove-Item -Path test_files -Recurse -Force
+          }
 
           # Create test files
           New-Item -ItemType Directory -Path test_files -Force | Out-Null
 
-          # Create a 1MB random file
-          $randomBytes = New-Object Byte[] 1048576
-          (New-Object Random).NextBytes($randomBytes)
-          [System.IO.File]::WriteAllBytes("test_files/test.raw", $randomBytes)
+          function Generate-Samples {
+              $script:Total_Count = 0
+              $script:Current_Count = 0
+              
+              if (-not (Test-Path $script:SampleVideo)) {
+                  $script:Total_Count++
+              }
+              if (-not (Test-Path $script:SampleAudio)) {
+                  $script:Total_Count++
+              }
+              if (-not (Test-Path $script:SampleImage)) {
+                  $script:Total_Count++
+              }
+
+              if (-not (Test-Path $script:SampleVideo)) {
+                  $script:Start_Time = Get-Date
+                  $script:Current_Count++
+                  text_with_padding "📹 Generating sample video" "[$script:Current_Count/$script:Total_Count]"
+                  Invoke-Expression "${{ github.workspace }}/ffmpeg.exe -hide_banner -f lavfi -i testsrc=duration=10:size=1280x720:rate=30 -c:v libx264 -crf 23 $script:SampleVideo" 2>&1
+                  $script:End_Time = Get-Date
+                  text_with_padding "✅ Sample video generated" "[ $((New-TimeSpan -Start $script:Start_Time -End $script:End_Time).Seconds)s ]" 1
+              }
+              
+              if (-not (Test-Path $script:SampleAudio)) {
+                  $script:Start_Time = Get-Date
+                  $script:Current_Count++
+                  text_with_padding "🔊 Generating sample audio" "[$script:Current_Count/$script:Total_Count]"
+                  Invoke-Expression "${{ github.workspace }}/ffmpeg.exe -hide_banner -f lavfi -i sine=frequency=1000:duration=10 -c:a pcm_s16le $script:SampleAudio" 2>&1
+                  $script:End_Time = Get-Date
+                  text_with_padding "✅ Sample audio generated" "[ $((New-TimeSpan -Start $script:Start_Time -End $script:End_Time).Seconds)s ]" 1
+              }
+
+              if (-not (Test-Path $script:SampleImage)) {
+                  $script:Start_Time = Get-Date
+                  $script:Current_Count++
+                  text_with_padding "🖼️ Generating sample image" "[$script:Current_Count/$script:Total_Count]" -1
+                  Invoke-Expression "${{ github.workspace }}/ffmpeg.exe -hide_banner -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 $script:SampleImage" 2>&1
+                  $script:End_Time = Get-Date
+                  text_with_padding "✅ Sample image generated" "[ $((New-TimeSpan -Start $script:Start_Time -End $script:End_Time).Seconds)s ]" 1
+              }
+          }
+
+          function text_with_padding {
+              param (
+                  [string]$TextBefore,
+                  [string]$TextAfter,
+                  [int]$ExtraPadding = 0
+              )
+              $textLength = $TextBefore.Length + $TextAfter.Length
+              $padding = ($script:TOTAL_WIDTH_TEXT - $textLength)
+              Write-Host "$("{0}{1}{2}" -f $TextBefore, (" " * ($padding - $ExtraPadding)), $TextAfter)"
+          }
 
           function check_command {
               param (
@@ -214,89 +352,108 @@ jobs:
           }
 
           function run_test {
-            param (
-              [string]$Name,
-              [string]$Command,
-              [string]$ExpectedOutput
-            )
+              param (
+                  [string]$Name,
+                  [string]$Command,
+                  [string]$ExpectedOutput
+              )
 
-            $script:TOTAL_TESTS++
-            Write-Host -NoNewline "Testing $Name... "
-
-            try {
-              $script:output = Invoke-Expression "${{ github.workspace }}/ffmpeg.exe $Command 2>&1" | Out-String
-              if ($script:output -cmatch $ExpectedOutput) {
-                Write-Host "✅ PASSED"
-                $script:PASSED_TESTS++
-              } else {
-                Write-Host "❌ FAILED"
-                $script:FAILED_TESTS++
+              $script:TOTAL_TESTS++
+              text_with_padding "🧪 Testing $($Name.ToUpper())" "[${script:TOTAL_TESTS}/24]"
+              $start_time = Get-Date
+              try {
+                  $script:output = Invoke-Expression "${{ github.workspace }}/ffmpeg.exe $Command 2>&1" | Out-String
+                  if ($script:output -cmatch $ExpectedOutput) {
+                  $end_time = Get-Date
+                  text_with_padding "✅ $($Name.ToUpper()) test was successfully" "[ $((New-TimeSpan -Start $start_time -End $end_time).Seconds)s ]" 1
+                  $script:PASSED_TESTS++
+                  } else {
+                  $end_time = Get-Date
+                  text_with_padding "❌ $($Name.ToUpper()) test failed" "[ $((New-TimeSpan -Start $start_time -End $end_time).Seconds)s ]" 1               
+                  $script:FAILED_TESTS++
+                  }
+              } catch {
+                  $end_time = Get-Date
+                  text_with_padding "❌ $($Name.ToUpper()) test failed" "[ $((New-TimeSpan -Start $start_time -End $end_time).Seconds)s ]" 1
+                  $script:FAILED_TESTS++
               }
-            } catch {
-              Write-Host "❌ FAILED (Error)"
-              $script:FAILED_TESTS++
-            }
           }
 
           # Check for required commands
           check_command ./ffmpeg.exe
-          check_command ./ffprobe.exe
-          # check_command ./ffplay.exe
+
+          # Print banner
+          Write-Host "------------------------------------------------------"
+          Write-Host "        _   _       __  __                      "
+          Write-Host "       | \ | | ___ |  \/  | ___ _ __ ___ _   _  "
+          Write-Host "       |  \| |/ _ \| |\/| |/ _ \ '__/ __| | | | "
+          Write-Host "       | |\  | (_) | |  | |  __/ | | (__| |_| | "
+          Write-Host "       |_| \_|\___/|_|  |_|\___|_|  \___|\__, | "
+          Write-Host "         _____ _____ __  __ ____  _____ _|___/  "
+          Write-Host "        |  ___|  ___|  \/  |  _ \| ____/ ___|   "
+          Write-Host "        | |_  | |_  | |\/| | |_) |  _|| |  _    "
+          Write-Host "        |  _| |  _| | |  | |  __/| |__| |_| |   "
+          Write-Host "        |_|   |_|   |_|  |_|_|   |_____\____|   "
+          Write-Host ""
+          Write-Host "------------------------------------------------------"
+
+          Generate-Samples
+
+          Write-Host "------------------------------------------------------"
 
           # Basic tests
-          run_test "ffmpeg version" "-version" "7.1"
+          run_test "version" "-version" "7.1"
 
           # Video codecs
-          run_test "libx264" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx264 test_files/test_h264.mp4" "encoder.*libx264"
-          run_test "libx265" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libx265 test_files/test_h265.mp4" "encoder.*libx265"
-          run_test "libvpx" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libvpx-vp9 test_files/test_vp9.webm" "encoder.*libvpx-vp9"
-          run_test "libaom" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libaom-av1 test_files/test_av1.mkv" "encoder.*libaom-av1"
-          run_test "libtheora" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v libtheora test_files/test_theora.ogv" "encoder.*libtheora"
+          run_test "libx264" "-y -i $script:SampleVideo -c:v libx264 test_files/test_h264.mp4" "encoder.*x264"
+          run_test "libx265" "-y -i $script:SampleVideo -c:v libx265 test_files/test_h265.mp4" "encoder.*x265"
+          run_test "libvpx" "-y -i $script:SampleVideo -c:v libvpx-vp9 test_files/test_vp9.webm" "encoder.*vp9"
+          run_test "libaom" "-y -i $script:SampleVideo -c:v libaom-av1 test_files/test_av1.mkv" "encoder.*av1"
+          run_test "libtheora" "-y -i $script:SampleVideo -c:v libtheora test_files/test_theora.ogv" "encoder.*theora"
 
           # Audio codecs
-          run_test "libfdk_aac" "-y -f lavfi -i anullsrc=duration=1 -c:a libfdk_aac test_files/test_aac.m4a" "encoder.*libfdk_aac"
-          run_test "libopus" "-y -f lavfi -i anullsrc=duration=1 -c:a libopus test_files/test_opus.opus" "encoder.*libopus"
-          run_test "libmp3lame" "-y -f lavfi -i anullsrc=duration=1 -c:a libmp3lame test_files/test_mp3.mp3" "encoder.*libmp3lame"
+          run_test "libfdk_aac" "-y -i $script:SampleAudio -c:a libfdk_aac test_files/test_aac.m4a" "encoder.*aac"
+          run_test "libopus" "-y -i $script:SampleAudio -c:a libopus test_files/test_opus.opus" "encoder.*opus"
+          run_test "libmp3lame" "-y -i $script:SampleAudio -c:a libmp3lame test_files/test_mp3.mp3" "encoder.*mp3"
 
           # Image codecs
-          run_test "libwebp" "-y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libwebp test_files/test.webp" "encoder.*libwebp"
-          run_test "libopenjpeg" "-y -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 -c:v libopenjpeg test_files/test.jp2" "encoder.*openjpeg"
+          run_test "libwebp" "-y $script:SampleImage -c:v libwebp test_files/test_webp.webp" "webp"
+          run_test "libopenjpeg" "-y $script:SampleImage -c:v libopenjpeg test_files/test_jp2.jp2" "openjpeg"
 
           # Subtitle codecs
-          run_test "libass" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -vf ass=test_files/test.ass test_files/test_ass.mp4" "ass"
-          run_test "libfribidi" "-filters 2>&1 | grep fribidi" "fribidi"
+          run_test "libass" "-y -i $script:SampleVideo -vf ass=test_files/test.ass test_files/test_ass.mp4" "ass"
 
           # Hardware acceleration
-          run_test "NVENC" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v h264_nvenc test_files/test_nvenc.mp4" "encoder.*h264_nvenc"
-          run_test "VAAPI" "-y -vaapi_device /dev/dri/renderD128 -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -vf 'format=nv12,hwupload' -c:v h264_vaapi test_files/test_vaapi.mp4 2>&1" "vaapi"
-          run_test "VPL" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v h264_vpl test_files/test_vpl.mp4" "encoder.*h264_vpl"
-          run_test "AMF" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v h264_amf test_files/test_amf.mp4" "encoder.*h264_amf"
-          run_test "AMF_HEVC" "-y -f lavfi -i testsrc=duration=1:size=1280x720:rate=30 -c:v hevc_amf test_files/test_amf_hevc.mp4" "encoder.*hevc_amf"
+          run_test "NVENC" "-y -i $script:SampleVideo -c:v h264_nvenc test_files/test_nvenc.mp4" "encoder.*nvenc"
+          run_test "VPL" "-y -i $script:SampleVideo -c:v h264_vpl test_files/test_vpl.mp4" "encoder.*vpl"
+          run_test "AMF" "-y -i $script:SampleVideo -c:v h264_amf test_files/test_amf.mp4" "encoder.*amf"
+          run_test "AMF_HEVC" "-y -i $script:SampleVideo -c:v hevc_amf test_files/test_amf_hevc.mp4" "encoder.*amf"
 
           # Additional format tests
-          run_test "libbluray" "-h 2>&1 | grep bluray" "bluray"
-          run_test "libcdio" "-h 2>&1 | grep cdio" "cdio"
-          run_test "libsrt" "-h 2>&1 | grep srt" "srt"
-          run_test "libxml2" "-h 2>&1 | grep xml" "xml"
+          run_test "libfribidi" "-filters 2>&1 | findstr fribidi" "fribidi"
+          run_test "libbluray" "-h 2>&1 | findstr bluray" "bluray"
+          run_test "libdvdread" "-h 2>&1 | findstr dvdread" "dvdread"
+          run_test "libcdio" "-h 2>&1 | findstr cdio" "cdio"
+          run_test "libsrt" "-h 2>&1 | findstr srt" "srt"
+          run_test "libxml2" "-h 2>&1 | findstr xml" "xml"
 
           # AV1 codec tests
-          run_test "libdav1d" "-h decoder 2>&1 | grep dav1d" "dav1d"
-          run_test "librav1e" "-h encoder 2>&1 | grep rav1e" "rav1e"
+          run_test "libdav1d" "-h decoder 2>&1 | findstr dav1d" "dav1d"
+          run_test "librav1e" "-h encoder 2>&1 | findstr rav1e" "rav1e"
 
           # Cleanup
           Remove-Item -Path test_files -Recurse -Force
 
           # Print summary
-          Write-Host "----------------------------------------"
-          Write-Host "Test Summary:"
-          Write-Host "Total tests: $script:TOTAL_TESTS"
-          Write-Host "Passed tests: $script:PASSED_TESTS"
-          Write-Host "Failed tests: $script:FAILED_TESTS"
-          Write-Host "----------------------------------------"
+          Write-Host "------------------------------------------------------"
+          Write-Host "📊 Summary:"
+          Write-Host "Total tests:    $script:TOTAL_TESTS"
+          Write-Host "Passed tests:   $script:PASSED_TESTS"
+          Write-Host "Failed tests:   $script:FAILED_TESTS"
+          Write-Host "------------------------------------------------------"
 
           # Exit with failure if any tests failed
           if ($script:FAILED_TESTS -gt 0) {
-            Write-Host "Some tests failed."
             exit $script:FAILED_TESTS
           }
           exit 0

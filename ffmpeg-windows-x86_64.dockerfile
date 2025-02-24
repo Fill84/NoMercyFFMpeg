@@ -14,16 +14,16 @@ ENV DEBIAN_FRONTEND=noninteractive \
 
 # Update and install dependencies
 RUN echo "------------------------------------------------------" \
-    && echo "       _   _       __  __                      " \
-    && echo "      | \ | | ___ |  \/  | ___ _ __ ___ _   _  " \
-    && echo "      |  \| |/ _ \| |\/| |/ _ \ '__/ __| | | | " \
-    && echo "      | |\  | (_) | |  | |  __/ | | (__| |_| | " \
-    && echo "      |_| \_|\___/|_|  |_|\___|_|  \___|\__, | " \
-    && echo "        _____ _____ __  __ ____  _____ _|___/  " \
-    && echo "       |  ___|  ___|  \/  |  _ \| ____/ ___|   " \
-    && echo "       | |_  | |_  | |\/| | |_) |  _|| |  _    " \
-    && echo "       |  _| |  _| | |  | |  __/| |__| |_| |   " \
-    && echo "       |_|   |_|   |_|  |_|_|   |_____\____|   " \
+    && echo "        _   _       __  __                      " \
+    && echo "       | \ | | ___ |  \/  | ___ _ __ ___ _   _  " \
+    && echo "       |  \| |/ _ \| |\/| |/ _ \ '__/ __| | | | " \
+    && echo "       | |\  | (_) | |  | |  __/ | | (__| |_| | " \
+    && echo "       |_| \_|\___/|_|  |_|\___|_|  \___|\__, | " \
+    && echo "         _____ _____ __  __ ____  _____ _|___/  " \
+    && echo "        |  ___|  ___|  \/  |  _ \| ____/ ___|   " \
+    && echo "        | |_  | |_  | |\/| | |_) |  _|| |  _    " \
+    && echo "        |  _| |  _| | |  | |  __/| |__| |_| |   " \
+    && echo "        |_|   |_|   |_|  |_|_|   |_____\____|   " \
     && echo "" \
     && echo "------------------------------------------------------" \
     && echo "📦 Start FFmpeg for Windows x86_64 build" \
@@ -104,12 +104,13 @@ RUN mkdir -p ${PREFIX}
 
 ENV FFMPEG_ENABLES="" \
     FFMPEG_CFLAGS="" \
-    FFMPEG_LDFLAGS=""
+    FFMPEG_LDFLAGS="" \
+    FFMPEG_EXTRA_LIBFLAGS=""
 
 # Copy the build scripts
 COPY ./scripts /scripts
 
-RUN touch /build/enable.txt /build/cflags.txt /build/ldflags.txt \
+RUN touch /build/enable.txt /build/cflags.txt /build/ldflags.txt /build/extra_libflags.txt \
     && chmod +x /scripts/init/init.sh \
     && /scripts/init/init.sh \
     || (echo "❌ FFmpeg build failed" ; exit 1)
@@ -118,11 +119,12 @@ RUN touch /build/enable.txt /build/cflags.txt /build/ldflags.txt \
 RUN FFMPEG_ENABLES=$(cat /build/enable.txt) export FFMPEG_ENABLES \
     && CFLAGS="${CFLAGS} $(cat /build/cflags.txt)" export CFLAGS \
     && LDFLAGS="${LDFLAGS} $(cat /build/ldflags.txt)" export LDFLAGS \
+    && FFMPEG_EXTRA_LIBFLAGS="-lpthread -lm $(cat /build/extra_libflags.txt)" export FFMPEG_EXTRA_LIBFLAGS \
     && echo "------------------------------------------------------" \
     && echo "🚧 Start building FFmpeg" \
     && echo "------------------------------------------------------" \
     && cd /build/ffmpeg \
-    && echo "🔧 Configure FFmpeg                              [1/2]" \
+    && echo "⚙️ Configure FFmpeg                              [1/2]" \
     && ./configure --pkg-config-flags=--static \
     --arch=${ARCH} \
     --target-os=mingw32 \
@@ -141,8 +143,8 @@ RUN FFMPEG_ENABLES=$(cat /build/enable.txt) export FFMPEG_ENABLES \
     --extra-version="NoMercy-MediaServer" \
     --extra-cflags="-static -static-libgcc -static-libstdc++" \
     --extra-ldflags="-static -static-libgcc -static-libstdc++" \
-    --extra-libs="-lpthread -lm" >/ffmpeg_build.log 2>&1 \
-    || (cat "/ffmpeg_build.log" ; echo "❌ FFmpeg build failed" ; false) \
+    --extra-libs="${FFMPEG_EXTRA_LIBFLAGS}" >/ffmpeg_build.log 2>&1 \
+    || (cat ffbuild/config.log ; echo "❌ FFmpeg build failed" ; false) \
     && echo "🛠️ Building FFmpeg                               [2/2]" \
     && make -j$(nproc) >/ffmpeg_build.log 2>&1 || (cat "/ffmpeg_build.log" ; echo "❌ FFmpeg build failed" ; exit 1) && make install >/dev/null 2>&1 \
     && rm -rf /build/ffmpeg \
@@ -158,7 +160,9 @@ RUN \
     echo "------------------------------------------------------" \
     && echo "🔧 Copying FFmpeg binaries" \
     && mkdir -p /ffmpeg/${TARGET_OS}/${ARCH} \
-    && cp ${PREFIX}/bin/ffplay.exe /ffmpeg/${TARGET_OS}/${ARCH} \
+    && if [ -f ${PREFIX}/bin/ffplay.exe ]; then \
+    cp ${PREFIX}/bin/ffplay.exe /ffmpeg/${TARGET_OS}/${ARCH}; \
+    fi \
     && cp ${PREFIX}/bin/ffmpeg.exe /ffmpeg/${TARGET_OS}/${ARCH} \
     && cp ${PREFIX}/bin/ffprobe.exe /ffmpeg/${TARGET_OS}/${ARCH} \
     && echo "✅ FFmpeg binaries copied successfully" \
@@ -169,7 +173,7 @@ RUN \
     \
     && mkdir -p /build/${TARGET_OS} /output \
     # create zipfile
-    && echo "📦 Creating FFmpeg zip file" \
+    && echo "⚙️ Creating FFmpeg zip file" \
     && cd /ffmpeg/${TARGET_OS}/${ARCH} \
     && zip -r /build/ffmpeg-7.1-${TARGET_OS}-${ARCH}.zip . >/dev/null 2>&1 \
     && cp /build/ffmpeg-7.1-${TARGET_OS}-${ARCH}.zip /output \

@@ -9,7 +9,7 @@ fi
 
 cd /build/x264
 ./configure \
-    --prefix=${PREFIX} --disable-cli --enable-static --disable-shared --disable-lavf --disable-swscale \
+    --prefix=${PREFIX} --disable-cli --enable-static --disable-lavf --disable-swscale \
     --cross-prefix=${CROSS_PREFIX} --host=${CROSS_PREFIX%-} ${X264_TARGET} | tee /ffmpeg_build.log
 if [ ${PIPESTATUS[0]} -ne 0 ]; then
     exit 1

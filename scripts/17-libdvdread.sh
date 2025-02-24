@@ -55,5 +55,6 @@ rm -rf /build/libdvdnav && cd /build
 #endregion
 
 add_enable "--enable-libdvdread --enable-libdvdnav"
+add_extralib "-ldvdcss"
 
 exit 0

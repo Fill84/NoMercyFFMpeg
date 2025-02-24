@@ -63,7 +63,31 @@ echo "Libs.private: -lstdc++" >>${PREFIX}/lib/pkgconfig/libbdplus.pc
 rm -rf /build/libbdplus
 
 # libaacs
+mkdir -p ~/.config/aacs/ /usr/local/etc/aacs/ /etc/aacs/
+
 cd /build/libaacs
+rm -f /build/libaacs/KEYDB.cfg
+wget https://vlc-bluray.whoknowsmy.name/files/KEYDB.cfg -O /build/libaacs/KEYDB.cfg
+ln -s ./KEYDB.cfg src/KEYDB.cfg
+ln -s ./KEYDB.cfg src/file/KEYDB.cfg
+ln -s ./KEYDB.cfg ~/.config/aacs/KEYDB.cfg
+ln -s ./KEYDB.cfg /usr/local/etc/aacs/KEYDB.cfg
+ln -s ./KEYDB.cfg /etc/aacs/KEYDB.cfg
+
+INPUT_FILE="KEYDB.cfg"
+OUTPUT_FILE="/src/file/keydb_embedded.h"
+# Read binary file and convert to C array format
+HEX_ARRAY=$(od -An -tx1 -v "$INPUT_FILE" | tr -s ' ' | tr ' ' ',' | sed 's/,/, /g')
+
+# Get file size
+FILE_SIZE=$(wc -c <"$INPUT_FILE")
+
+# Write to output file
+{
+    echo "unsigned char KEYDB_cfg[] = { $HEX_ARRAY };"
+    echo "unsigned int KEYDB_cfg_len = $FILE_SIZE;"
+} >"$OUTPUT_FILE"
+
 ./bootstrap --prefix=${PREFIX} --libdir=${PREFIX}/lib --enable-static --disable-shared --with-pic --disable-doc \
     --host=${CROSS_PREFIX%-}
 ./configure --prefix=${PREFIX} --libdir=${PREFIX}/lib --enable-static --disable-shared --with-pic --disable-doc \
@@ -83,11 +107,11 @@ sed -i 's/dec_init/libbluray_dec_init/g' src/libbluray/disc/dec.c
 sed -i 's/dec_init/libbluray_dec_init/g' src/libbluray/disc/dec.h
 sed -i 's/dec_init/libbluray_dec_init/g' src/libbluray/disc/disc.c
 cd /build/libbluray
-./bootstrap --prefix=${PREFIX} --enable-static --disable-shared --with-pic --with-libxml2 \
+./bootstrap --prefix=${PREFIX} --enable-static --disable-shared --with-pic --with-libxml2 --with-libaacs \
     --disable-doxygen-doc --disable-doxygen-dot --disable-doxygen-html --disable-doxygen-ps --disable-doxygen-pdf --disable-examples --disable-bdjava-jar \
     --host=${CROSS_PREFIX%-} \
     LIBS="-laacs -lbdplus"
-./configure --prefix=${PREFIX} --enable-static --disable-shared --with-pic --with-libxml2 \
+./configure --prefix=${PREFIX} --enable-static --disable-shared --with-pic --with-libxml2 --with-libaacs \
     --disable-doxygen-doc --disable-doxygen-dot --disable-doxygen-html --disable-doxygen-ps --disable-doxygen-pdf --disable-examples --disable-bdjava-jar \
     --host=${CROSS_PREFIX%-} \
     LIBS="-laacs -lbdplus" | tee /ffmpeg_build.log
@@ -101,5 +125,6 @@ rm -rf /build/libbluray
 EXTRA_LIBS=""
 
 add_enable "--enable-libbluray"
+add_extralib "-laacs -lbdplus"
 
 exit 0
