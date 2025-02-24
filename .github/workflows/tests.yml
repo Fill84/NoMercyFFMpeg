@@ -71,7 +71,6 @@ jobs:
         shell: bash
         run: |
           TOTAL_WIDTH_TEXT=54
-
           TOTAL_TESTS=0
           PASSED_TESTS=0
           FAILED_TESTS=0
@@ -85,12 +84,12 @@ jobs:
           mkdir -p ${{ github.workspace }}/test_files
           
           generate_samples() {
-              TOTAL_COUNT=0
-              CURRENT_COUNT=0
+              Total_Count=0
+              Current_Count=0
 
-              [[ ! -f "$SAMPLE_VIDEO" ]] && ((TOTAL_COUNT++))
-              [[ ! -f "$SAMPLE_AUDIO" ]] && ((TOTAL_COUNT++))
-              [[ ! -f "$SAMPLE_IMAGE" ]] && ((TOTAL_COUNT++))
+              [[ ! -f "$SAMPLE_VIDEO" ]] && ((Total_Count++))
+              [[ ! -f "$SAMPLE_AUDIO" ]] && ((Total_Count++))
+              [[ ! -f "$SAMPLE_IMAGE" ]] && ((Total_Count++))
 
               if [[ ! -f $SampleVideo ]]; then
                   Start_Time=$(date +%s)
