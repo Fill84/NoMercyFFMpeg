@@ -95,18 +95,18 @@ jobs:
               Current_Count=0
 
               if [[ ! -f $SampleVideo ]]; then
-                  $Total_Count++
+                  $Total_Count=$(($Total_Count + 1))
               fi
               if [[ ! -f $SampleAudio ]]; then
-                  $Total_Count++
+                  $Total_Count=$(($Total_Count + 1))
               fi
               if [[ ! -f $SampleImage ]]; then
-                  $Total_Count++
+                  $Total_Count=$(($Total_Count + 1))
               fi
 
               if [[ ! -f $SampleVideo ]]; then
                   Start_Time=$(data +%s)
-                  $Current_Count++
+                  $Current_Count=$(($Current_Count + 1))
                   text_with_padding "📹 Generating sample video" "[$Current_Count/$Total_Count]"
                   eval "${{ github.workspace }}/ffmpeg -hide_banner -f lavfi -i testsrc=duration=10:size=1280x720:rate=30 -c:v libx264 -crf 23 $SampleVideo" 2>&1
                   End_Time=$(data +%s)
@@ -115,7 +115,7 @@ jobs:
               
               if [[ ! -f $SampleAudio ]]; then
                   Start_Time=$(data +%s)
-                  $Current_Count++
+                  $Current_Count=$(($Current_Count + 1))
                   text_with_padding "🔊 Generating sample audio" "[$Current_Count/$Total_Count]"
                   eval "${{ github.workspace }}/ffmpeg -hide_banner -f lavfi -i sine=frequency=1000:duration=10 -c:a pcm_s16le $SampleAudio" 2>&1
                   End_Time=$(data +%s)
@@ -124,7 +124,7 @@ jobs:
 
               if [[ ! -f $SampleImage ]]; then
                   Start_Time=$(data +%s)
-                  $Current_Count++
+                  $Current_Count=$(($Current_Count + 1))
                   text_with_padding "🖼️ Generating sample image" "[$Current_Count/$Total_Count]" -1
                   eval "${{ github.workspace }}/ffmpeg -hide_banner -f lavfi -i testsrc=duration=1:size=640x480:rate=1 -frames:v 1 $SampleImage" 2>&1
                   End_Time=$(data +%s)
