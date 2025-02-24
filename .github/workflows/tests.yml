@@ -183,7 +183,7 @@ jobs:
           echo ""
           echo "------------------------------------------------------"
 
-          Generate-Samples
+          generate_samples
 
           echo "------------------------------------------------------"
 
@@ -288,7 +288,7 @@ jobs:
           # Create test files
           New-Item -ItemType Directory -Path test_files -Force | Out-Null
 
-          function Generate-Samples {
+          function generate_samples {
               $script:Total_Count = 0
               $script:Current_Count = 0
               
@@ -397,7 +397,7 @@ jobs:
           Write-Host ""
           Write-Host "------------------------------------------------------"
 
-          Generate-Samples
+          generate_samples
 
           Write-Host "------------------------------------------------------"
 
