@@ -81,28 +81,16 @@ jobs:
           SampleImage="${{ github.workspace }}/test_files/sample.png"  # Ensure this exists or will be generated
 
           # Cleanup
-          # Remove test files if they exist
-
-          if [ -f "${{ github.workspace }}/test_files" ]; then
-              rm -rf ${{ github.workspace }}/test_files
-          fi
-
-          # Create test files
+          rm -rf ${{ github.workspace }}/test_files
           mkdir -p ${{ github.workspace }}/test_files
-
+          
           generate_samples() {
-              Total_Count=0
-              Current_Count=0
+              TOTAL_COUNT=0
+              CURRENT_COUNT=0
 
-              if [[ ! -f $SampleVideo ]]; then
-                  $Total_Count=$(($Total_Count + 1))
-              fi
-              if [[ ! -f $SampleAudio ]]; then
-                  $Total_Count=$(($Total_Count + 1))
-              fi
-              if [[ ! -f $SampleImage ]]; then
-                  $Total_Count=$(($Total_Count + 1))
-              fi
+              [[ ! -f "$SAMPLE_VIDEO" ]] && ((TOTAL_COUNT++))
+              [[ ! -f "$SAMPLE_AUDIO" ]] && ((TOTAL_COUNT++))
+              [[ ! -f "$SAMPLE_IMAGE" ]] && ((TOTAL_COUNT++))
 
               if [[ ! -f $SampleVideo ]]; then
                   Start_Time=$(data +%s)
