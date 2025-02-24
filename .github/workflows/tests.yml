@@ -87,9 +87,9 @@ jobs:
               Total_Count=0
               Current_Count=0
 
-              [[ ! -f "$SAMPLE_VIDEO" ]] && ((Total_Count++))
-              [[ ! -f "$SAMPLE_AUDIO" ]] && ((Total_Count++))
-              [[ ! -f "$SAMPLE_IMAGE" ]] && ((Total_Count++))
+              [[ ! -f "$SampleVideo" ]] && ((Total_Count++))
+              [[ ! -f "$SampleAudio" ]] && ((Total_Count++))
+              [[ ! -f "$SampleImage" ]] && ((Total_Count++))
 
               if [[ ! -f $SampleVideo ]]; then
                   Start_Time=$(date +%s)
