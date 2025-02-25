@@ -15,27 +15,7 @@ on:
         default: true
 
 jobs:
-  check-build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Download Build Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: build-artifacts
-          run-id: ${{ github.event.workflow_run.id }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          path: downloads/
-
-      - name: Log Downloaded Files
-        run: ls -la downloads
-
   platform-tests-unix:
-    needs: check-build
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -43,6 +23,11 @@ jobs:
         arch: [x86_64, arm64]
     continue-on-error: true
     steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - name: Download Build Artifacts
         uses: actions/download-artifact@v4
         with:
@@ -75,7 +60,6 @@ jobs:
           exit 0
 
   platform-tests-windows:
-    needs: check-build
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -83,6 +67,11 @@ jobs:
         arch: [x86_64] #, arm64]
     continue-on-error: true
     steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - name: Download Build Artifacts
         uses: actions/download-artifact@v4
         with:
@@ -101,12 +90,12 @@ jobs:
         id: tests
         shell: pwsh
         run: |
-          ${{ github.workspace }}/tests/tests.ps1 "${{ github.workspace }}"
+          ${{ github.workspace }}\tests\tests.ps1 "${{ github.workspace }}"
           exit 0
 
   prepare-release:
     runs-on: ubuntu-latest
-    needs: [check-build, platform-tests-unix, platform-tests-windows]
+    needs: [platform-tests-unix, platform-tests-windows]
     continue-on-error: false
     if: success()
     steps:    
