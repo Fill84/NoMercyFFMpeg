@@ -161,7 +161,7 @@ Write-Host ([string]::new('-', $TOTAL_WIDTH_TEXT))
 check_command
 generate_samples
 
-Basic tests
+# Basic tests
 run_test "version" "-version" "ffmpeg version"
 
 # Video codecs
