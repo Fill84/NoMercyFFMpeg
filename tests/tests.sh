@@ -129,20 +129,20 @@ run_test() {
     local exit_code
 
     TOTAL_TESTS=$((TOTAL_TESTS + 1))
+    name=$(echo $name | tr '[:lower:]' '[:upper:]')
 
-    text_with_padding "🧪 Testing ${name^^}" "[${TOTAL_TESTS}/${TOTAL_RUNS}]" 1
+    text_with_padding "🧪 Testing ${name}" "[${TOTAL_TESTS}/${TOTAL_RUNS}]" 1
     Start_Time=$(date +%s)
 
     test_output=$(eval "${Workspace}/ffmpeg $command" 2>&1)
     exit_code=$?
-
     if [[ $exit_code -eq 0 ]] && echo "$test_output" | grep -q "$expected_output"; then
         End_Time=$(date +%s)
-        text_with_padding "✅ ${name^^} test passed" "[$((End_Time - Start_Time))s]" 1
+        text_with_padding "✅ ${name} test passed" "[$((End_Time - Start_Time))s]" 1
         PASSED_TESTS=$((PASSED_TESTS + 1))
     else
         End_Time=$(date +%s)
-        text_with_padding "❌ ${name^^} test failed" "[$((End_Time - Start_Time))s]" 1
+        text_with_padding "❌ ${name} test failed" "[$((End_Time - Start_Time))s]" 1
         FAILED_TESTS=$((FAILED_TESTS + 1))
     fi
 }
@@ -193,14 +193,16 @@ run_test "VPL" "-y -i ${SampleVideo} -c:v h264_vpl ${TestRoot}/test_vpl.mp4" "vp
 run_test "AMF" "-y -i ${SampleVideo} -c:v h264_amf ${TestRoot}/test_amf.mp4" "amf"
 
 # Additional format tests
-run_test "libfribidi" "-hide_banner -filters 2>&1" "fribidi"
-run_test "libbluray" "-hide_banner -protocols 2>&1" "bluray"
-run_test "libdvdread" "-hide_banner -protocols 2>&1" "dvdread"
-run_test "libsrt" "-hide_banner -protocols 2>&1" "srt"
+run_test "libbluray" "-hide_banner -protocols | grep bluray" "bluray"
+run_test "libdvdread" "-hide_banner -version | grep dvdread" "dvdread"
+run_test "libcdio" "-hide_banner -version | grep cdio" "cdio"
+run_test "libfribidi" "-hide_banner -version | grep fribidi" "fribidi"
+run_test "libsrt" "-hide_banner -version | grep srt" "srt"
+run_test "libxml2" "-hide_banner -version | grep xml" "xml"
 
 # AV1 codec tests
-run_test "libdav1d" "-hide_banner -decoders 2>&1" "dav1d"
-run_test "librav1e" "-hide_banner -encoders 2>&1" "rav1e"
+run_test "libdav1d" "-hide_banner -decoders" "dav1d"
+run_test "librav1e" "-hide_banner -encoders" "rav1e"
 
 # Print summary
 printf "%${TOTAL_WIDTH_TEXT}s\n" | tr ' ' '-' # Print a horizontal line

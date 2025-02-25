@@ -3,9 +3,9 @@ param (
 )
 
 $TOTAL_WIDTH_TEXT = 54
-$TOTAL_TESTS = 0
-$PASSED_TESTS = 0
-$FAILED_TESTS = 0
+$script:TOTAL_TESTS = 0
+$script:PASSED_TESTS = 0
+$script:FAILED_TESTS = 0
 
 $TestRoot = "$Workspace\test_files"
 $SampleVideo = "$TestRoot\sample.mp4"
@@ -125,20 +125,21 @@ function run_test {
         $command,
         $expected_output
     )
-    $TOTAL_TESTS++
-    text_with_padding "🧪 Testing $($name.ToUpper())" "[$TOTAL_TESTS/$TOTAL_RUNS]"
 
+    $script:TOTAL_TESTS++
+    $name = $name.ToUpper()
+    text_with_padding "🧪 Testing ${name}" "[$script:TOTAL_TESTS/$TOTAL_RUNS]"
     $Start_Time = Get-Date
     $test_output = Invoke-Expression "$Workspace\ffmpeg.exe $command 2>&1" | Out-String
     if ($test_output -cmatch $expected_output) {
         $End_Time = Get-Date
-        text_with_padding "✅ $($name.ToUpper()) test was successfully" "[ $((New-TimeSpan -Start $Start_Time -End $End_Time).Seconds)s ]" 1
-        $PASSED_TESTS++
+        text_with_padding "✅ ${name} test passed" "[ $((New-TimeSpan -Start $Start_Time -End $End_Time).Seconds)s ]" 1
+        $script:PASSED_TESTS++
     }
     else {
         $End_Time = Get-Date
-        text_with_padding "❌ $($name.ToUpper()) test failed" "[ $((New-TimeSpan -Start $Start_Time -End $End_Time).Seconds)s ]" 1               
-        $FAILED_TESTS++
+        text_with_padding "❌ ${name} test failed" "[ $((New-TimeSpan -Start $Start_Time -End $End_Time).Seconds)s ]" 1               
+        $script:FAILED_TESTS++
     }
 }
 
@@ -160,7 +161,7 @@ Write-Host ([string]::new('-', $TOTAL_WIDTH_TEXT))
 check_command
 generate_samples
 
-# Basic tests
+Basic tests
 run_test "version" "-version" "ffmpeg version"
 
 # Video codecs
@@ -188,21 +189,23 @@ run_test "VPL" "-y -i $SampleVideo -c:v h264_vpl $TestRoot\test_vpl.mp4" "vpl"
 run_test "AMF" "-y -i $SampleVideo -c:v h264_amf $TestRoot\test_amf.mp4" "amf"
 
 # Additional format tests
-run_test "libfribidi" "-hide_banner -filters 2>&1" "fribidi"
-run_test "libbluray" "-hide_banner -protocols 2>&1" "bluray"
-run_test "libdvdread" "-hide_banner -protocols 2>&1" "dvdread"
-run_test "libsrt" "-hide_banner -protocols 2>&1" "srt"
+run_test "libbluray" "-hide_banner -protocols | findstr bluray" "bluray"
+run_test "libdvdread" "-hide_banner -version | findstr dvdread" "dvdread"
+run_test "libcdio" "-hide_banner -version | findstr cdio" "cdio"
+run_test "libfribidi" "-hide_banner -version | findstr fribidi" "fribidi"
+run_test "libsrt" "-hide_banner -version | findstr srt" "srt"
+run_test "libxml2" "-hide_banner -version | findstr xml" "xml"
 
 # AV1 codec tests
-run_test "libdav1d" "-hide_banner -decoders 2>&1" "dav1d"
-run_test "librav1e" "-hide_banner -encoders 2>&1" "rav1e"
+run_test "libdav1d" "-hide_banner -decoders" "dav1d"
+run_test "librav1e" "-hide_banner -encoders" "rav1e"
 
 # Print summary
 Write-Host ([string]::new('-', $TOTAL_WIDTH_TEXT))
-Write-Host "📊 Summary:"
-text_with_padding "Total tests:" "$TOTAL_TESTS"
-text_with_padding "Passed tests:" "$PASSED_TESTS"
-text_with_padding "Failed tests:" "$FAILED_TESTS"
+text_with_padding "📊 Summary:" ""
+text_with_padding "Total tests:" "$script:TOTAL_TESTS"
+text_with_padding "Passed tests:" "$script:PASSED_TESTS"
+text_with_padding "Failed tests:" "$script:FAILED_TESTS"
 Write-Host ([string]::new('-', $TOTAL_WIDTH_TEXT))
 Write-Host ""
 # Exit with failure if any tests failed
