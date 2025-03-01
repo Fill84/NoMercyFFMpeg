@@ -176,22 +176,36 @@ hr # Print a horizontal line
 #region enabled components
 local_enables=$(split_lines "/build/enable.txt")
 local_enables_count=$(echo "${local_enables}" | wc -l)
+if [[ ${local_enables} == "" ]]; then
+    local_enables_count=0
+fi
 text_with_padding "📃 Enabled components:" "[ ${local_enables_count} ]" -2
 hr # Print a horizontal line
-for enable in $local_enables; do
-    text_with_padding "   ${enable}" ""
-done
+if [[ ${local_enables} == "" ]]; then
+    text_with_padding "   No components enabled" ""
+else
+    for enable in $local_enables; do
+        text_with_padding "   ${enable}" ""
+    done
+fi
 hr # Print a horizontal line
 #endregion
 
 #region extra libflags
 local_libflags=$(split_lines "/build/extra_libflags.txt")
 local_libflags_count=$(echo "${local_libflags}" | wc -l)
+if [[ ${local_libflags} == "" ]]; then
+    local_libflags_count=0
+fi
 text_with_padding "📃 Extra libraries:" "[ ${local_libflags_count} ]" -2
 hr # Print a horizontal line
-for libflag in $local_libflags; do
-    text_with_padding "   ${libflag}" ""
-done
+if [[ ${local_libflags} == "" ]]; then
+    text_with_padding "   No extra libraries" ""
+else
+    for libflag in $local_libflags; do
+        text_with_padding "   ${libflag}" ""
+    done
+fi
 echo "$(join_lines "/build/extra_libflags.txt")" >/build/extra_libflags.txt
 hr # Print a horizontal line
 #endregion

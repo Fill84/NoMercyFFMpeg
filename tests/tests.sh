@@ -1,8 +1,15 @@
 #!/bin/bash
 
-Workspace=$1
-if [[ -L $Workspace ]]; then
-    Workspace=$(readlink -f $Workspace)
+Workspace="$1"
+
+if [[ -z "$Workspace" ]]; then
+    echo "Error: Workspace path is required." >&2
+    exit 1
+fi
+
+if [[ -L "$Workspace" ]]; then
+    echo "Error: Workspace path cannot be a symbolic link." >&2
+    exit 1
 fi
 
 TOTAL_WIDTH_TEXT=54

@@ -625,6 +625,40 @@ RUN \
     && echo "✅ Download completed successfully" \
     && echo "------------------------------------------------------"
 
+# Download giflib
+RUN \
+    echo "------------------------------------------------------" \
+    && echo "🔄 Start downloading giflib" \
+    && wget -O giflib-5.2.2.tar.gz https://sourceforge.net/projects/giflib/files/giflib-5.2.2.tar.gz/download >/dev/null 2>&1 \
+    && tar -xvzf giflib-5.2.2.tar.gz >/dev/null 2>&1 && mv giflib-5.2.2 giflib && rm giflib-5.2.2.tar.gz \
+    && echo "✅ Download completed successfully" \
+    && echo "------------------------------------------------------"
+
+# Download libpng
+RUN \
+    echo "------------------------------------------------------" \
+    && echo "🔄 Start downloading libpng" \
+    && wget https://download.sourceforge.net/libpng/libpng-1.6.47.tar.gz >/dev/null 2>&1 \
+    && tar -xvf libpng-1.6.47.tar.gz >/dev/null 2>&1 && mv libpng-1.6.47 libpng && rm -f libpng-1.6.47.tar.gz \
+    && echo "✅ Download completed successfully" \
+    && echo "------------------------------------------------------"
+
+# Download libjpeg-turbo
+RUN \
+    echo "------------------------------------------------------" \
+    && echo "🔄 Start downloading libjpeg-turbo" \
+    && git clone --branch 3.1.0 https://github.com/libjpeg-turbo/libjpeg-turbo.git /build/libjpeg-turbo >/dev/null 2>&1 \
+    && echo "✅ Download completed successfully" \
+    && echo "------------------------------------------------------"
+
+# Download libtiff
+RUN \
+    echo "------------------------------------------------------" \
+    && echo "🔄 Start downloading libtiff" \
+    && git clone --branch v4.7.0 https://gitlab.com/libtiff/libtiff.git /build/libtiff >/dev/null 2>&1 \
+    && echo "✅ Download completed successfully" \
+    && echo "------------------------------------------------------"
+
 # Download leptonica
 RUN \
     echo "------------------------------------------------------" \

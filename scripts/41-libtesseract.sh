@@ -1,66 +1,44 @@
 #!/bin/bash
 
-wget https://github.com/libjpeg-turbo/libjpeg-turbo/archive/refs/tags/3.0.2.tar.gz -O libjpeg-turbo-3.0.2.tar.gz
-tar xzf libjpeg-turbo-3.0.2.tar.gz
-cd libjpeg-turbo-3.0.2
-mkdir build && cd build
-cmake -S .. -B . \
-    ${CMAKE_COMMON_ARG}
-make -j$(nproc) && make install
-rm -rf /build/libjpeg-turbo-3.0.2
-
-wget https://download.osgeo.org/libtiff/tiff-4.6.0.tar.gz
-tar xzf tiff-4.6.0.tar.gz
-cd tiff-4.6.0
-./configure --host=${CROSS_PREFIX%-} --prefix=${PREFIX} \
-    --enable-static --disable-shared \
-    --host=${CROSS_PREFIX%-}
-make -j$(nproc) && make install
-if [[ ${TARGET_OS} == "windows" ]]; then
-    sed -i 's/^Libs: \(.*\)/Libs: \1 -lz/' ${PREFIX}/lib/pkgconfig/libtiff-4.pc
-fi
-echo "Libs.private: -lstdc++" >>${PREFIX}/lib/pkgconfig/libtiff-4.pc
-rm -rf /build/tiff-4.6.0
-
+#region leptonica
 cd /build/leptonica
 ./autogen.sh --prefix=${PREFIX} --enable-static --disable-shared \
     --disable-programs \
-    --without-giflib \
-    --without-jpeg \
     --without-libopenjpeg \
-    --without-libwebp \
-    --without-libtiff \
     --host=${CROSS_PREFIX%-}
 ./configure --prefix=${PREFIX} --enable-static --disable-shared \
     --disable-programs \
-    --without-giflib \
-    --without-jpeg \
     --without-libopenjpeg \
-    --without-libwebp \
-    --without-libtiff \
     --host=${CROSS_PREFIX%-} | tee /ffmpeg_build.log
 
 if [ ${PIPESTATUS[0]} -ne 0 ]; then
+    echo "Failed to build leptonica" >>/ffmpeg_build.log
     exit 1
 fi
 
 make -j$(nproc) && make install
 
+if [ ! -f ${PREFIX}/lib/pkgconfig/lept.pc ]; then
+    echo "Failed to build leptonica" >>/ffmpeg_build.log
+    exit 1
+fi
+
 if [[ ${TARGET_OS} == "windows" ]]; then
     sed -i 's/^Libs: \(.*\)/Libs: \1 -lws2_32/' ${PREFIX}/lib/pkgconfig/lept.pc
 fi
 
-if [[ ${TARGET_OS} == "darwin" ]]; then
-    echo "Libs.private: -lstdc++ -lz" >>${PREFIX}/lib/pkgconfig/lept.pc
+if [[ ${TARGET_OS} != "linux" ]]; then
+    echo "Libs.private: -lstdc++ -lz -lm -lsharpyuv -lpng16 -ltiff -lgif -ljpeg -lwebp" >>${PREFIX}/lib/pkgconfig/lept.pc
 else
-    echo "Libs.private: -lstdc++" >>${PREFIX}/lib/pkgconfig/lept.pc
+    echo "Libs.private: -lstdc++ -lsharpyuv -lpng16 -ltiff -lgif -ljpeg -lwebp" >>${PREFIX}/lib/pkgconfig/lept.pc
 fi
 
 cp ${PREFIX}/lib/pkgconfig/lept.pc ${PREFIX}/lib/pkgconfig/liblept.pc
 rm -rf /build/leptonica && cd /build
+#endregion
 
+#region libtesseract
 cd /build/libtesseract
-
 if [[ ${TARGET_OS} == "darwin" && ${ARCH} == "x86_64" ]]; then
     sed -i '/#include <filesystem>/d' src/ccutil/ccutil.cpp
     sed -i 's/#include <cstring>/#include <cstring> \n#include <sys\/stat.h> \n#include <unistd.h>/' src/ccutil/ccutil.cpp
@@ -89,6 +67,7 @@ fi
     --host=${CROSS_PREFIX%-} | tee /ffmpeg_build.log
 
 if [ ${PIPESTATUS[0]} -ne 0 ]; then
+    echo "Failed to build libtesseract" >>/ffmpeg_build.log
     exit 1
 fi
 
@@ -99,12 +78,15 @@ if [[ ${TARGET_OS} == "windows" ]]; then
 fi
 
 if [[ ${TARGET_OS} == "darwin" ]]; then
-    echo "Libs.private: -lstdc++ -lz -framework Accelerate" >>${PREFIX}/lib/pkgconfig/tesseract.pc
+    echo "Libs.private: -lstdc++ -lz -framework Accelerate -lsharpyuv -lpng16 -ltiff -lgif -ljpeg -lwebp" >>${PREFIX}/lib/pkgconfig/tesseract.pc
+elif [[ ${TARGET_OS} != "linux" ]]; then
+    echo "Libs.private: -lstdc++ -lz -lm -lsharpyuv -lpng16 -ltiff -lgif -ljpeg -lwebp" >>${PREFIX}/lib/pkgconfig/tesseract.pc
 else
-    echo "Libs.private: -lstdc++" >>${PREFIX}/lib/pkgconfig/tesseract.pc
+    echo "Libs.private: -lstdc++ -lsharpyuv -lpng16 -ltiff -lgif -ljpeg -lwebp" >>${PREFIX}/lib/pkgconfig/tesseract.pc
 fi
 
 cp ${PREFIX}/lib/pkgconfig/tesseract.pc ${PREFIX}/lib/pkgconfig/libtesseract.pc
+#endregion
 
 add_enable "--enable-libtesseract"
 

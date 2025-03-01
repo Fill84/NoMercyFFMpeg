@@ -131,7 +131,7 @@ function run_test {
     text_with_padding "🧪 Testing ${name}" "[$script:TOTAL_TESTS/$TOTAL_RUNS]"
     $Start_Time = Get-Date
     $test_output = Invoke-Expression "$Workspace\ffmpeg.exe $command 2>&1" | Out-String
-    if ($test_output -cmatch $expected_output) {
+    if ( $LASTEXITCODE -eq 0 -and $test_output -cmatch $expected_output ) {
         $End_Time = Get-Date
         text_with_padding "✅ ${name} test passed" "[ $((New-TimeSpan -Start $Start_Time -End $End_Time).Seconds)s ]" 1
         $script:PASSED_TESTS++
