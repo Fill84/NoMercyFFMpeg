@@ -11,7 +11,12 @@ if [ ${PIPESTATUS[0]} -ne 0 ]; then
 fi
 
 make -j$(nproc) && make install
-ln -s libudfread.pc ${PREFIX}/lib/pkgconfig/udfread.pc
+
+if [ ! -f ${PREFIX}/lib/pkgconfig/libudfread.pc ]; then
+    cp libudfread.pc ${PREFIX}/lib/pkgconfig/udfread.pc
+    cp ${PREFIX}/lib/pkgconfig/udfread.pc ${PREFIX}/lib/pkgconfig/libudfread.pc
+fi
+
 rm -rf /build/libudfread
 
 exit 0

@@ -6,6 +6,7 @@ hr() {                           # HR function to print a horizontal line
         return                   # Return without printing anything
     fi
     printf "%${length}s\n" | tr ' ' '-' # Print the provided length of dashes
+    return 0
 }
 
 text_with_padding() {
@@ -22,12 +23,14 @@ text_with_padding() {
     #     padding=$((54 - ${#text_before} - ${#text_after} - extra_padding))
     # fi
     printf "%s%*s%s\n" "$text_before" "$padding" "" "$text_after"
+    return 0
 }
 
 clean_whitespace() {
     local text="$1"
     text=$(printf "%s" "$text" | sed -E -e 's/\r$//; s/^[[:space:]]+//; s/[[:space:]]+$//; s/[[:space:]]+/ /g; /^$/d;')
     printf "%s" "$text"
+    return 0
 }
 
 join_lines() {
@@ -37,6 +40,7 @@ join_lines() {
     result=$(grep -v '^$' "$file" | paste -sd ' ') # Remove empty lines and join into one line
 
     printf "%s" "$result"
+    return 0
 }
 
 split_lines() {
@@ -47,6 +51,7 @@ split_lines() {
     result=$(echo "$result" | tr ' ' '\n' | grep -v '^$') # Replace spaces with new lines and remove empty lines again
 
     printf "%s" "$result"
+    return 0
 }
 
 add_enable() {
@@ -57,6 +62,7 @@ add_enable() {
     fi
     FFMPEG_ENABLES+="$enable"
     echo "${FFMPEG_ENABLES}" >>/build/enable.txt
+    return 0
 }
 
 add_cflag() {
@@ -67,6 +73,7 @@ add_cflag() {
     fi
     FFMPEG_CFLAGS+="$cflag"
     echo "${FFMPEG_CFLAGS}" >>/build/cflags.txt
+    return 0
 }
 
 add_ldflag() {
@@ -77,6 +84,7 @@ add_ldflag() {
     fi
     FFMPEG_LDFLAGS+="$ldflag"
     echo "${FFMPEG_LDFLAGS}" >>/build/ldflags.txt
+    return 0
 }
 
 add_extralib() {
@@ -87,4 +95,24 @@ add_extralib() {
     fi
     FFMPEG_EXTRA_LIBFLAGS+="$extralibflag"
     echo "${FFMPEG_EXTRA_LIBFLAGS}" >>/build/extra_libflags.txt
+    return 0
+}
+
+apply_sed() {
+    # Check if the correct number of arguments is provided 3 with max of 5
+    if [ "$#" -gt 5 ] || [ "$#" -lt 3 ]; then
+        echo "Usage: apply_sed <search_pattern> <replacement> <file_path> [prefix_flags] [suffix_flags]"
+        return 1
+    fi
+
+    local search_pattern="$1"
+    local replacement="$2"
+    local file_path="$3"
+    local prefix_flags="${4:-}"
+    local suffix_flags="${5:-}"
+
+    # Use sed to perform the substitution
+
+    sed -i "$prefix_flags/$search_pattern/$replacement$suffix_flags" "$file_path" || return 1
+    return 0
 }

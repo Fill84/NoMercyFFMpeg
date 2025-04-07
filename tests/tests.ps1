@@ -208,6 +208,10 @@ text_with_padding "Passed tests:" "$script:PASSED_TESTS"
 text_with_padding "Failed tests:" "$script:FAILED_TESTS"
 Write-Host ([string]::new('-', $TOTAL_WIDTH_TEXT))
 Write-Host ""
+
+# Cleanup
+Remove-Item -Recurse -Force -Path $TestRoot -ErrorAction SilentlyContinue
+
 # Exit with failure if any tests failed
 if ($FAILED_TESTS -gt 0) {
     exit $FAILED_TESTS

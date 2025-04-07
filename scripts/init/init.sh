@@ -49,6 +49,10 @@ skipped_count=0
 failed_count=0
 #endregion
 
+if [[ ${DEBUG} == "true" ]]; then
+    touch /full_ffmpeg_build.log
+fi
+
 #region main
 mkdir -p ${PREFIX}/lib ${PREFIX}/lib/pkgconfig ${PREFIX}/include ${PREFIX}/bin
 
@@ -77,7 +81,7 @@ echo "⚙️ Registering helper functions"
 
 mkdir -p /logs
 . /scripts/init/helpers.sh
-export -f hr text_with_padding add_enable add_cflag add_ldflag add_extralib join_lines split_lines clean_whitespace
+export -f hr text_with_padding add_enable add_cflag add_ldflag add_extralib join_lines split_lines clean_whitespace apply_sed
 
 text_with_padding "✅ Helper functions registered" ""
 hr # Print a horizontal line
@@ -128,6 +132,10 @@ for i in /scripts/*.sh; do
                 if [[ -n "${logtext}" ]]; then
                     printf "%s\n" "📃 Log: ${logtext}"
                 fi
+                echo "Log for ${name}" >>/full_ffmpeg_build.log
+                echo "${logtext}" >>/full_ffmpeg_build.log
+                echo "$(hr)" >>/full_ffmpeg_build.log
+                echo "" >>/full_ffmpeg_build.log
                 rm -f /ffmpeg_build.log
             fi
         fi

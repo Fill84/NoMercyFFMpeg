@@ -36,7 +36,7 @@ RUN echo "------------------------------------------------------" \
     && echo "------------------------------------------------------" \
     && echo "🔧 Installing dependencies" \
     && apt-get install -y --no-install-recommends \
-    mingw-w64 libgit2-dev zip >/dev/null 2>&1 \
+    mingw-w64 libgit2-dev zip openjdk-11-jdk ant >/dev/null 2>&1 \
     && apt-get upgrade -y >/dev/null 2>&1 && apt-get autoremove -y >/dev/null 2>&1 && apt-get autoclean -y >/dev/null 2>&1 && apt-get clean -y >/dev/null 2>&1 \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
     && echo "✅ Installations completed successfully" \
@@ -171,42 +171,7 @@ RUN FFMPEG_ENABLES=$(cat /build/enable.txt) export FFMPEG_ENABLES \
     && echo "✅ FFmpeg was built successfully" \
     && echo "------------------------------------------------------" 
 
-# copy ffmpeg binaries
-# cleanup
-# create zipfile
-# cleanup
-RUN \
-    echo "------------------------------------------------------" \
-    && echo "🔧 Copying FFmpeg binaries" \
-    && mkdir -p /ffmpeg/${TARGET_OS}/${ARCH} \
-    && if [ -f ${PREFIX}/bin/ffplay.exe ]; then \
-    cp ${PREFIX}/bin/ffplay.exe /ffmpeg/${TARGET_OS}/${ARCH}; \
-    fi \
-    && cp ${PREFIX}/bin/ffmpeg.exe /ffmpeg/${TARGET_OS}/${ARCH} \
-    && cp ${PREFIX}/bin/ffprobe.exe /ffmpeg/${TARGET_OS}/${ARCH} \
-    && echo "✅ FFmpeg binaries copied successfully" \
-    && echo "------------------------------------------------------" \
-    \
-    # cleanup
-    && rm -rf ${PREFIX} /build \
-    \
-    && mkdir -p /build/${TARGET_OS} /output \
-    # create zipfile
-    && echo "⚙️ Creating FFmpeg zip file" \
-    && cd /ffmpeg/${TARGET_OS}/${ARCH} \
-    && zip -r /build/ffmpeg-7.1-${TARGET_OS}-${ARCH}.zip . >/dev/null 2>&1 \
-    && cp /build/ffmpeg-7.1-${TARGET_OS}-${ARCH}.zip /output \
-    && echo "✅ FFmpeg zip file created successfully" \
-    \
-    # cleanup
-    && apt-get autoremove -y >/dev/null 2>&1 && apt-get autoclean -y >/dev/null 2>&1 && apt-get clean -y >/dev/null 2>&1 \
-    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
-    \
-    && cp /ffmpeg/${TARGET_OS}/${ARCH} /build/${TARGET_OS} -r \
-    \
-    && echo "------------------------------------------------------" \
-    && echo "📦 FFmpeg build completed" \
-    && echo "------------------------------------------------------"
+RUN chmod +x /scripts/init/package.sh && /scripts/init/package.sh
 
 FROM alpine:latest AS final
 

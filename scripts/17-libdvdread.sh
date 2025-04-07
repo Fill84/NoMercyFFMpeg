@@ -34,7 +34,7 @@ if [ ${PIPESTATUS[0]} -ne 0 ]; then
 fi
 
 make -j$(nproc) && make install
-echo "Libs.private: -ldvdcss -ldvdnav -lstdc++" >>${PREFIX}/lib/pkgconfig/libdvdread.pc
+echo "Libs.private: -ldvdnav -ldvdcss -lstdc++" >>${PREFIX}/lib/pkgconfig/libdvdread.pc
 rm -rf /build/libdvdread && cd /build
 #endregion
 
@@ -43,7 +43,7 @@ git clone --branch 6.1.1 https://code.videolan.org/videolan/libdvdnav.git /build
 cd /build/libdvdnav
 
 autoreconf -i
-./configure --prefix=${PREFIX} --prefix=${PREFIX} --enable-static --disable-shared ${EXTRA_FLAGS} \
+./configure --prefix=${PREFIX} --prefix=${PREFIX} --enable-static --disable-shared --with-libdvdcss ${EXTRA_FLAGS} \
     --host=${CROSS_PREFIX%-} | tee /ffmpeg_build.log
 if [ ${PIPESTATUS[0]} -ne 0 ]; then
     exit 1
@@ -56,5 +56,10 @@ rm -rf /build/libdvdnav && cd /build
 
 add_enable "--enable-libdvdread --enable-libdvdnav"
 add_extralib "-ldvdcss"
+
+if [ -f /build/ffmpeg/libavformat/dvdvideodec.c ]; then
+    # patch ffmpeg to use libdvdcss
+    apply_sed "#include <dvdread\/nav_read.h>" "a #include <dvdcss\/dvdcss.h>" "/build/ffmpeg/libavformat/dvdvideodec.c"
+fi
 
 exit 0

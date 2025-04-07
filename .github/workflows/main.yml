@@ -34,7 +34,15 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      
+    
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: "https://github.com/NoMercy-Entertainment/FFMPEG-Secrets.git"    
+          path: "${{ github.workspace }}/scripts"
+
       - name: Bump version
         id: bump-version
         run: |

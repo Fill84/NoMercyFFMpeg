@@ -1,9 +1,6 @@
 #!/bin/bash
 
 #region libjpeg
-cd /build
-wget -O jpegsrc.v9f.tar.gz https://ijg.org/files/jpegsrc.v9f.tar.gz
-tar -xvzf jpegsrc.v9f.tar.gz && mv jpeg-9f jpeg
 cd /build/jpeg
 
 # Configure and compile
@@ -18,7 +15,7 @@ fi
 make && make install
 
 if [[ ${TARGET_OS} != "linux" ]]; then
-    sed -i 's/^Libs: \(.*\)/Libs: \1 -lz/' ${PREFIX}/lib/pkgconfig/libjpeg.pc
+    sed -i 's/^Libs: \(.*\)[\r|\n]/Libs: \1 -lz/' ${PREFIX}/lib/pkgconfig/libjpeg.pc
 fi
 echo "Libs.private: -lstdc++" >>${PREFIX}/lib/pkgconfig/libjpeg.pc
 
@@ -33,7 +30,7 @@ cmake -S .. -B . \
     ${CMAKE_COMMON_ARG}
 make -j$(nproc) && make install
 if [[ ${TARGET_OS} != "linux" ]]; then
-    sed -i 's/^Libs: \(.*\)/Libs: \1 -lz/' ${PREFIX}/lib/pkgconfig/libjpeg.pc
+    sed -i 's/^Libs: \(.*\)[\r|\n]/Libs: \1 -lz/' ${PREFIX}/lib/pkgconfig/libjpeg.pc
 fi
 echo "Libs.private: -lstdc++" >>${PREFIX}/lib/pkgconfig/libjpeg.pc
 cd /build

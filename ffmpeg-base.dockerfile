@@ -14,11 +14,11 @@ ENV ffmpeg_version=7.1 \
     libxml2_version=2.13 \
     zlib_version=1.3.1 \
     fftw3_version=3.3.10 \
-    freetype_version=2.13.3 \
+    freetype_version=2-13-3 \
     fribidi_version=1.0.16 \
     libogg_version=1.3.5 \
     openssl_version=3.4.0 \
-    fontconfig_version=2.15.0 \
+    fontconfig_version=2.16.1 \
     libpciaccess_version=0.18.1 \
     xcbproto_version=1.17.0 \
     xorgproto_version=2024.1 \
@@ -36,7 +36,10 @@ ENV ffmpeg_version=7.1 \
     chromaprint_version=1.5.1 \
     libass_version=0.17.3 \
     libva_version=2.22.0 \
+    libgpg_error_version=1.51 \
     libgcrypt_version=1.11.0 \
+    libbdplus_version=0.2.0 \
+    libaacs_version=0.11.1 \
     libbluray_version=1.3.4 \
     libcddb_version=1.3.2 \
     libcdio_version=master \
@@ -58,6 +61,7 @@ ENV ffmpeg_version=7.1 \
     xvid_version=1.3.7 \
     libwebp_version=1.4.0 \
     openjpeg_version=2.5.3 \
+    jpegsrc_version=9f \
     zimg_version=3.0.5 \
     frei0r_version=2.3.3 \
     libvpl_version=2.14.0 \
@@ -157,6 +161,7 @@ RUN \
     && echo "🔄 Start downloading iconv" \
     && wget -O libiconv.tar.gz http://ftp.gnu.org/gnu/libiconv/libiconv-${iconv_version}.tar.gz >/dev/null 2>&1 \
     && tar -xvf libiconv.tar.gz >/dev/null 2>&1 && rm libiconv.tar.gz && mv libiconv-* iconv \
+    # && git clone --branch v${iconv_version} https://git.savannah.gnu.org/git/libiconv.git iconv >/dev/null 2>&1 \
     && echo "✅ Download completed successfully" \
     && echo "------------------------------------------------------"
 
@@ -182,15 +187,19 @@ RUN \
     && echo "🔄 Start downloading fftw3" \
     && wget -O fftw3.tar.gz http://www.fftw.org/fftw-${fftw3_version}.tar.gz >/dev/null 2>&1 \
     && tar -xvf fftw3.tar.gz >/dev/null 2>&1 && rm fftw3.tar.gz && mv fftw-${fftw3_version} fftw3 \
+    # && git clone --branch fftw-${fftw3_version} https://github.com/FFTW/fftw3.git fftw3 >/dev/null 2>&1 \
     && echo "✅ Download completed successfully" \
     && echo "------------------------------------------------------"
 
 # Download freetype
+# replace - with . for ${freetype_version}
+
 RUN \
     echo "------------------------------------------------------" \
     && echo "🔄 Start downloading freetype" \
-    && wget -O freetype.tar.gz https://download.savannah.gnu.org/releases/freetype/freetype-${freetype_version}.tar.gz >/dev/null 2>&1 \
-    && tar -xzf freetype.tar.gz >/dev/null 2>&1 && rm freetype.tar.gz && mv freetype-${freetype_version} freetype \
+    && wget -O freetype.tar.gz https://download.savannah.gnu.org/releases/freetype/freetype-$(echo ${freetype_version} | tr '-' '.').tar.gz >/dev/null 2>&1 \
+    && tar -xzf freetype.tar.gz >/dev/null 2>&1 && rm freetype.tar.gz && mv freetype-$(echo ${freetype_version} | tr '-' '.') freetype \
+    # && git clone --branch VER-${freetype_version} https://gitlab.freedesktop.org/freetype/freetype.git freetype >/dev/null 2>&1 \
     && echo "✅ Download completed successfully" \
     && echo "------------------------------------------------------"
 
@@ -200,6 +209,7 @@ RUN \
     && echo "🔄 Start downloading fribidi" \
     && wget https://github.com/fribidi/fribidi/releases/download/v${fribidi_version}/fribidi-${fribidi_version}.tar.xz >/dev/null 2>&1 \
     && tar -xJf fribidi-${fribidi_version}.tar.xz >/dev/null 2>&1 && rm fribidi-${fribidi_version}.tar.xz && mv fribidi-${fribidi_version} fribidi \
+    # && git clone --branch v${fribidi_version} https://github.com/fribidi/fribidi.git fribidi >/dev/null 2>&1 \
     && echo "✅ Download completed successfully" \
     && echo "------------------------------------------------------"
 
@@ -374,7 +384,7 @@ RUN \
 RUN \
     echo "------------------------------------------------------" \
     && echo "🔄 Start downloading libgpg-error" \
-    && git clone https://github.com/gpg/libgpg-error.git libgpg-error >/dev/null 2>&1 \
+    && git clone --branch libgpg-error-${libgpg_error_version} https://github.com/gpg/libgpg-error.git libgpg-error >/dev/null 2>&1 \
     && echo "✅ Download completed successfully" \
     && echo "------------------------------------------------------"
 
@@ -382,8 +392,7 @@ RUN \
 RUN \
     echo "------------------------------------------------------" \
     && echo "🔄 Start downloading libgcrypt" \
-    && wget https://github.com/gpg/libgcrypt/archive/refs/tags/libgcrypt-${libgcrypt_version}.tar.gz >/dev/null 2>&1 \
-    && tar -xzf libgcrypt-${libgcrypt_version}.tar.gz >/dev/null 2>&1 && rm -f libgcrypt-${libgcrypt_version}.tar.gz && mv libgcrypt-libgcrypt-${libgcrypt_version} libgcrypt \
+    && git clone --branch libgcrypt-${libgcrypt_version} https://github.com/gpg/libgcrypt.git libgcrypt >/dev/null 2>&1 \
     && echo "✅ Download completed successfully" \
     && echo "------------------------------------------------------"
 
@@ -391,7 +400,7 @@ RUN \
 RUN \
     echo "------------------------------------------------------" \
     && echo "🔄 Start downloading libbdplus" \
-    && git clone https://code.videolan.org/videolan/libbdplus.git libbdplus >/dev/null 2>&1 \
+    && git clone --branch ${libbdplus_version} https://code.videolan.org/videolan/libbdplus.git libbdplus >/dev/null 2>&1 \
     && echo "✅ Download completed successfully" \
     && echo "------------------------------------------------------"
 
@@ -399,7 +408,7 @@ RUN \
 RUN \
     echo "------------------------------------------------------" \
     && echo "🔄 Start downloading libaacs" \
-    && git clone https://code.videolan.org/videolan/libaacs.git libaacs >/dev/null 2>&1 \
+    && git clone --branch ${libaacs_version} https://code.videolan.org/videolan/libaacs.git libaacs >/dev/null 2>&1 \
     && echo "✅ Download completed successfully" \
     && echo "------------------------------------------------------"
 
@@ -582,6 +591,12 @@ RUN \
     echo "------------------------------------------------------" \
     && echo "🔄 Start downloading openjpeg" \
     && git clone --branch v${openjpeg_version} https://github.com/uclouvain/openjpeg.git openjpeg >/dev/null 2>&1 \
+    && echo "✅ Download completed successfully" \
+    && echo "------------------------------------------------------" \
+    && echo "------------------------------------------------------" \
+    && echo "🔄 Start downloading jpeg" \
+    && wget -O jpegsrc.v${jpegsrc_version}.tar.gz https://ijg.org/files/jpegsrc.v${jpegsrc_version}.tar.gz >/dev/null 2>&1 \
+    && tar -xzf jpegsrc.v${jpegsrc_version}.tar.gz >/dev/null 2>&1 && mv jpeg-${jpegsrc_version} jpeg && rm jpegsrc.v${jpegsrc_version}.tar.gz \
     && echo "✅ Download completed successfully" \
     && echo "------------------------------------------------------"
 

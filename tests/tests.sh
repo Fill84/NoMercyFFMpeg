@@ -219,6 +219,10 @@ text_with_padding "Passed tests:" "${PASSED_TESTS}"
 text_with_padding "Failed tests:" "${FAILED_TESTS}"
 printf "%${TOTAL_WIDTH_TEXT}s\n" | tr ' ' '-' # Print a horizontal line
 echo ""
+
+# cleanup
+rm -rf "${TestRoot}"
+
 # Exit with failure if any tests failed
 if [ "${FAILED_TESTS}" -gt 0 ]; then
     exit $FAILED_TESTS

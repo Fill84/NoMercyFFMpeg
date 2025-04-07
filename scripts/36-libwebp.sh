@@ -59,26 +59,55 @@ fi
 
 #region libgif
 cd /build/giflib
-make -j$(nproc) && make install
-if [ ! -f ${PREFIX}/include/gif_lib.h ]; then
-    if [ -f gif_lib.h ]; then
-        cp gif_lib.h ${PREFIX}/include/gif_lib.h
-    else
-        echo "Failed to build giflib 1" >>/ffmpeg_build.log
+
+if [[ ${TARGET_OS} != "windows" ]]; then
+    apt-get update
+    apt-get install -y --no-install-recommends imagemagick
+
+    if [[ ${TARGET_OS} == "darwin" ]]; then
+        sed -i 's/-Wl,-soname/-Wl,-install_name/g' Makefile
+    fi
+
+    make PREFIX=${PREFIX} || (
+        echo "Error: giflib make failed." >>/ffmpeg_build.log
         exit 1
+    )
+
+    make PREFIX=${PREFIX} install || (
+        echo "Error: giflib install failed." >>/ffmpeg_build.log
+        exit 1
+    )
+else
+    make || (
+        echo "Error: giflib make failed." >>/ffmpeg_build.log
+        exit 1
+    )
+    make install || (
+        echo "Error: giflib install failed." >>/ffmpeg_build.log
+        exit 1
+    )
+    if [ ! -f ${PREFIX}/include/gif_lib.h ]; then
+        if [ -f gif_lib.h ]; then
+            cp gif_lib.h ${PREFIX}/include/gif_lib.h
+        else
+            echo "Failed to build giflib 1" >>/ffmpeg_build.log
+            exit 1
+        fi
+    fi
+    if [ ! -f ${PREFIX}/lib/libgif.a ]; then
+        if [ -f libgif.a ]; then
+            cp libgif.a ${PREFIX}/lib/libgif.a
+        else
+            echo "Failed to build giflib 2" >>/ffmpeg_build.log
+            exit 1
+        fi
     fi
 fi
-if [ ! -f ${PREFIX}/lib/libgif.a ]; then
-    if [ -f libgif.a ]; then
-        cp libgif.a ${PREFIX}/lib/libgif.a
-    else
-        echo "Failed to build giflib 2" >>/ffmpeg_build.log
-        exit 1
-    fi
-fi
+
 if [ ! -f ${PREFIX}/lib/pkgconfig/giflib.pc ]; then
     if [ -f giflib.pc ]; then
         cp giflib.pc ${PREFIX}/lib/pkgconfig/giflib.pc
+        sed -i "s|prefix=.*|prefix=${PREFIX}|g" ${PREFIX}/lib/pkgconfig/giflib.pc
     else
         {
             echo "prefix=${PREFIX}"
