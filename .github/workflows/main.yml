@@ -40,7 +40,7 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
-          repository: "https://github.com/NoMercy-Entertainment/FFMPEG-Secrets.git"    
+          repository: "NoMercy-Entertainment/FFMPEG-Secrets"   
           path: "${{ github.workspace }}/scripts"
 
       - name: Bump version
