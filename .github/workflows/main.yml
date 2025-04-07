@@ -34,14 +34,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-    
-      - name: Checkout Code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
-          repository: "NoMercy-Entertainment/FFMPEG-Secrets"   
-          path: "${{ github.workspace }}/scripts"
 
       - name: Bump version
         id: bump-version
@@ -231,6 +223,20 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
+      
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: "master"
+          repository: "NoMercy-Entertainment/FFMPEG-Secrets"   
+          path: "FFMPEG-Secrets"
+      
+      - name: Copy secrets
+        run: |
+          cp -r FFMPEG-Secrets/* ${{ github.workspace }}/scripts/
+          rm -rf FFMPEG-Secrets
 
       - name: Build and push Linux x86_64 image
         uses: docker/build-push-action@v4
@@ -269,6 +275,20 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
+      
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: "master"
+          repository: "NoMercy-Entertainment/FFMPEG-Secrets"   
+          path: "FFMPEG-Secrets"
+      
+      - name: Copy secrets
+        run: |
+          cp -r FFMPEG-Secrets/* ${{ github.workspace }}/scripts/
+          rm -rf FFMPEG-Secrets
 
       - name: Build and push Aarch64 image
         uses: docker/build-push-action@v4
@@ -307,6 +327,20 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
+      
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: "master"
+          repository: "NoMercy-Entertainment/FFMPEG-Secrets"   
+          path: "FFMPEG-Secrets"
+      
+      - name: Copy secrets
+        run: |
+          cp -r FFMPEG-Secrets/* ${{ github.workspace }}/scripts/
+          rm -rf FFMPEG-Secrets
 
       - name: Build and push Windows image
         uses: docker/build-push-action@v4
@@ -345,6 +379,20 @@ jobs:
     #     with:
     #       username: ${{ secrets.DOCKER_USERNAME }}
     #       password: ${{ secrets.DOCKER_PASSWORD }}
+      
+    #   - name: Checkout Code
+    #     uses: actions/checkout@v4
+    #     with:
+    #       fetch-depth: 0
+    #       token: ${{ secrets.GITHUB_TOKEN }}
+    #       ref: "master"
+    #       repository: "NoMercy-Entertainment/FFMPEG-Secrets"   
+    #       path: "FFMPEG-Secrets"
+       
+    #   - name: Copy secrets
+    #     run: |
+    #       cp -r FFMPEG-Secrets/* ${{ github.workspace }}/scripts/
+    #       rm -rf FFMPEG-Secrets
 
     #   - name: Build and push Windows image
     #     uses: docker/build-push-action@v4
@@ -383,6 +431,20 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
+      
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: "master"
+          repository: "NoMercy-Entertainment/FFMPEG-Secrets"   
+          path: "FFMPEG-Secrets"
+      
+      - name: Copy secrets
+        run: |
+          cp -r FFMPEG-Secrets/* ${{ github.workspace }}/scripts/
+          rm -rf FFMPEG-Secrets
 
       - name: Build and push Darwin image
         uses: docker/build-push-action@v4
@@ -421,6 +483,20 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
+      
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: "master"
+          repository: "NoMercy-Entertainment/FFMPEG-Secrets"   
+          path: "FFMPEG-Secrets"
+      
+      - name: Copy secrets
+        run: |
+          cp -r FFMPEG-Secrets/* ${{ github.workspace }}/scripts/
+          rm -rf FFMPEG-Secrets
 
       - name: Build and push Darwin image
         uses: docker/build-push-action@v4
