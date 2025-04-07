@@ -230,7 +230,7 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.PAT_TOKEN }}
           repository: "NoMercy-Entertainment/FFMPEG-Secrets"
-          path: "${{ github.workspace }}/scripts"
+          path: "${{ github.workspace }}/FFMPEG-Secrets"
       
       - name: Copy secrets
         run: |
@@ -281,7 +281,7 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.PAT_TOKEN }}
           repository: "NoMercy-Entertainment/FFMPEG-Secrets"
-          path: "${{ github.workspace }}/scripts"
+          path: "${{ github.workspace }}/FFMPEG-Secrets"
       
       - name: Copy secrets
         run: |
@@ -332,7 +332,7 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.PAT_TOKEN }}
           repository: "NoMercy-Entertainment/FFMPEG-Secrets"
-          path: "${{ github.workspace }}/scripts"
+          path: "${{ github.workspace }}/FFMPEG-Secrets"
       
       - name: Copy secrets
         run: |
@@ -435,7 +435,7 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.PAT_TOKEN }}
           repository: "NoMercy-Entertainment/FFMPEG-Secrets"
-          path: "${{ github.workspace }}/scripts"
+          path: "${{ github.workspace }}/FFMPEG-Secrets"
       
       - name: Copy secrets
         run: |
@@ -486,7 +486,7 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.PAT_TOKEN }}
           repository: "NoMercy-Entertainment/FFMPEG-Secrets"
-          path: "${{ github.workspace }}/scripts"
+          path: "${{ github.workspace }}/FFMPEG-Secrets"
       
       - name: Copy secrets
         run: |
