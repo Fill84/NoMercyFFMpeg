@@ -230,7 +230,7 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
           ref: "master"
-          repository: "NoMercy-Entertainment/FFMPEG-Secrets"   
+          repository: "NoMercy-Entertainment/FFMPEG-Secrets.git"   
           path: "FFMPEG-Secrets"
       
       - name: Copy secrets
@@ -282,7 +282,7 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
           ref: "master"
-          repository: "NoMercy-Entertainment/FFMPEG-Secrets"   
+          repository: "NoMercy-Entertainment/FFMPEG-Secrets.git"   
           path: "FFMPEG-Secrets"
       
       - name: Copy secrets
@@ -334,7 +334,7 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
           ref: "master"
-          repository: "NoMercy-Entertainment/FFMPEG-Secrets"   
+          repository: "NoMercy-Entertainment/FFMPEG-Secrets.git"   
           path: "FFMPEG-Secrets"
       
       - name: Copy secrets
@@ -386,7 +386,7 @@ jobs:
     #       fetch-depth: 0
     #       token: ${{ secrets.GITHUB_TOKEN }}
     #       ref: "master"
-    #       repository: "NoMercy-Entertainment/FFMPEG-Secrets"   
+    #       repository: "NoMercy-Entertainment/FFMPEG-Secrets.git"   
     #       path: "FFMPEG-Secrets"
        
     #   - name: Copy secrets
@@ -438,7 +438,7 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
           ref: "master"
-          repository: "NoMercy-Entertainment/FFMPEG-Secrets"   
+          repository: "NoMercy-Entertainment/FFMPEG-Secrets.git"   
           path: "FFMPEG-Secrets"
       
       - name: Copy secrets
@@ -490,7 +490,7 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
           ref: "master"
-          repository: "NoMercy-Entertainment/FFMPEG-Secrets"   
+          repository: "NoMercy-Entertainment/FFMPEG-Secrets.git"   
           path: "FFMPEG-Secrets"
       
       - name: Copy secrets
