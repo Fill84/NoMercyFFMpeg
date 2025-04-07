@@ -60,9 +60,15 @@ generate_samples() {
         Start_Time=$(date +%s)
         Current_Count=$((Current_Count + 1))
         text_with_padding "📹 Generating sample video" "[$Current_Count/$Total_Count]" 1
-        ${Workspace}/ffmpeg -hide_banner -y -f lavfi -i "testsrc=duration=10:size=1280x720:rate=30" \
-            -c:v libx264 -crf 23 "$SampleVideo" >/dev/null 2>&1
+        ffmpeg_command="-hide_banner -y -f lavfi -i \"testsrc=duration=10:size=1280x720:rate=30\" -c:v libx264 -crf 23 \"$SampleVideo\""
+        output=$(eval "${Workspace}/ffmpeg $ffmpeg_command" 2>&1)
+        exit_code=$?
         End_Time=$(date +%s)
+        if [[ $exit_code -ne 0 ]]; then
+            text_with_padding "❌ Error generating sample video" "[$((End_Time - Start_Time))s]" 1
+            echo "$output"
+            exit 1
+        fi
         text_with_padding "✅ Sample video generated" "[$((End_Time - Start_Time))s]" 1
     fi
 
@@ -70,9 +76,15 @@ generate_samples() {
         Start_Time=$(date +%s)
         Current_Count=$((Current_Count + 1))
         text_with_padding "🔊 Generating sample audio" "[$Current_Count/$Total_Count]" 1
-        ${Workspace}/ffmpeg -hide_banner -y -f lavfi -i "sine=frequency=1000:duration=10" \
-            -c:a pcm_s16le "$SampleAudio" >/dev/null 2>&1
+        ffmpeg_command="-hide_banner -y -f lavfi -i \"sine=frequency=1000:duration=10\" -c:a pcm_s16le \"$SampleAudio\""
+        output=$(eval "${Workspace}/ffmpeg $ffmpeg_command" 2>&1)
+        exit_code=$?
         End_Time=$(date +%s)
+        if [[ $exit_code -ne 0 ]]; then
+            text_with_padding "❌ Error generating sample audio" "[$((End_Time - Start_Time))s]" 1
+            echo "$output"
+            exit 1
+        fi
         text_with_padding "✅ Sample audio generated" "[$((End_Time - Start_Time))s]" 1
     fi
 
@@ -80,9 +92,15 @@ generate_samples() {
         Start_Time=$(date +%s)
         Current_Count=$((Current_Count + 1))
         text_with_padding "🖼️ Generating sample image" "[$Current_Count/$Total_Count]"
-        ${Workspace}/ffmpeg -hide_banner -y -f lavfi -i "testsrc=duration=1:size=640x480:rate=1" \
-            -frames:v 1 "$SampleImage" >/dev/null 2>&1
+        ffmpeg_command="-hide_banner -y -f lavfi -i \"testsrc=duration=1:size=640x480:rate=1\" -frames:v 1 \"$SampleImage\""
+        output=$(eval "${Workspace}/ffmpeg $ffmpeg_command" 2>&1)
+        exit_code=$?
         End_Time=$(date +%s)
+        if [[ $exit_code -ne 0 ]]; then
+            text_with_padding "❌ Error generating sample image" "[$((End_Time - Start_Time))s]" 1
+            echo "$output"
+            exit 1
+        fi
         text_with_padding "✅ Sample image generated" "[$((End_Time - Start_Time))s]" 1
     fi
 
