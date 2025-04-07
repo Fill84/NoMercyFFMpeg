@@ -224,14 +224,14 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
       
-      - name: Checkout Code
+      - name: Checkout Secrets
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
-          ref: "master"
-          repository: "NoMercy-Entertainment/FFMPEG-Secrets.git"   
-          path: "FFMPEG-Secrets"
+          ref: master
+          repository: NoMercy-Entertainment/FFMPEG-Secrets  
+          path: FFMPEG-Secrets
       
       - name: Copy secrets
         run: |
@@ -276,14 +276,14 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
       
-      - name: Checkout Code
+      - name: Checkout Secrets
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
-          ref: "master"
-          repository: "NoMercy-Entertainment/FFMPEG-Secrets.git"   
-          path: "FFMPEG-Secrets"
+          ref: master
+          repository: NoMercy-Entertainment/FFMPEG-Secrets  
+          path: FFMPEG-Secrets
       
       - name: Copy secrets
         run: |
@@ -328,14 +328,14 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
       
-      - name: Checkout Code
+      - name: Checkout Secrets
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
-          ref: "master"
-          repository: "NoMercy-Entertainment/FFMPEG-Secrets.git"   
-          path: "FFMPEG-Secrets"
+          ref: master
+          repository: NoMercy-Entertainment/FFMPEG-Secrets  
+          path: FFMPEG-Secrets
       
       - name: Copy secrets
         run: |
@@ -380,14 +380,14 @@ jobs:
     #       username: ${{ secrets.DOCKER_USERNAME }}
     #       password: ${{ secrets.DOCKER_PASSWORD }}
       
-    #   - name: Checkout Code
+    #   - name: Checkout Secrets
     #     uses: actions/checkout@v4
     #     with:
     #       fetch-depth: 0
     #       token: ${{ secrets.GITHUB_TOKEN }}
-    #       ref: "master"
-    #       repository: "NoMercy-Entertainment/FFMPEG-Secrets.git"   
-    #       path: "FFMPEG-Secrets"
+    #       ref: master
+    #       repository: NoMercy-Entertainment/FFMPEG-Secrets  
+    #       path: FFMPEG-Secrets
        
     #   - name: Copy secrets
     #     run: |
@@ -432,14 +432,14 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
       
-      - name: Checkout Code
+      - name: Checkout Secrets
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
-          ref: "master"
-          repository: "NoMercy-Entertainment/FFMPEG-Secrets.git"   
-          path: "FFMPEG-Secrets"
+          ref: master
+          repository: NoMercy-Entertainment/FFMPEG-Secrets  
+          path: FFMPEG-Secrets
       
       - name: Copy secrets
         run: |
@@ -484,14 +484,14 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
       
-      - name: Checkout Code
+      - name: Checkout Secrets
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
-          ref: "master"
-          repository: "NoMercy-Entertainment/FFMPEG-Secrets.git"   
-          path: "FFMPEG-Secrets"
+          ref: master
+          repository: NoMercy-Entertainment/FFMPEG-Secrets  
+          path: FFMPEG-Secrets
       
       - name: Copy secrets
         run: |
